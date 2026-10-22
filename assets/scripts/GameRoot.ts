@@ -1,6 +1,10 @@
-import { _decorator, Component, Node, UITransform, EventTouch, view, ResolutionPolicy, input, Input } from 'cc';
-import { GAME, LEVELS, applyScreen } from './config/GameConfig';
+import { _decorator, Component, Node, UITransform, EventTouch, view, ResolutionPolicy, input, Input, sys } from 'cc';
+import { GAME, LEVELS, applyScreen, SAVE_KEY_UNLOCKED } from './config/GameConfig';
 import { makeNode, rectNode } from './core/Draw';
+import { loadArt, spriteNode } from './core/Art';
+
+const BG_ART = ['bg_level1_village', 'bg_level2_temple']; // 与 LEVELS 下标对应
+const BG_ART_RATIO = 2340 / 1080;
 import { SkillSystem } from './game/SkillSystem';
 import { Combat } from './game/Combat';
 import { Spawner } from './game/Spawner';
@@ -8,6 +12,16 @@ import { GameUI } from './game/GameUI';
 import { Feedback } from './game/Feedback';
 
 const { ccclass } = _decorator;
+
+/** 读取已解锁关卡数；存档缺失或损坏时只开放第一关 */
+function loadUnlocked(): number {
+    const n = parseInt(sys.localStorage.getItem(SAVE_KEY_UNLOCKED) ?? '', 10);
+    return Number.isFinite(n) ? Math.max(1, Math.min(LEVELS.length, n)) : 1;
+}
+
+function saveUnlocked(n: number): void {
+    sys.localStorage.setItem(SAVE_KEY_UNLOCKED, String(n));
+}
 
 // 入口组件：挂在 Canvas 下的空节点上即可运行
 @ccclass('GameRoot')
@@ -20,6 +34,7 @@ export class GameRoot extends Component {
     private fb: Feedback;
     private state: 'menu' | 'play' | 'pick' | 'over' = 'menu';
     private levelIndex = 0;
+    private unlocked = loadUnlocked();
     private bg: Node;
     private time = 0;
 
@@ -64,7 +79,8 @@ export class GameRoot extends Component {
         input.on(Input.EventType.TOUCH_END, release);
         input.on(Input.EventType.TOUCH_CANCEL, release);
 
-        this.showMenu();
+        // 先加载美术素材再进菜单；加载失败时各处退回色块绘制
+        loadArt().then(() => this.showMenu());
     }
 
     onDestroy(): void {
@@ -97,7 +113,7 @@ export class GameRoot extends Component {
     private showMenu(): void {
         this.world.destroyAllChildren();
         this.state = 'menu';
-        this.ui.showLevels(LEVELS, (i) => this.startLevel(i));
+        this.ui.showLevels(LEVELS, this.unlocked, (i) => this.startLevel(i));
     }
 
     private startLevel(index: number): void {
@@ -105,6 +121,8 @@ export class GameRoot extends Component {
         const level = LEVELS[index];
         this.bg.destroyAllChildren();
         rectNode('bg', GAME.width, GAME.height * 2, level.bg, this.bg);
+        // 背景图按宽度铺满（1080×2340 → 720×1560），纯色底兜住更高的屏幕
+        spriteNode(BG_ART[index], GAME.width, GAME.width * BG_ART_RATIO, this.bg);
         this.world.destroyAllChildren();
         this.ui.clearOverlay();
         this.skills = new SkillSystem();
@@ -139,6 +157,10 @@ export class GameRoot extends Component {
     private end(win: boolean): void {
         this.state = 'over';
         this.combat.stopHold();
+        if (win && this.levelIndex + 2 > this.unlocked) {
+            this.unlocked = Math.min(LEVELS.length, this.levelIndex + 2);
+            saveUnlocked(this.unlocked);
+        }
         const buttons = [{ text: '再来一局', cb: () => this.startLevel(this.levelIndex) }];
         if (win && this.levelIndex + 1 < LEVELS.length) {
             buttons.unshift({ text: '下一关', cb: () => this.startLevel(this.levelIndex + 1) });

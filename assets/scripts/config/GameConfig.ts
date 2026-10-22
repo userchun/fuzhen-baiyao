@@ -24,7 +24,7 @@ export function applyScreen(visibleHeight: number): void {
 }
 
 // 基础攻击（镇妖符）：按住瞄准时射速更快，鼓励手动操作
-export const BASE_ATTACK = { damage: 12, holdCd: 0.25, autoCd: 0.45, speed: 1100 };
+export const BASE_ATTACK = { damage: 12, holdCd: 0.25, autoCd: 0.7, speed: 1100 };
 
 export const ELEMENT_COLOR: Record<Element, string> = {
     metal: '#F5D76E', wood: '#5FBF6A', water: '#5AB4F0',
@@ -37,6 +37,7 @@ export const COUNTER: Partial<Record<Element, Element>> = {
 };
 export const COUNTER_MULT = 1.5;   // 克制
 export const RESIST_MULT = 0.7;    // 被克
+export const MIN_HIT_DAMAGE = 1;   // 护甲减免后的最低伤害，保证命中总有反馈
 
 export const ELEMENT_NAME: Record<Element, string> = {
     metal: '金', wood: '木', water: '水', fire: '火', earth: '土', none: '',
@@ -67,7 +68,7 @@ export interface EnemyDef {
 }
 
 export const ENEMIES: Record<string, EnemyDef> = {
-    paperman: { id: 'paperman', name: '小纸人', char: '纸', element: 'wood', hp: 55, speed: 60, radius: 22, damage: 5, xp: 1, move: 'straight' },
+    paperman: { id: 'paperman', name: '小纸人', char: '纸', element: 'wood', hp: 80, speed: 60, radius: 22, damage: 5, xp: 1, move: 'straight' },
     jiangshi: { id: 'jiangshi', name: '跳尸', char: '尸', element: 'earth', hp: 120, speed: 70, radius: 26, damage: 10, xp: 2, move: 'hop' },
     foxfire: { id: 'foxfire', name: '狐火', char: '狐', element: 'fire', hp: 38, speed: 110, radius: 18, damage: 5, xp: 1, move: 'sine' },
     lantern: {
@@ -127,9 +128,12 @@ export const LEVEL2_WAVES: WaveDef[] = [
 export interface LevelDef { name: string; desc: string; bg: string; waves: WaveDef[]; startPicks: number; hpMult: number; }
 
 export const LEVELS: LevelDef[] = [
-    { name: '第一关 · 荒村', desc: 'Boss：黑山老妖', bg: '#141428', waves: LEVEL1_WAVES, startPicks: 0, hpMult: 0.85 },
+    { name: '第一关 · 荒村', desc: 'Boss：黑山老妖', bg: '#141428', waves: LEVEL1_WAVES, startPicks: 0, hpMult: 1.0 },
     { name: '第二关 · 古寺', desc: 'Boss：白骨夫人（三相变化）\n新妖：铜甲尸（护甲）、水鬼（潜水无敌）', bg: '#1E1A2B', waves: LEVEL2_WAVES, startPicks: 2, hpMult: 1.2 },
 ];
+
+/** 本地存档：已解锁关卡数（默认 1，即只开放第一关） */
+export const SAVE_KEY_UNLOCKED = 'fuzhen.unlockedLevels';
 
 export interface TalismanDef {
     id: TalismanId; name: string; element: Element;
@@ -154,6 +158,9 @@ export const PASSIVES: Record<string, PassiveDef> = {
     ward: { name: '固元', desc: '结界每秒回复 +1', maxLevel: 3 },
 };
 
+/** 符咒成长系数：伤害 = 基础 ×(1+dmgPerLevel×(级−1)) ×(1+dmgPerPower×朱砂级)；冷却 = 基础 ×cdPerLevel^(级−1) ÷(1+speedPerHaste×疾书级) */
+export const GROWTH = { dmgPerLevel: 0.35, dmgPerPower: 0.2, cdPerLevel: 0.92, speedPerHaste: 0.15 };
+
 export interface ComboDef { id: string; name: string; desc: string; need: TalismanId[]; level: number; }
 
 // 两个相生符咒都达到 level 级时解锁
@@ -161,3 +168,4 @@ export const COMBOS: ComboDef[] = [
     { id: 'burn', name: '焚林燎原', desc: '藤蔓被点燃，伤害 ×3', need: ['wood', 'fire'], level: 3 },
     { id: 'river', name: '天河倒悬', desc: '每 6 秒水龙横扫全屏', need: ['metal', 'water'], level: 3 },
 ];
+export const RIVER_INTERVAL = 6; // 天河倒悬触发间隔（秒），改动时同步 desc

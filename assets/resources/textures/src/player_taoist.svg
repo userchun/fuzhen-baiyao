@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 160" width="160" height="160">
+  <!-- 小道士：Q 版，黄道袍，手持符笔，胸前「师」字徽记留空 -->
+  <g stroke-linejoin="round" stroke-linecap="round">
+    <!-- 光边 -->
+    <path d="M80 18 C104 18 118 34 118 54 C118 64 114 70 110 74 L124 134 C124 142 116 146 108 146 L52 146 C44 146 36 142 36 134 L50 74 C46 70 42 64 42 54 C42 34 56 18 80 18 Z" fill="none" stroke="#E8E2D0" stroke-width="10" opacity="0.5"/>
+    <!-- 道袍 -->
+    <path d="M52 76 L36 134 C36 142 44 146 52 146 L108 146 C116 146 124 142 124 134 L108 76 Z" fill="#E9C46A" stroke="#7A5A1E" stroke-width="5"/>
+    <path d="M80 80 L80 146" stroke="#C99A3A" stroke-width="3"/>
+    <path d="M60 82 L80 104 L100 82" fill="none" stroke="#7A5A1E" stroke-width="4"/>
+    <!-- 腰带 -->
+    <rect x="46" y="112" width="68" height="10" rx="4" fill="#9B3D2E" stroke="#5A2018" stroke-width="3"/>
+    <!-- 胸前徽记（空白，代码叠「师」） -->
+    <circle cx="80" cy="122" r="0" fill="none"/>
+    <!-- 头 -->
+    <circle cx="80" cy="54" r="34" fill="#FBE3C8" stroke="#7A5A1E" stroke-width="5"/>
+    <!-- 道冠发髻 -->
+    <circle cx="80" cy="20" r="11" fill="#2B2235" stroke="#14101C" stroke-width="4"/>
+    <rect x="70" y="10" width="20" height="8" rx="3" fill="#E9C46A" stroke="#7A5A1E" stroke-width="3"/>
+    <path d="M48 44 C54 26 106 26 112 44 C100 36 60 36 48 44 Z" fill="#2B2235" stroke="#14101C" stroke-width="3"/>
+    <!-- 脸 -->
+    <ellipse cx="68" cy="58" rx="4.5" ry="6" fill="#2B2235"/>
+    <ellipse cx="92" cy="58" rx="4.5" ry="6" fill="#2B2235"/>
+    <circle cx="69.5" cy="55.5" r="1.8" fill="#FFF"/>
+    <circle cx="93.5" cy="55.5" r="1.8" fill="#FFF"/>
+    <ellipse cx="60" cy="68" rx="6" ry="3.5" fill="#F28C8C" opacity="0.6"/>
+    <ellipse cx="100" cy="68" rx="6" ry="3.5" fill="#F28C8C" opacity="0.6"/>
+    <path d="M74 70 Q80 76 86 70" fill="none" stroke="#2B2235" stroke-width="3"/>
+    <!-- 右手持符笔 -->
+    <circle cx="122" cy="100" r="9" fill="#FBE3C8" stroke="#7A5A1E" stroke-width="4"/>
+    <path d="M126 96 L142 64" stroke="#5A3A1A" stroke-width="6"/>
+    <path d="M142 64 L148 52 L138 60 Z" fill="#14101C" stroke="#14101C" stroke-width="3"/>
+    <!-- 左手黄符 -->
+    <rect x="18" y="86" width="20" height="30" rx="2" fill="#F5D76E" stroke="#7A5A1E" stroke-width="3" transform="rotate(-12 28 101)"/>
+    <path d="M24 94 L32 94 M24 101 L32 101 M24 108 L30 108" stroke="#9B3D2E" stroke-width="2" transform="rotate(-12 28 101)"/>
+    <circle cx="40" cy="102" r="9" fill="#FBE3C8" stroke="#7A5A1E" stroke-width="4"/>
+  </g>
+</svg>

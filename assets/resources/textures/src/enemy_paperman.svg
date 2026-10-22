@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+  <!-- 纸人（木）：扁平剪纸身体，锯齿边，腹部空白字印 -->
+  <g stroke-linejoin="round">
+    <!-- 浅色光边 -->
+    <path d="M64 10 C78 10 86 20 86 32 L98 36 L92 44 L104 52 L94 58 L102 68 L92 72 L96 86 L84 88 L86 104 L74 100 L70 116 L64 106 L58 116 L54 100 L42 104 L44 88 L32 86 L36 72 L26 68 L34 58 L24 52 L36 44 L30 36 L42 32 C42 20 50 10 64 10 Z" fill="none" stroke="#E8E2D0" stroke-width="10" opacity="0.55"/>
+    <!-- 身体 -->
+    <path d="M64 10 C78 10 86 20 86 32 L98 36 L92 44 L104 52 L94 58 L102 68 L92 72 L96 86 L84 88 L86 104 L74 100 L70 116 L64 106 L58 116 L54 100 L42 104 L44 88 L32 86 L36 72 L26 68 L34 58 L24 52 L36 44 L30 36 L42 32 C42 20 50 10 64 10 Z" fill="#5FBF6A" stroke="#2F6B37" stroke-width="5"/>
+    <!-- 纸张折痕 -->
+    <path d="M64 40 L64 52" stroke="#4C9F57" stroke-width="2" opacity="0.6"/>
+    <!-- 脸 -->
+    <ellipse cx="54" cy="30" rx="4.5" ry="5.5" fill="#1A2E1D"/>
+    <ellipse cx="74" cy="30" rx="4.5" ry="5.5" fill="#1A2E1D"/>
+    <circle cx="55.5" cy="28" r="1.6" fill="#FFFFFF"/>
+    <circle cx="75.5" cy="28" r="1.6" fill="#FFFFFF"/>
+    <ellipse cx="47" cy="37" rx="5" ry="3" fill="#F28C8C" opacity="0.6"/>
+    <ellipse cx="81" cy="37" rx="5" ry="3" fill="#F28C8C" opacity="0.6"/>
+    <path d="M60 38 Q64 42 68 38" fill="none" stroke="#1A2E1D" stroke-width="2.5" stroke-linecap="round"/>
+    <!-- 腹部空白字印（代码叠字） -->
+    <circle cx="64" cy="72" r="20" fill="#EAF7E6" stroke="#2F6B37" stroke-width="3.5"/>
+    <circle cx="64" cy="72" r="15.5" fill="none" stroke="#5FBF6A" stroke-width="1.5" stroke-dasharray="3 3"/>
+  </g>
+</svg>

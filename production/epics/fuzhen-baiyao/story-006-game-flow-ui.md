@@ -1,12 +1,12 @@
 # Story 006: 菜单 → 战斗 → 选卡 → 结算流程
 
 > **Epic**: 符镇百妖
-> **Status**: Ready
+> **Status**: Complete
 > **Layer**: Presentation
 > **Type**: UI
 > **Estimate**: M
 > **Manifest Version**: N/A (minimal — no control manifest)
-> **Last Updated**: —
+> **Last Updated**: 2026-10-23
 
 ## Context
 
@@ -32,6 +32,8 @@
 - [ ] 过关显示胜利结算，失败显示失败结算，均可返回菜单或重来
 - [ ] 状态 menu / play / pick / over 切换时，非 play 状态不响应战斗输入
 - [ ] 竖屏不同高度机型上 UI 不越界、不被裁切
+- [ ] 关卡解锁：默认只开放第一关；通关第 N 关后第 N+1 关解锁，进度存本地、重启后保留；未解锁关卡灰显且点击无效（2026-10-23 用户追加）
+- [ ] 顶部 HUD 有不透明底板，妖怪出场时不与灵气条/文字重叠；结界血条位于城墙下方（2026-10-23 用户追加）
 
 ---
 
@@ -49,10 +51,10 @@
 
 ## Files
 
-- `assets/scripts/GameRoot.ts`
-- `assets/scripts/game/GameUI.ts`
-
----
+- `assets/scripts/GameRoot.ts` — 关卡解锁存档（`loadUnlocked` / `saveUnlocked`）、进关设置 HUD 底板颜色
+- `assets/scripts/game/GameUI.ts` — 锁定关卡灰显；HUD 底板随关卡背景色、菜单隐藏；结界血条移到城墙下方并显示数值
+- `assets/scripts/config/GameConfig.ts` — 新增 `SAVE_KEY_UNLOCKED`
+- 测试未写：`qa.level: minimal` 下豁免
 
 ## QA Test Cases
 
@@ -73,3 +75,10 @@
 
 - Depends on: `production/epics/fuzhen-baiyao/story-003-level-up-picks.md`, `production/epics/fuzhen-baiyao/story-005-levels-waves.md`
 - Unlocks: None
+
+## Completion Notes
+**Completed**: 2026-10-23
+**Criteria**: 8/8 passing（截图 01–08；运行时：选卡时游戏时间冻结、拖动不移动玩家；胜利后本地存档写入 2，刷新后保持）
+**Deviations**: OUT OF SCOPE — Out of Scope 写了「存档」，但用户追加了关卡解锁，只存已解锁关卡数一个值；HUD 底板、结界血条移到城墙下方也是用户追加。菜单隐藏 HUD 底板的最后一处修改已通过类型检查，尚未截图确认
+**Test Evidence**: 屏幕高度用预览机型 iPhone 14 Pro 393×852 / iPhone 12 390×844 / Nokia C2 360×720 验证；iPad 4:3 因浏览器窗口装不下画布未测
+**Reviewed by**: self, no independent review

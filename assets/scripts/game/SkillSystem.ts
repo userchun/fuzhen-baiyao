@@ -1,4 +1,4 @@
-import { TALISMANS, PASSIVES, COMBOS, GAME, TalismanId } from '../config/GameConfig';
+import { TALISMANS, PASSIVES, COMBOS, GAME, GROWTH, TalismanId } from '../config/GameConfig';
 
 export interface TalismanState { level: number; cdT: number; }
 
@@ -18,6 +18,9 @@ export class SkillSystem {
     xp = 0;
     xpNeed = GAME.xpBase;
     pending = 0; // 待选择的升级次数
+
+    /** @param rng 随机源，测试时注入固定序列保证确定性 */
+    constructor(private rng: () => number = Math.random) {}
 
     addXp(v: number): void {
         this.xp += v;
@@ -42,12 +45,12 @@ export class SkillSystem {
 
     damage(id: TalismanId): number {
         const lv = Math.max(1, this.talismanLevel(id));
-        return TALISMANS[id].damage * (1 + 0.35 * (lv - 1)) * (1 + 0.2 * this.passive('power'));
+        return TALISMANS[id].damage * (1 + GROWTH.dmgPerLevel * (lv - 1)) * (1 + GROWTH.dmgPerPower * this.passive('power'));
     }
 
     cooldown(id: TalismanId): number {
         const lv = Math.max(1, this.talismanLevel(id));
-        return TALISMANS[id].cd * Math.pow(0.92, lv - 1) / (1 + 0.15 * this.passive('haste'));
+        return TALISMANS[id].cd * Math.pow(GROWTH.cdPerLevel, lv - 1) / (1 + GROWTH.speedPerHaste * this.passive('haste'));
     }
 
     rollOptions(n = 3): Option[] {
@@ -69,7 +72,7 @@ export class SkillSystem {
             if (lv < d.maxLevel) pool.push({ type: 'passive', id, title: `${d.name} Lv${lv + 1}`, desc: d.desc });
         });
         for (let i = pool.length - 1; i > 0; i--) {
-            const j = Math.floor(Math.random() * (i + 1));
+            const j = Math.floor(this.rng() * (i + 1));
             [pool[i], pool[j]] = [pool[j], pool[i]];
         }
         const picked = pool.slice(0, n);

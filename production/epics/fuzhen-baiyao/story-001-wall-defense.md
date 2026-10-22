@@ -1,12 +1,12 @@
 # Story 001: 守墙射击：移动、瞄准与城墙受击
 
 > **Epic**: 符镇百妖
-> **Status**: In Progress
+> **Status**: Complete
 > **Layer**: Foundation
 > **Type**: Integration
 > **Estimate**: M
 > **Manifest Version**: N/A (minimal — no control manifest)
-> **Last Updated**: 2026-10-22
+> **Last Updated**: 2026-10-23
 
 ## Context
 
@@ -79,3 +79,11 @@
 
 - Depends on: None
 - Unlocks: `production/epics/fuzhen-baiyao/story-002-element-counter.md`, `production/epics/fuzhen-baiyao/story-005-levels-waves.md`
+
+## Completion Notes
+**Completed**: 2026-10-23
+**Criteria**: 6/6 passing（AC-1~6 用户实机确认；AC-1/5/6 另有截图）
+**Deviations**: ADVISORY — 写死数值未挪入配置：`GameRoot.ts:53`（边距 40）、`GameRoot.ts:130`（回血 30）、`Combat.ts:32`（30）
+**Test Evidence**: waived at qa.level minimal；截图 `production/qa/evidence/story-001-wall-defense/`（390×844、375×667）
+**Correction (2026-10-23)**: 375×667 那张是浏览器窗口裁切了 393×852 的预览画布，不是真正的矮屏。AC-6 的有效证据见 `production/qa/evidence/story-006-game-flow-ui/06-hud-nokia-360x720.png`（预览机型 Nokia C2）
+**Reviewed by**: self, no independent review

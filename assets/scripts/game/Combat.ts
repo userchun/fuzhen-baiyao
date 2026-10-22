@@ -1,9 +1,11 @@
 import { Node, Graphics, Label } from 'cc';
 import {
     ENEMIES, EnemyDef, GAME, BASE_ATTACK, TalismanId, ELEMENT_COLOR, ELEMENT_NAME, Element, elementTier, TIER_MULT,
+    MIN_HIT_DAMAGE, RIVER_INTERVAL,
 } from '../config/GameConfig';
 import { Pool } from '../core/Pool';
 import { circleNode, rectNode, makeNode, hex, setOpacity, paintCircle, addLabel } from '../core/Draw';
+import { ENEMY_ART, hasArt, spriteNode } from '../core/Art';
 import { SkillSystem } from './SkillSystem';
 import { paintElement, drawHp } from './EnemyView';
 import { Feedback } from './Feedback';
@@ -31,7 +33,8 @@ interface Fx { key: string; node: Node; life: number; maxLife: number; scale: nu
 
 const HALF_W = GAME.width / 2 - 30;
 const top = (): number => GAME.height / 2 + 60; // 出怪线，在屏幕顶部之外
-const RIVER_INTERVAL = 6;
+const WALL_ART_H = 80;      // 城墙图片显示高度（素材 1440×160 的一半）
+const PLAYER_ART_SIZE = 88; // 小道士图片显示边长（原圆章直径 64）
 
 // 战斗世界：施法、敌人移动、子弹碰撞、区域伤害、特效
 export class Combat {
@@ -62,8 +65,10 @@ export class Combat {
         this.pool = new Pool((key) => this.create(key));
         this.zoneLayer = makeNode('zones', layer);
         this.enemyLayer = makeNode('enemies', layer);
-        rectNode('wall', GAME.width, 40, '#4A3B2A', layer).setPosition(0, GAME.wallY - 20);
-        this.player = circleNode('player', 32, '#F2E3B3', '师', layer);
+        // 城墙图片含上方垛口：高 80，垛口顶略高于 wallY
+        const wall = spriteNode('env_wall', GAME.width, WALL_ART_H, layer) ?? rectNode('wall', GAME.width, 40, '#4A3B2A', layer);
+        wall.setPosition(0, hasArt('env_wall') ? GAME.wallY - WALL_ART_H / 2 + 10 : GAME.wallY - 20);
+        this.player = spriteNode('player_taoist', PLAYER_ART_SIZE, PLAYER_ART_SIZE, layer) ?? circleNode('player', 32, '#F2E3B3', '师', layer);
         this.player.setPosition(0, GAME.playerY);
         this.bulletLayer = makeNode('bullets', layer);
         this.fxLayer = makeNode('fx', layer);
@@ -149,13 +154,24 @@ export class Combat {
         const [kind, id] = key.split(':');
         if (kind === 'enemy') {
             const d = ENEMIES[id];
-            const n = circleNode(key, d.radius, ELEMENT_COLOR[d.element], d.char);
+            const art = ENEMY_ART[id];
+            let n: Node;
+            if (art && hasArt(art.tex)) {
+                // 图片比碰撞圆大（含描边和肢体）；汉字叠在腹部空白字印上
+                const size = d.radius * 2 * art.scale;
+                n = makeNode(key, undefined, d.radius * 2, d.radius * 2);
+                spriteNode(art.tex, size, size, n).name = 'art';
+                const ch = addLabel(n, d.char, Math.max(12, Math.round(size * art.sealR * 1.3)), '#1E1A26');
+                ch.node.setPosition(0, size * (0.5 - art.sealY));
+            } else {
+                n = circleNode(key, d.radius, ELEMENT_COLOR[d.element], d.char);
+            }
             const badge = addLabel(n, ELEMENT_NAME[d.element], Math.max(16, Math.round(d.radius * 0.5)));
             badge.node.name = 'badge';
             badge.node.setPosition(d.radius * 0.75, d.radius * 0.75);
             if (d.elite || d.boss) {
                 const bar = makeNode('hp', n);
-                bar.setPosition(0, d.radius + 12);
+                bar.setPosition(0, d.radius * (art && hasArt(art.tex) ? art.scale : 1) + 12);
                 bar.addComponent(Graphics);
             }
             return n;
@@ -431,7 +447,7 @@ export class Combat {
         if (!e.alive || e.diving) return;
         const tier = elementTier(el, e.element);
         let dmg = amount * TIER_MULT[tier];
-        if (show && e.def.armor) dmg = Math.max(1, dmg - e.def.armor);
+        if (show && e.def.armor) dmg = Math.max(MIN_HIT_DAMAGE, dmg - e.def.armor);
         e.hp -= dmg;
         if (show) {
             this.fb.text(e.x, e.y + e.def.radius, dmg, tier);

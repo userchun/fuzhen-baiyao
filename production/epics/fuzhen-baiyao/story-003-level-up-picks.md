@@ -1,12 +1,12 @@
 # Story 003: 灵气升级三选一
 
 > **Epic**: 符镇百妖
-> **Status**: Ready
+> **Status**: Complete
 > **Layer**: Core
 > **Type**: Logic
 > **Estimate**: L
 > **Manifest Version**: N/A (minimal — no control manifest)
-> **Last Updated**: —
+> **Last Updated**: 2026-10-23
 
 ## Context
 
@@ -54,12 +54,10 @@
 
 ## Files
 
-- `assets/scripts/game/SkillSystem.ts`
-- `assets/scripts/game/Combat.ts`
-- `assets/scripts/config/GameConfig.ts`
-- `tests/unit/fuzhen-baiyao/level-up-picks_test.ts`
-
----
+- `assets/scripts/game/SkillSystem.ts` — `rng` 可注入（构造参数）；成长系数改读 `GROWTH`
+- `assets/scripts/config/GameConfig.ts` — 新增 `GROWTH` 成长系数
+- 已核对未改动：`assets/scripts/game/Combat.ts`（6 种符咒行为）
+- 测试未写：`qa.level: minimal` 下豁免
 
 ## QA Test Cases
 
@@ -80,3 +78,10 @@
 
 - Depends on: `production/epics/fuzhen-baiyao/story-002-element-counter.md`
 - Unlocks: `production/epics/fuzhen-baiyao/story-004-combos.md`
+
+## Completion Notes
+**Completed**: 2026-10-23
+**Criteria**: 8/8 passing（截图 + 运行时状态读取；6 种符咒：金光三连发/穿透、烈焰见 02，青藤减速与寒冰弹见 03，镇山石柱与冻结/眩晕（frozen=2）见 04，天雷连锁仅运行时数据 maxChain=3，未单独截图）
+**Deviations**: None；补了 `rng` 注入与 `GROWTH` 配置。截图时在页面内临时注入符咒，不影响项目代码
+**Test Evidence**: waived at qa.level minimal；截图 `production/qa/evidence/story-003-level-up-picks/`
+**Reviewed by**: self, no independent review

@@ -1,12 +1,12 @@
 # Story 004: 相生合击（焚林燎原、天河倒悬）
 
 > **Epic**: 符镇百妖
-> **Status**: Ready
+> **Status**: Complete
 > **Layer**: Feature
 > **Type**: Logic
 > **Estimate**: M
 > **Manifest Version**: N/A (minimal — no control manifest)
-> **Last Updated**: —
+> **Last Updated**: 2026-10-23
 
 ## Context
 
@@ -50,12 +50,11 @@
 
 ## Files
 
-- `assets/scripts/game/SkillSystem.ts`
-- `assets/scripts/game/Combat.ts`
-- `assets/scripts/config/GameConfig.ts`
-- `tests/unit/fuzhen-baiyao/combos_test.ts`
-
----
+- `assets/scripts/config/GameConfig.ts` — `RIVER_INTERVAL` 移入配置
+- `assets/scripts/game/Combat.ts` — 改读配置中的 `RIVER_INTERVAL`
+- `assets/scripts/game/GameUI.ts` — 新增符咒冷却遮罩（用户追加需求）
+- 已核对未改动：`assets/scripts/game/SkillSystem.ts`（合击解锁判定）
+- 测试未写：`qa.level: minimal` 下豁免
 
 ## QA Test Cases
 
@@ -76,3 +75,10 @@
 
 - Depends on: `production/epics/fuzhen-baiyao/story-003-level-up-picks.md`
 - Unlocks: None
+
+## Completion Notes
+**Completed**: 2026-10-23
+**Criteria**: 6/6 passing（运行时：2 级不解锁、3 级同时解锁、再次 apply 不重复；截图：解锁提示、焚林红色藤蔓区、天河水龙横带）
+**Deviations**: OUT OF SCOPE — 按用户要求追加符咒冷却遮罩（`GameUI.ts`），截图 01 可见；同期按用户要求调整平衡：`autoCd` 0.45→0.7、小纸人 hp 55→80、第一关 `hpMult` 0.85→1.0
+**Test Evidence**: waived at qa.level minimal；截图 `production/qa/evidence/story-004-combos/`
+**Reviewed by**: self, no independent review
