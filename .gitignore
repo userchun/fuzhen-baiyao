@@ -1,0 +1,9 @@
+library/
+temp/
+local/
+build/
+profiles/
+node_modules/
+scripts/balance-sim/out/
+scripts/balance-sim/node_modules/
+scripts/balance-sim/tsconfig.sim.json
