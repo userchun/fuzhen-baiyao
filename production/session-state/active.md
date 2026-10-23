@@ -35,11 +35,11 @@ Task:
 <!-- CHECKPOINT -->
 **Updated:** 2026-10-23
 **Branch:** `n/a (not a git repo)`
-**Current task:** /story-done — production/epics/fuzhen-baiyao/story-001-wall-defense.md: BLOCKED, left open
-**Next step:** 补截图到 production/qa/evidence/story-001-wall-defense/ 后重跑 /story-done
-**Blocked on:** AC-1/AC-6 缺留存截图
+**Current task:** story-006 COMPLETE（6/6 stories done）
+**Next step:** /art-bible — 出第一版美术风格
+**Blocked on:** nothing
 **Files in progress:** none
-**Open questions:** 写死数值(GameRoot.ts:53,130; Combat.ts:32)未处理
+**Open questions:** 菜单隐藏 HUD 底板待编译后截图确认
 <!-- /CHECKPOINT -->
 
 ---
