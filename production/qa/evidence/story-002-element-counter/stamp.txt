@@ -1,3 +1,0 @@
-Reviewed-Content-Hash: assets/scripts/config/GameConfig.ts 44f99caacd224439c8cfd1cddfd8a4afa002e12e
-Reviewed-Content-Hash: assets/scripts/game/Combat.ts 037e60cc5556cb356369ae6e3646fd56814a64b1
-Reviewed-Content-Hash: assets/scripts/game/Feedback.ts 64d4e4b5161c527460cc7476dbcb1508d41e3740

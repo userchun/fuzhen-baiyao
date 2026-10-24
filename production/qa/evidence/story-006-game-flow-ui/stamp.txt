@@ -1,3 +1,0 @@
-Reviewed-Content-Hash: assets/scripts/GameRoot.ts 2f67914b948a9e4cac73e65b5337287653df2298
-Reviewed-Content-Hash: assets/scripts/game/GameUI.ts 3eb821ecc917929cb4988a907b8996f148a9eb35
-Reviewed-Content-Hash: assets/scripts/config/GameConfig.ts 21e476b79af08ffc13034267f7af09093b065a34
