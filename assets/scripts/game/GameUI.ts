@@ -4,6 +4,7 @@ import { makeNode, addLabel, rectNode, hex, setOpacity, circleNode } from '../co
 import { spriteNode } from '../core/Art';
 import { SkillSystem, Option } from './SkillSystem';
 import { Combat } from './Combat';
+import { popIn, breathe } from './Anim';
 
 const top = (): number => GAME.height / 2;
 const SAFE_TOP = 60; // 刘海/状态栏留白
@@ -58,7 +59,9 @@ export class GameUI {
         const t = Math.floor(time);
         this.wallText.string = `结界 ${Math.ceil(c.wallHp)}/${GAME.wallHp}`;
         this.xpText.string = `Lv${s.level}`;
-        this.info.string = `击杀 ${c.kills}   ${Math.floor(t / 60)}:${String(t % 60).padStart(2, '0')}`;
+        const mm = Math.floor(t / 60);
+        const ss = Math.floor(t % 60);
+        this.info.string = `击杀 ${c.kills}   ${mm}:${ss < 10 ? '0' + ss : ss}`;
         // 技能有变化才重建左侧技能栏
         const sig: string[] = [];
         s.talismans.forEach((st, id) => sig.push(id + st.level));
@@ -144,7 +147,9 @@ export class GameUI {
 
     showPick(title: string, opts: Option[], onPick: (o: Option) => void): void {
         const ov = this.openOverlay();
-        addLabel(ov, title, 40, '#FFD700').node.setPosition(0, 380);
+        const titleNode = addLabel(ov, title, 40, '#FFD700');
+        titleNode.node.setPosition(0, 380);
+        popIn(titleNode.node, 0.3);
         opts.forEach((o, i) => {
             const card = rectNode('card', 580, 170, '#2C2440', ov, 16);
             card.setPosition(0, 200 - i * 200);
@@ -152,6 +157,8 @@ export class GameUI {
             const el = tal && ELEMENT_NAME[tal.element] ? `【${ELEMENT_NAME[tal.element]}】` : '';
             addLabel(card, el + o.title, 34, tal ? ELEMENT_COLOR[tal.element] : '#FFD700').node.setPosition(0, 40);
             addLabel(card, o.desc, 24, '#DDDDDD').node.setPosition(0, -25);
+            popIn(card, 0.22 + i * 0.06);
+            breathe(card, 0.02, 2.0 + i * 0.3);
             card.on(Node.EventType.TOUCH_END, (e: EventTouch) => {
                 e.propagationStopped = true;
                 onPick(o);
@@ -180,9 +187,14 @@ export class GameUI {
 
     showResult(win: boolean, kills: number, time: number, buttons: { text: string; cb: () => void }[]): void {
         const ov = this.openOverlay();
-        addLabel(ov, win ? '镇妖成功' : '结界破碎', 64, win ? '#FFD700' : '#E74C3C').node.setPosition(0, 200);
+        const title = addLabel(ov, win ? '镇妖成功' : '结界破碎', 64, win ? '#FFD700' : '#E74C3C');
+        title.node.setPosition(0, 200);
+        popIn(title.node, 0.4);
         addLabel(ov, `击杀 ${kills}    用时 ${Math.floor(time)} 秒`, 30).node.setPosition(0, 80);
-        buttons.forEach((b, i) => this.button(ov, b.text, b.cb, 300, 90, i === 0 ? '#8E2C2C' : '#3A3350', 0, -80 - i * 120));
+        buttons.forEach((b, i) => {
+            const btn = this.button(ov, b.text, b.cb, 300, 90, i === 0 ? '#8E2C2C' : '#3A3350', 0, -80 - i * 120);
+            popIn(btn, 0.25 + i * 0.08);
+        });
     }
 
     private button(parent: Node, text: string, cb: () => void, w: number, h: number, color: string, x: number, y: number): Node {

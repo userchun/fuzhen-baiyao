@@ -42,6 +42,11 @@ export function hasArt(name: string): boolean {
     return frames.has(name);
 }
 
+/** 取已加载的 SpriteFrame；素材不存在时返回 null */
+export function getFrame(name: string): SpriteFrame | null {
+    return frames.get(name) ?? null;
+}
+
 /** 生成指定尺寸的图片节点；素材不存在时返回 null */
 export function spriteNode(name: string, w: number, h: number, parent?: Node): Node | null {
     const sf = frames.get(name);

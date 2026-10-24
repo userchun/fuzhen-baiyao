@@ -1,7 +1,7 @@
 import { Node, Graphics, Label } from 'cc';
 import {
     ENEMIES, EnemyDef, GAME, BASE_ATTACK, TalismanId, ELEMENT_COLOR, ELEMENT_NAME, Element, elementTier, TIER_MULT,
-    MIN_HIT_DAMAGE, RIVER_INTERVAL,
+    MIN_HIT_DAMAGE, RIVER_INTERVAL, depthY, depthScale, lanePixels,
 } from '../config/GameConfig';
 import { Pool } from '../core/Pool';
 import { circleNode, rectNode, makeNode, hex, setOpacity, paintCircle, addLabel } from '../core/Draw';
@@ -9,10 +9,14 @@ import { ENEMY_ART, hasArt, spriteNode } from '../core/Art';
 import { SkillSystem } from './SkillSystem';
 import { paintElement, drawHp } from './EnemyView';
 import { Feedback } from './Feedback';
+import { AudioManager } from '../core/AudioManager';
+import { FX, burst } from './ParticleFX';
+import { hitPulse } from './Anim';
 
 export interface Enemy {
     def: EnemyDef; node: Node; element: Element; diving: boolean;
     x: number; y: number; baseX: number;
+    depth: number; // 2.5D 纵深：0=远(地平线) → 1=近(城墙)
     hp: number; maxHp: number; t: number; slow: number; freezeT: number; summonT: number; flashT: number;
     alive: boolean;
 }
@@ -32,7 +36,7 @@ interface Zone {
 interface Fx { key: string; node: Node; life: number; maxLife: number; scale: number; alive: boolean; }
 
 const HALF_W = GAME.width / 2 - 30;
-const top = (): number => GAME.height / 2 + 60; // 出怪线，在屏幕顶部之外
+const top = (): number => GAME.horizonY; // 纵深最远点（地平线/出怪线）
 const WALL_ART_H = 80;      // 城墙图片显示高度（素材 1440×160 的一半）
 const PLAYER_ART_SIZE = 88; // 小道士图片显示边长（原圆章直径 64）
 
@@ -53,7 +57,6 @@ export class Combat {
     private aimX = 0;
     private aimY = top();
     private holding = false;
-    private reticle: Node;
     private pool: Pool;
     private player: Node;
     private zoneLayer: Node;
@@ -61,7 +64,7 @@ export class Combat {
     private bulletLayer: Node;
     private fxLayer: Node;
 
-    constructor(layer: Node, private skills: SkillSystem, private fb: Feedback, private onKill: (e: Enemy) => void) {
+    constructor(layer: Node, private skills: SkillSystem, private fb: Feedback, private onKill: (e: Enemy) => void, private audio?: AudioManager) {
         this.pool = new Pool((key) => this.create(key));
         this.zoneLayer = makeNode('zones', layer);
         this.enemyLayer = makeNode('enemies', layer);
@@ -72,25 +75,21 @@ export class Combat {
         this.player.setPosition(0, GAME.playerY);
         this.bulletLayer = makeNode('bullets', layer);
         this.fxLayer = makeNode('fx', layer);
-        // 准星：显示当前瞄准点
-        this.reticle = makeNode('reticle', layer);
-        const rg = this.reticle.addComponent(Graphics);
-        rg.lineWidth = 3;
-        rg.strokeColor = hex('#FFE9A8', 200);
-        rg.circle(0, 0, 22);
-        rg.moveTo(-32, 0); rg.lineTo(-12, 0); rg.moveTo(12, 0); rg.lineTo(32, 0);
-        rg.moveTo(0, -32); rg.lineTo(0, -12); rg.moveTo(0, 12); rg.lineTo(0, 32);
-        rg.stroke();
-        this.reticle.active = false;
     }
 
-    spawnEnemy(id: string, x = (Math.random() * 2 - 1) * HALF_W, y = top()): void {
+    spawnEnemy(id: string, x = (Math.random() * 2 - 1) * HALF_W, depth = 0): void {
         const def = ENEMIES[id];
+        const y = depthY(depth);
         const node = this.pool.get('enemy:' + id, this.enemyLayer);
         node.setPosition(x, y);
+        node.setScale(depthScale(depth), depthScale(depth), 1);
         if (def.phases) paintElement(node, def, def.element);
+        if (def.boss) {
+            this.audio?.playSfx('boss', 0.9);
+            this.fb.shake(12, 0.4);
+        }
         const e: Enemy = {
-            def, node, element: def.element, diving: false, x, y, baseX: x, hp: def.hp * this.hpMult, maxHp: def.hp * this.hpMult, t: 0, slow: 0, freezeT: 0,
+            def, node, element: def.element, diving: false, x, y, baseX: x, depth, hp: def.hp * this.hpMult, maxHp: def.hp * this.hpMult, t: 0, slow: 0, freezeT: 0,
             summonT: def.summonInterval ?? 0, flashT: 0, alive: true,
         };
         this.enemies.push(e);
@@ -102,8 +101,6 @@ export class Combat {
         this.aimX = x;
         this.aimY = y;
         this.holding = hold;
-        this.reticle.active = true;
-        this.reticle.setPosition(x, y);
     }
 
     stopHold(): void {
@@ -203,6 +200,8 @@ export class Combat {
                 this.riverT = RIVER_INTERVAL;
                 const dmg = (s.damage('metal') + s.damage('water')) * 2;
                 this.shoot('river', 0, GAME.wallY, 0, 500, dmg, { radius: 30, life: 3 });
+                burst(this.fxLayer, 0, GAME.wallY + 60, FX.combo(0, GAME.wallY + 60, '#5AB4F0'));
+                this.audio?.playSfx('combo', 0.8);
                 this.fb.shake(6, 0.3);
             }
         }
@@ -235,6 +234,7 @@ export class Combat {
                     ? { bounces: lv, radius: 11 }
                     : { explodeR: 70 + 15 * lv, radius: 14, life: dist / speed });
             }
+            if (id === 'water') this.audio?.playSfx('freeze', 0.5);
         } else if (id === 'wood') {
             const used = new Set<Enemy>();
             for (let i = 0; i < count; i++) {
@@ -253,12 +253,14 @@ export class Combat {
                 const cx = t.x;
                 const cy = t.y;
                 this.addFx(cx, cy, r, 'fx:earth');
+                burst(this.fxLayer, cx, cy, FX.earth(cx, cy));
+                this.audio?.playSfx('thunder', 0.5);
                 this.fb.shake(3, 0.08);
                 for (const e of this.enemies) {
-                    if (!e.alive || Math.hypot(e.x - cx, e.y - cy) > r + e.def.radius) continue;
+                    if (!e.alive || Math.hypot(e.x - cx, e.y - cy) > r + e.def.radius * depthScale(e.depth)) continue;
                     this.hurt(e, dmg, 'earth');
                     if (!e.def.boss) {
-                        e.y += 50; // 击退
+                        e.depth = Math.max(0, e.depth - 50 / lanePixels()); // 击退（推远）
                         e.freezeT = Math.max(e.freezeT, 0.4);
                     }
                 }
@@ -272,10 +274,12 @@ export class Combat {
                 for (let j = 0; j <= lv && cur; j++) {
                     hit.add(cur);
                     this.addFx(cur.x, cur.y, 35, 'fx:thunder');
+                    burst(this.fxLayer, cur.x, cur.y, FX.thunder(cur.x, cur.y));
                     this.hurt(cur, dmg, 'none');
                     cur = this.nearest(cur.x, cur.y, hit, 250);
                 }
             }
+            this.audio?.playSfx('thunder', 0.7);
         }
     }
 
@@ -284,6 +288,7 @@ export class Combat {
         const node = this.pool.get('bullet:' + kind, this.bulletLayer);
         node.setPosition(x, y);
         if (kind === 'metal') node.angle = -Math.atan2(vx, vy) * 180 / Math.PI;
+        if (kind === 'manual') this.audio?.playSfx('shoot', 0.6);
         this.bullets.push({
             kind, node, x, y, vx, vy, damage,
             radius: opt.radius ?? 10, pierce: opt.pierce ?? 0, bounces: opt.bounces ?? 0,
@@ -313,7 +318,7 @@ export class Combat {
             if (z.life <= 0) { z.alive = false; continue; }
             for (const e of this.enemies) {
                 if (!e.alive) continue;
-                if (Math.hypot(e.x - z.x, e.y - z.y) < z.r + e.def.radius * 0.5) {
+                if (Math.hypot(e.x - z.x, e.y - z.y) < z.r + e.def.radius * 0.5 * depthScale(e.depth)) {
                     e.slow = Math.max(e.slow, z.slow);
                     this.hurt(e, z.dps * dt, z.el, false);
                 }
@@ -330,22 +335,25 @@ export class Combat {
                 e.freezeT -= dt;
             } else {
                 const sp = d.speed * (1 - e.slow);
+                const rate = sp / lanePixels(); // px/s → depth/s
                 if (d.move === 'hop') {
-                    if (e.t % 1.2 < 0.4) e.y -= sp * 3 * dt;
+                    if (e.t % 1.2 < 0.4) e.depth += rate * 3 * dt;
                 } else if (d.move === 'sine') {
-                    e.y -= sp * dt;
+                    e.depth += rate * dt;
                     e.x = e.baseX + Math.sin(e.t * 3) * 80;
                 } else {
-                    e.y -= sp * dt;
+                    e.depth += rate * dt;
                 }
             }
+            e.depth = Math.max(0, Math.min(1, e.depth));
+            e.y = depthY(e.depth);
             e.x = Math.max(-HALF_W, Math.min(HALF_W, e.x));
             // 水鬼：每 3 秒潜水 1 秒，潜水时无敌
             e.diving = !!d.dive && e.t % 3 > 2;
             setOpacity(e.node, e.diving ? 60 : e.freezeT > 0 ? 150 : 255);
-            // 命中闪一下：放大
+            // 命中闪一下：放大（叠加在纵深缩放之上）
             if (e.flashT > 0) e.flashT -= dt;
-            const sc = e.flashT > 0 ? 1.15 : 1;
+            const sc = depthScale(e.depth) * (e.flashT > 0 ? 1.15 : 1);
             e.node.setScale(sc, sc, 1);
 
             if (d.summon) {
@@ -353,19 +361,23 @@ export class Combat {
                 if (e.summonT <= 0) {
                     e.summonT = d.summonInterval;
                     for (let i = 0; i < (d.summonCount ?? 1); i++) {
-                        this.spawnEnemy(d.summon, e.x + (i % 2 ? 1 : -1) * (d.radius + 30), e.y - 20);
+                        this.spawnEnemy(d.summon, e.x + (i % 2 ? 1 : -1) * (d.radius + 30), e.depth);
                     }
                 }
             }
 
-            if (d.boss && e.y - d.radius <= GAME.wallY) {
+            const r = d.radius * depthScale(e.depth);
+            if (d.boss && e.y - r <= GAME.wallY) {
                 // Boss 抵达城墙：停下持续攻城
-                e.y = GAME.wallY + d.radius;
+                e.depth = 1;
+                e.y = GAME.wallY + r;
                 this.wallHp -= d.damage * dt;
                 if (Math.random() < dt * 4) this.fb.shake(6, 0.15);
-            } else if (e.y - d.radius <= GAME.wallY) {
+            } else if (e.y - r <= GAME.wallY) {
                 this.wallHp -= d.damage;
                 this.fb.shake(d.boss ? 30 : 10, 0.25);
+                this.audio?.playSfx('hit', 0.6);
+                burst(this.fxLayer, e.x, GAME.wallY, FX.barrier(e.x, GAME.wallY));
                 e.alive = false;
                 this.addFx(e.x, GAME.wallY, d.radius * 1.5);
                 continue;
@@ -390,7 +402,7 @@ export class Combat {
 
             if (b.kind === 'river') {
                 for (const e of this.enemies) {
-                    if (e.alive && !b.hit.has(e) && Math.abs(e.y - b.y) < b.radius + e.def.radius) {
+                    if (e.alive && !b.hit.has(e) && Math.abs(e.y - b.y) < b.radius + e.def.radius * depthScale(e.depth)) {
                         b.hit.add(e);
                         e.freezeT = 1;
                         this.hurt(e, b.damage, 'water');
@@ -401,7 +413,7 @@ export class Combat {
 
             for (const e of this.enemies) {
                 if (!e.alive || e.diving || b.hit.has(e)) continue;
-                const rr = b.radius + e.def.radius;
+                const rr = b.radius + e.def.radius * depthScale(e.depth);
                 if ((e.x - b.x) ** 2 + (e.y - b.y) ** 2 < rr * rr) {
                     this.onHit(b, e);
                     if (!b.alive) break;
@@ -435,9 +447,11 @@ export class Combat {
 
     private explode(b: Bullet): void {
         this.addFx(b.x, b.y, b.explodeR);
+        burst(this.fxLayer, b.x, b.y, FX.explode(b.x, b.y, b.explodeR));
+        this.audio?.playSfx('explode', 0.7);
         this.fb.shake(4, 0.1);
         for (const e of this.enemies) {
-            if (e.alive && Math.hypot(e.x - b.x, e.y - b.y) < b.explodeR + e.def.radius) {
+            if (e.alive && Math.hypot(e.x - b.x, e.y - b.y) < b.explodeR + e.def.radius * depthScale(e.depth)) {
                 this.hurt(e, b.damage, 'fire');
             }
         }
@@ -450,8 +464,19 @@ export class Combat {
         if (show && e.def.armor) dmg = Math.max(MIN_HIT_DAMAGE, dmg - e.def.armor);
         e.hp -= dmg;
         if (show) {
-            this.fb.text(e.x, e.y + e.def.radius, dmg, tier);
+            this.fb.text(e.x, e.y + e.def.radius * depthScale(e.depth), dmg, tier);
             e.flashT = 0.08;
+            hitPulse(e.node, 1.12);
+            // 命中火花 + 音效
+            const py = e.y + e.def.radius * depthScale(e.depth);
+            if (tier === 'crit') {
+                burst(this.fxLayer, e.x, py, FX.crit(e.x, py, ELEMENT_COLOR[el === 'none' ? e.element : el]));
+                this.audio?.playSfx('crit', 0.8);
+            } else {
+                burst(this.fxLayer, e.x, py, FX.hit(e.x, py, '#FFFFFF'));
+                if (tier === 'resist') this.audio?.playSfx('resist', 0.6);
+                else this.audio?.playSfx('hit', 0.5);
+            }
         }
         if (e.def.elite || e.def.boss) drawHp(e);
         if (e.hp <= 0) this.kill(e);
@@ -468,24 +493,27 @@ export class Combat {
         this.fb.shake(14, 0.4);
         this.fb.hitStop(0.15);
         for (let i = 0; i < 4; i++) {
-            this.spawnEnemy(e.def.summon ?? 'paperman', e.x + (i - 1.5) * 60, e.y - 40);
+            this.spawnEnemy(e.def.summon ?? 'paperman', e.x + (i - 1.5) * 60, e.depth);
         }
     }
 
     private kill(e: Enemy): void {
         e.alive = false;
         this.kills++;
+        burst(this.fxLayer, e.x, e.y, FX.death(e.x, e.y, ELEMENT_COLOR[e.element]));
         if (e.def.boss) {
             this.bossDead = true;
+            this.audio?.playSfx('win', 0.9);
             this.fb.hitStop(0.3);
             this.fb.shake(20, 0.5);
         } else if (e.def.elite) {
+            this.audio?.playSfx('explode', 0.6);
             this.fb.hitStop(0.06);
             this.fb.shake(8, 0.2);
         }
         if (e.def.splitInto) {
             for (let i = 0; i < (e.def.splitCount ?? 0); i++) {
-                this.spawnEnemy(e.def.splitInto, e.x + (i - 1) * 40, e.y);
+                this.spawnEnemy(e.def.splitInto, e.x + (i - 1) * 40, e.depth);
             }
         }
         this.addFx(e.x, e.y, e.def.radius * 1.2);

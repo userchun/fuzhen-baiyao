@@ -147,6 +147,49 @@ def tongjia(broken=False):
     return svg(128, 128, b)
 
 
+def paperman():
+    m, d, light = EL['wood']
+    b = ''
+    # 扁平剪纸小人：锯齿边身体 + 四肢
+    body = ('<path d="M64 18 L74 24 L80 34 L96 48 L100 70 L96 92 L104 108 L96 118 L64 118 L32 118 '
+            'L24 108 L32 92 L28 70 L32 48 L48 34 L54 24 Z"')
+    b += rimmed(body, m, d, 5)
+    # 剪纸锯齿（身体左右边缘）
+    for y in (34, 44, 54, 64, 74, 84, 94, 104):
+        b += f'<path d="M26 {y} L32 {y+6} L26 {y+12}" fill="none" stroke="{d}" stroke-width="3"/>'
+        b += f'<path d="M102 {y} L96 {y+6} L102 {y+12}" fill="none" stroke="{d}" stroke-width="3"/>'
+    # 四肢（纸片条状）
+    b += rimmed('<rect x="14" y="52" width="16" height="40" rx="6"', m, d, 4)
+    b += rimmed('<rect x="98" y="52" width="16" height="40" rx="6"', m, d, 4)
+    b += face(64, 50, 0.9)
+    b += seal(64, 86, 15, 'wood')
+    return svg(128, 128, b)
+
+
+def taoist():
+    m, d, light = '#E8D6A8', '#8C6F3E', '#F6ECD8'  # 赭黄袍，避开金/土
+    b = ''
+    # 宽袖道袍（背身 3/4，朝上）
+    robe = ('<path d="M64 14 C78 14 92 22 98 36 L104 84 L120 116 L92 118 L84 96 '
+            'L80 118 L48 118 L44 96 L36 118 L8 116 L24 84 L30 36 C36 22 50 14 64 14 Z"')
+    b += rimmed(robe, m, d, 5)
+    # 腰带
+    b += f'<rect x="42" y="84" width="44" height="12" rx="4" fill="#9B3D2E" stroke="#5E281E" stroke-width="3"/>'
+    # 背身发髻 + 发簪
+    b += f'<circle cx="64" cy="22" r="14" fill="#2B2235" stroke="#14101C" stroke-width="4"/>'
+    b += f'<path d="M50 20 L78 24" stroke="#F5D76E" stroke-width="5"/>'
+    b += f'<circle cx="78" cy="24" r="4" fill="#F5D76E" stroke="#8C7428" stroke-width="2"/>'
+    # 右手高举符笔（右上）
+    b += rimmed('<rect x="90" y="30" width="14" height="34" rx="6"', m, d, 4)
+    b += f'<rect x="88" y="14" width="18" height="22" rx="4" fill="#3E2E1E" stroke="#1E160E" stroke-width="3"/>'
+    b += f'<path d="M97 14 L93 4 L103 4 Z" fill="#E8E2D0" stroke="#8C7428" stroke-width="2"/>'
+    # 左手捏符纸（左上）
+    b += f'<rect x="34" y="34" width="16" height="12" rx="2" fill="#F6ECD8" stroke="#8C7428" stroke-width="2.5" transform="rotate(-12 42 40)"/>'
+    # 「师」字徽记（背心小字章）
+    b += f'<circle cx="64" cy="62" r="13" fill="#F6ECD8" stroke="{d}" stroke-width="3"/>'
+    return svg(160, 160, b)
+
+
 def heishan():
     m, d, _ = EL['earth']
     b = ''
@@ -310,6 +353,7 @@ def passive(motif):
 
 
 ASSETS = {
+    'enemy_paperman': paperman,
     'enemy_jiangshi': jiangshi,
     'enemy_foxfire': foxfire,
     'enemy_lantern': lambda: lantern(192, True),
@@ -317,6 +361,7 @@ ASSETS = {
     'enemy_shuigui': shuigui,
     'enemy_tongjia': lambda: tongjia(False),
     'enemy_tongjia_broken': lambda: tongjia(True),
+    'player_taoist': taoist,
     'boss_heishan': heishan,
     'boss_baigu_metal': lambda: baigu('metal'),
     'boss_baigu_water': lambda: baigu('water'),
@@ -324,6 +369,7 @@ ASSETS = {
     'env_wall': wall,
     'bg_level1_village': bg_village,
     'bg_level2_temple': bg_temple,
+    'icon_talisman_metal': lambda: talisman('metal', '#F5D76E', '#8C7428', 'circle'),
     'icon_talisman_water': lambda: talisman('water', '#5AB4F0', '#22618A', 'wave'),
     'icon_talisman_fire': lambda: talisman('fire', '#F06A4A', '#8A3020', 'triangle'),
     'icon_talisman_earth': lambda: talisman('earth', '#B08A55', '#5E4526', 'square'),
@@ -336,10 +382,8 @@ ASSETS = {
 }
 
 if __name__ == '__main__':
-    os.makedirs(SRC, exist_ok=True)
+    os.makedirs(OUT, exist_ok=True)
     for name, fn in ASSETS.items():
         text = fn()
-        with open(os.path.join(SRC, name + '.svg'), 'w', encoding='utf-8') as f:
-            f.write(text)
         cairosvg.svg2png(bytestring=text.encode('utf-8'), write_to=os.path.join(OUT, name + '.png'))
-    print(f'generated {len(ASSETS)} assets')
+    print(f'generated {len(ASSETS)} PNG assets (SVG 源不落盘)')

@@ -9,6 +9,7 @@ export const GAME = {
     wallY: -440,      // 城墙顶部 y（由 applyScreen 按屏幕高度重算）
     playerY: -470,
     moveZoneY: -350,  // 此线以下拖动移动，以上点按瞄准/攻击
+    horizonY: 520,    // 地平线 y（2.5D 纵深最远点，由 applyScreen 按屏幕高度重算）
     wallHp: 100,
     xpBase: 5,        // 第一次升级所需灵气
     xpGrow: 1.3,      // 每级所需灵气倍率
@@ -21,6 +22,28 @@ export function applyScreen(visibleHeight: number): void {
     GAME.wallY = -GAME.height / 2 + 200;
     GAME.playerY = GAME.wallY - 30;
     GAME.moveZoneY = GAME.wallY + 90;
+    GAME.horizonY = GAME.height / 2 - 120; // 顶部留 120px 作天空/地平线
+}
+
+// ---- 2.5D 俯视纵深（P1：线性投影）----
+// depth 0 = 远（地平线/出怪），1 = 近（城墙）
+export const DEPTH = {
+    farScale: 0.35,   // 地平线处敌人缩放（近处为 1）
+};
+
+/** 纵深 → 屏幕 y：0 在地平线，1 在城墙 */
+export function depthY(d: number): number {
+    return GAME.horizonY + (GAME.wallY - GAME.horizonY) * d;
+}
+
+/** 纵深 → 敌人缩放：远处小、近处大 */
+export function depthScale(d: number): number {
+    return DEPTH.farScale + (1 - DEPTH.farScale) * d;
+}
+
+/** 纵深满程（地平线→城墙）的屏幕像素长度，用于把 speed(px/s) 换算成 depth 速率 */
+export function lanePixels(): number {
+    return GAME.horizonY - GAME.wallY;
 }
 
 // 基础攻击（镇妖符）：按住瞄准时射速更快，鼓励手动操作

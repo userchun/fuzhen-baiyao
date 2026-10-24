@@ -1,7 +1,8 @@
-import { _decorator, Component, Node, UITransform, EventTouch, view, ResolutionPolicy, input, Input, sys } from 'cc';
+import { _decorator, Component, Node, UITransform, EventTouch, view, ResolutionPolicy, input, Input, sys, Graphics } from 'cc';
 import { GAME, LEVELS, applyScreen, SAVE_KEY_UNLOCKED } from './config/GameConfig';
-import { makeNode, rectNode } from './core/Draw';
+import { makeNode, rectNode, hex } from './core/Draw';
 import { loadArt, spriteNode } from './core/Art';
+import { loadAudio, AudioManager } from './core/AudioManager';
 
 const BG_ART = ['bg_level1_village', 'bg_level2_temple']; // 与 LEVELS 下标对应
 const BG_ART_RATIO = 2340 / 1080;
@@ -32,6 +33,7 @@ export class GameRoot extends Component {
     private combat: Combat;
     private spawner: Spawner;
     private fb: Feedback;
+    private audio: AudioManager;
     private state: 'menu' | 'play' | 'pick' | 'over' = 'menu';
     private levelIndex = 0;
     private unlocked = loadUnlocked();
@@ -47,6 +49,7 @@ export class GameRoot extends Component {
         this.bg = makeNode('bgHolder', this.node);
         this.world = makeNode('world', this.node);
         this.ui = new GameUI(makeNode('ui', this.node));
+        this.audio = new AudioManager(this.node);
 
         // 底部区域拖动 = 移动；上方战场按住 = 瞄准并连发
         let mode: 'move' | 'aim' | null = null;
@@ -81,6 +84,8 @@ export class GameRoot extends Component {
 
         // 先加载美术素材再进菜单；加载失败时各处退回色块绘制
         loadArt().then(() => this.showMenu());
+        // 音频异步加载，失败静默（无声音仍可玩）
+        loadAudio().then(() => this.audio.playBgm('village'));
     }
 
     onDestroy(): void {
@@ -123,6 +128,7 @@ export class GameRoot extends Component {
         rectNode('bg', GAME.width, GAME.height * 2, level.bg, this.bg);
         // 背景图按宽度铺满（1080×2340 → 720×1560），纯色底兜住更高的屏幕
         spriteNode(BG_ART[index], GAME.width, GAME.width * BG_ART_RATIO, this.bg);
+        this.addGroundDepth(); // 2.5D：地平线 + 纵深等高线（在背景图之上）
         this.world.destroyAllChildren();
         this.ui.clearOverlay();
         this.skills = new SkillSystem();
@@ -130,7 +136,7 @@ export class GameRoot extends Component {
         const combatLayer = makeNode('combat', this.world);
         const textLayer = makeNode('texts', this.world); // 飘字在战斗层之上
         this.fb = new Feedback(textLayer, this.world);
-        this.combat = new Combat(combatLayer, this.skills, this.fb, (e) => this.skills.addXp(e.def.xp));
+        this.combat = new Combat(combatLayer, this.skills, this.fb, (e) => this.skills.addXp(e.def.xp), this.audio);
         this.combat.hpMult = level.hpMult;
         this.spawner = new Spawner(level.waves, (id) => this.combat.spawnEnemy(id));
         this.skills.pending = level.startPicks;
@@ -139,15 +145,47 @@ export class GameRoot extends Component {
         this.ui.showToast(level.name);
     }
 
+    /** 2.5D 纵深地面：地平线 + 半透明地面 + 纵深等高线（P1 占位，后续换透视地面素材） */
+    private addGroundDepth(): void {
+        const g = makeNode('ground', this.bg).addComponent(Graphics);
+        const w = GAME.width;
+        const topY = GAME.horizonY;
+        const bottomY = GAME.wallY;
+        // 地面：地平线以下到城墙的半透明色块
+        g.fillColor = hex('#1A1830', 120);
+        g.rect(-w / 2, bottomY, w, topY - bottomY);
+        g.fill();
+        // 纵深等高线：近疏远密，暗示透视
+        const lines = 8;
+        g.lineWidth = 2;
+        for (let i = 1; i <= lines; i++) {
+            const d = i / (lines + 1);
+            const y = bottomY + (topY - bottomY) * d;
+            g.strokeColor = hex('#3A3560', Math.round(60 + 60 * d));
+            g.moveTo(-w / 2, y);
+            g.lineTo(w / 2, y);
+        }
+        g.stroke();
+        // 地平线
+        g.lineWidth = 3;
+        g.strokeColor = hex('#6A5FA0', 120);
+        g.moveTo(-w / 2, topY);
+        g.lineTo(w / 2, topY);
+        g.stroke();
+    }
+
     private openPick(): void {
         this.state = 'pick';
         this.combat.stopHold();
+        this.audio.playSfx('levelup', 0.7);
         this.ui.showPick('灵气充盈 · 择一而修', this.skills.rollOptions(), (opt) => {
             this.skills.pending--;
+            this.audio.playSfx('click', 0.6);
             if (opt.type === 'heal') {
                 this.combat.wallHp = Math.min(GAME.wallHp, this.combat.wallHp + 30);
             } else {
                 this.skills.apply(opt).forEach((name) => this.ui.showToast(`五行相生 · ${name}`));
+                if (this.skills.combos.size > 0) this.audio.playSfx('combo', 0.8);
             }
             this.ui.clearOverlay();
             this.state = 'play';
@@ -157,6 +195,7 @@ export class GameRoot extends Component {
     private end(win: boolean): void {
         this.state = 'over';
         this.combat.stopHold();
+        this.audio.playSfx(win ? 'win' : 'lose', 0.9);
         if (win && this.levelIndex + 2 > this.unlocked) {
             this.unlocked = Math.min(LEVELS.length, this.levelIndex + 2);
             saveUnlocked(this.unlocked);
