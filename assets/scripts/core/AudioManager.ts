@@ -12,12 +12,20 @@ const SFX_KEYS = [
     'paperman_rustle', 'tongjia_clank', 'shuigui_dive_in', 'shuigui_dive_out',
     'foxfire_whoosh', 'shuigui_presence',
     'paperman_death', 'foxfire_snuff', 'tongjia_break', 'shuigui_death', 'enemy_hurt',
+    'amb_village', 'amb_temple',
 ] as const;
 
 const BGM_KEYS = ['village', 'temple'] as const;
 
 export type SfxName = typeof SFX_KEYS[number];
 export type BgmName = typeof BGM_KEYS[number];
+
+/** Ambient bed under BGM — low so it never covers music (BGM default 0.6). */
+const AMBIENT_GAIN = 0.2;
+const AMBIENT_FOR_BGM: Record<BgmName, SfxName> = {
+    village: 'amb_village',
+    temple: 'amb_temple',
+};
 
 function sfxPath(k: SfxName): string { return 'audio/sfx/' + k; }
 function bgmPath(k: BgmName): string { return 'audio/bgm/' + k; }
@@ -128,9 +136,24 @@ export class AudioManager {
             this.bgmSource.volume = volume;
             this.bgmSource.play();
         }
+        this.syncAmbient(key);
     }
 
     stopBgm(): void {
         if (this.bgmSource) this.bgmSource.stop();
+        this.stopAllAmbient();
+    }
+
+    /** Match ambient bed to BGM; stop the other scene's loop. */
+    private syncAmbient(key: BgmName): void {
+        const want = AMBIENT_FOR_BGM[key];
+        for (const amb of Object.values(AMBIENT_FOR_BGM)) {
+            if (amb === want) this.playLoopSfx(amb, AMBIENT_GAIN);
+            else this.stopLoopSfx(amb);
+        }
+    }
+
+    private stopAllAmbient(): void {
+        for (const amb of Object.values(AMBIENT_FOR_BGM)) this.stopLoopSfx(amb);
     }
 }
