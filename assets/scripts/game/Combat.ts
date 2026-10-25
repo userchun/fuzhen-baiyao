@@ -68,9 +68,21 @@ export class Combat {
     private playerIdle: FrameClip | null = null;
     private playerCast: FrameClip | null = null;
     private playerHit: FrameClip | null = null;
-    private jiangshiAnims = new Map<Node, FrameAnim>();
-    private jiangshiMove: FrameClip | null = null;
-    private static readonly JIANGSHI_HOP_PX = 12;
+    /** 敌人 move 序列帧：id → clip（无帧则不下挂） */
+    private enemyMoveClips = new Map<string, FrameClip>();
+    /** 节点 → FrameAnim（池化复用） */
+    private enemyAnims = new Map<Node, FrameAnim>();
+    /**
+     * move 规格：fps + 可选 Y-bob（仅 art 子节点；碰撞仍用 e.x/e.y）。
+     * foxfire/tongjia/shuigui bob=0；paperman 轻 bob；jiangshi 保持 12px hop。
+     */
+    private static readonly ENEMY_MOVE: Record<string, { fps: number; bobPx: number }> = {
+        jiangshi: { fps: 8, bobPx: 12 },
+        paperman: { fps: 9, bobPx: 4 },
+        foxfire: { fps: 9, bobPx: 0 },
+        tongjia: { fps: 11, bobPx: 0 },
+        shuigui: { fps: 8, bobPx: 0 }, // 略慢以缓和 f6–f7 观感；无 bob
+    };
 
     constructor(layer: Node, private skills: SkillSystem, private fb: Feedback, private onKill: (e: Enemy) => void, private audio?: AudioManager) {
         this.pool = new Pool((key) => this.create(key));
@@ -84,7 +96,15 @@ export class Combat {
         this.bulletLayer = makeNode('bullets', layer);
         this.fxLayer = makeNode('fx', layer);
         this.setupPlayerAnim();
-        this.jiangshiMove = this.makeClip('anim/enemy_jiangshi/move', 8, true);
+        this.setupEnemyMoveClips();
+    }
+
+    private setupEnemyMoveClips(): void {
+        for (const id of Object.keys(Combat.ENEMY_MOVE)) {
+            const spec = Combat.ENEMY_MOVE[id];
+            const clip = this.makeClip(`anim/enemy_${id}/move`, spec.fps, true);
+            if (clip) this.enemyMoveClips.set(id, clip);
+        }
     }
 
     private makeClip(prefix: string, fps: number, loop: boolean): FrameClip | null {
@@ -197,11 +217,12 @@ export class Combat {
                 n = makeNode(key, undefined, d.radius * 2, d.radius * 2);
                 const artNode = spriteNode(art.tex, size, size, n)!;
                 artNode.name = 'art';
-                // 跳尸：挂 move 序列帧（无帧则保持静态贴图）
-                if (id === 'jiangshi' && this.jiangshiMove) {
+                // 挂 move 序列帧（无帧则保持静态贴图）
+                const moveClip = this.enemyMoveClips.get(id);
+                if (moveClip) {
                     const anim = new FrameAnim(artNode);
-                    anim.play(this.jiangshiMove);
-                    this.jiangshiAnims.set(n, anim);
+                    anim.play(moveClip);
+                    this.enemyAnims.set(n, anim);
                 }
                 const ch = addLabel(n, d.char, Math.max(12, Math.round(size * art.sealR * 1.3)), '#1E1A26');
                 ch.node.setPosition(0, size * (0.5 - art.sealY));
@@ -429,23 +450,27 @@ export class Combat {
                 this.addFx(e.x, GAME.wallY, d.radius * 1.5);
                 continue;
             }
-            // 跳尸：序列帧 + art 子节点纵向 hop（逻辑坐标不变，碰撞仍用 e.x/e.y）
-            if (e.def.id === 'jiangshi') {
-                let anim = this.jiangshiAnims.get(e.node);
-                if (!anim && this.jiangshiMove) {
+            // move 序列帧 + 可选 art 子节点 Y-bob（逻辑坐标不变，碰撞仍用 e.x/e.y）
+            const moveSpec = Combat.ENEMY_MOVE[e.def.id];
+            if (moveSpec && this.enemyMoveClips.has(e.def.id)) {
+                let anim = this.enemyAnims.get(e.node);
+                if (!anim) {
                     const art = e.node.getChildByName('art');
+                    const clip = this.enemyMoveClips.get(e.def.id)!;
                     if (art) {
                         anim = new FrameAnim(art);
-                        anim.play(this.jiangshiMove);
-                        this.jiangshiAnims.set(e.node, anim);
+                        anim.play(clip);
+                        this.enemyAnims.set(e.node, anim);
                     }
                 }
                 anim?.update(dt);
-                const art = e.node.getChildByName('art');
-                if (art) {
-                    const hop = Math.abs(Math.sin(anim ? anim.progress * Math.PI * 2 : e.t * Math.PI * 4))
-                        * Combat.JIANGSHI_HOP_PX;
-                    art.setPosition(0, hop);
+                if (moveSpec.bobPx > 0) {
+                    const art = e.node.getChildByName('art');
+                    if (art) {
+                        const hop = Math.abs(Math.sin(anim ? anim.progress * Math.PI * 2 : e.t * Math.PI * 4))
+                            * moveSpec.bobPx;
+                        art.setPosition(0, hop);
+                    }
                 }
             }
             e.node.setPosition(e.x, e.y);
@@ -620,7 +645,8 @@ export class Combat {
     private cleanup(): void {
         this.enemies = this.enemies.filter((e) => {
             if (e.alive) return true;
-            if (e.def.id === 'jiangshi') {
+            const bobSpec = Combat.ENEMY_MOVE[e.def.id];
+            if (bobSpec && bobSpec.bobPx > 0) {
                 const art = e.node.getChildByName('art');
                 if (art) art.setPosition(0, 0);
             }
