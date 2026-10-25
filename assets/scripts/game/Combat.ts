@@ -254,7 +254,7 @@ export class Combat {
         return true;
     }
 
-    /** E：相生合击 VFX/SFX 统一入口（候选 / 待 CD spot；SFX 未封入 SFX_KEYS） */
+    /** E：相生合击 VFX/SFX 统一入口（combo_sheng 已封；VFX 贴图仍等 CD Art） */
     private static readonly COMBO_SHENG: Record<'burn' | 'river', { mother: string; child: string }> = {
         burn: { mother: '#5FBF6A', child: '#F06A4A' },   // 木→火
         river: { mother: '#F5D76E', child: '#5AB4F0' },  // 金→水
@@ -265,7 +265,7 @@ export class Combat {
         if (!c) return;
         burst(this.fxLayer, x, y, FX.combo(x, y, c.mother));
         burst(this.fxLayer, x, y, FX.combo(x, y, c.child));
-        // E：combo_sheng 仍 Must — 候选 prefer，fallback 封印 combo
+        // E：combo_sheng 已封；缺轨仍 fallback combo（不挂 fx_combo_sheng 贴图）
         this.audio?.playSfxPrefer('combo_sheng', 'combo', 0.8);
     }
 

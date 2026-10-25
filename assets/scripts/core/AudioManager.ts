@@ -8,7 +8,7 @@ const clips = new Map<string, AudioClip>();
 
 const SFX_KEYS = [
     'shoot', 'hit', 'crit', 'resist', 'explode', 'freeze', 'thunder',
-    'levelup', 'combo', 'boss', 'win', 'lose', 'click',
+    'levelup', 'combo', 'combo_sheng', 'boss', 'win', 'lose', 'click', // E combo_sheng 已封
     'paperman_rustle', 'tongjia_clank', 'shuigui_dive_in', 'shuigui_dive_out',
     'foxfire_whoosh', 'shuigui_presence',
     'jiangshi_presence', 'lantern_split', // F 已封挂（CD）
@@ -21,13 +21,8 @@ const SFX_KEYS = [
     'amb_village', 'amb_temple',
 ] as const;
 
-/**
- * 候选 SFX（未封）——预加载试听；缺轨由 playSfxPrefer fallback。
- * combo_sheng：CD Must，E 仍 fallback combo。
- */
-const CANDIDATE_SFX_KEYS = [
-    'combo_sheng', // E 相生 · 待 Must，不封 SFX_KEYS
-] as const;
+/** 候选 SFX（当前空；CD PASS 后已并入 SFX_KEYS）。保留槽位供下次试听挂点。 */
+const CANDIDATE_SFX_KEYS = [] as const;
 
 const BGM_KEYS = ['village', 'temple'] as const;
 
