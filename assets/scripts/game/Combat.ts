@@ -265,7 +265,7 @@ export class Combat {
         if (!c) return;
         burst(this.fxLayer, x, y, FX.combo(x, y, c.mother));
         burst(this.fxLayer, x, y, FX.combo(x, y, c.child));
-        // 候选：combo_sheng → fallback combo（待 CD audio PASS 再封 SFX_KEYS）
+        // E：combo_sheng 仍 Must — 候选 prefer，fallback 封印 combo
         this.audio?.playSfxPrefer('combo_sheng', 'combo', 0.8);
     }
 
@@ -667,7 +667,6 @@ export class Combat {
         }
 
         // 存在感循环：任一存活未冻则 loop，否则停（dive_in/out 仍由切换触发，不改）
-        // F jiangshi_presence：候选挂点（待 CD spot），不改刷怪/AI 时序
         let papermanMoving = false;
         let foxfireAlive = false;
         let shuiguiAlive = false;
@@ -685,8 +684,9 @@ export class Combat {
         else this.audio?.stopLoopSfx('foxfire_whoosh');
         if (shuiguiAlive) this.audio?.playLoopSfx('shuigui_presence', 0.28);
         else this.audio?.stopLoopSfx('shuigui_presence');
-        if (jiangshiAlive) this.audio?.playLoopSfxKey('jiangshi_presence', 0.28);
-        else this.audio?.stopLoopSfxKey('jiangshi_presence');
+        // F 已封挂 jiangshi_presence（不改刷怪/AI 时序）
+        if (jiangshiAlive) this.audio?.playLoopSfx('jiangshi_presence', 0.28);
+        else this.audio?.stopLoopSfx('jiangshi_presence');
     }
 
     private updateBullets(dt: number): void {
@@ -846,7 +846,7 @@ export class Combat {
         } else {
             const deathKey = Combat.ENEMY_DEATH_SFX[e.def.id];
             if (deathKey) this.audio?.playSfx(deathKey, 0.65);
-            // lantern 改走下方 lantern_split 候选（缺轨再 fallback explode），避免双响
+            // lantern 改走下方已封挂 lantern_split，避免与 elite explode 双响
             else if (e.def.elite && e.def.id !== 'lantern') this.audio?.playSfx('explode', 0.6);
             if (e.def.elite) {
                 this.fb.hitStop(0.06);
@@ -858,8 +858,8 @@ export class Combat {
             const art = ENEMY_ART.lantern;
             const size = e.def.radius * 2 * (art?.scale ?? 2.75);
             this.spawnLanternSplitFx(e.x, e.y, size);
-            // F 候选：lantern_split oneshot（待 CD spot；缺轨静默）
-            this.audio?.playSfxPrefer('lantern_split', 'explode', 0.65);
+            // F 已封挂 lantern_split oneshot
+            this.audio?.playSfx('lantern_split', 0.65);
         }
         if (e.def.splitInto) {
             for (let i = 0; i < (e.def.splitCount ?? 0); i++) {

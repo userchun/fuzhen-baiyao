@@ -11,6 +11,7 @@ const SFX_KEYS = [
     'levelup', 'combo', 'boss', 'win', 'lose', 'click',
     'paperman_rustle', 'tongjia_clank', 'shuigui_dive_in', 'shuigui_dive_out',
     'foxfire_whoosh', 'shuigui_presence',
+    'jiangshi_presence', 'lantern_split', // F 已封挂（CD）
     'paperman_death', 'foxfire_snuff', 'tongjia_break', 'shuigui_death', 'enemy_hurt',
     // GOAL-AUDIO-BOSS-P1
     'heishan_hit', 'heishan_death',
@@ -21,13 +22,11 @@ const SFX_KEYS = [
 ] as const;
 
 /**
- * 候选 SFX 挂点（待 CD spot）——预加载以便试听，但不并入 SFX_KEYS / 不算 PASS 封印。
- * CD PASS 后再封入 SFX_KEYS。
+ * 候选 SFX（未封）——预加载试听；缺轨由 playSfxPrefer fallback。
+ * combo_sheng：CD Must，E 仍 fallback combo。
  */
 const CANDIDATE_SFX_KEYS = [
-    'combo_sheng',         // E 相生
-    'jiangshi_presence',   // F 小怪听感
-    'lantern_split',       // F 灯笼分裂
+    'combo_sheng', // E 相生 · 待 Must，不封 SFX_KEYS
 ] as const;
 
 const BGM_KEYS = ['village', 'temple'] as const;

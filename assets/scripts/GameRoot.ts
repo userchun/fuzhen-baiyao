@@ -214,8 +214,8 @@ export class GameRoot extends Component {
         this.state = 'over';
         this.spawner.stop(); // D：胜/负均停刷
         this.combat.stopHold();
-        // D：win/lose 各只在此播一次（Combat 不再播 win）
-        this.audio.playSfx(win ? 'win' : 'lose', 0.9);
+        // D：win 播一次（短金属石）；lose = barrier_crack（CD）；Combat 不再播 win
+        this.audio.playSfx(win ? 'win' : 'barrier_crack', 0.9);
         if (win && this.levelIndex + 2 > this.unlocked) {
             this.unlocked = Math.min(LEVELS.length, this.levelIndex + 2);
             saveUnlocked(this.unlocked);
