@@ -150,11 +150,11 @@ def tongjia(broken=False):
 def paperman():
     m, d, light = EL['wood']
     b = ''
-    # 扁平剪纸小人：锯齿边身体 + 四肢
+    # 扁平薄片小人：锯齿边身体 + 四肢
     body = ('<path d="M64 18 L74 24 L80 34 L96 48 L100 70 L96 92 L104 108 L96 118 L64 118 L32 118 '
             'L24 108 L32 92 L28 70 L32 48 L48 34 L54 24 Z"')
     b += rimmed(body, m, d, 5)
-    # 剪纸锯齿（身体左右边缘）
+    # 锯齿边（身体左右边缘）
     for y in (34, 44, 54, 64, 74, 84, 94, 104):
         b += f'<path d="M26 {y} L32 {y+6} L26 {y+12}" fill="none" stroke="{d}" stroke-width="3"/>'
         b += f'<path d="M102 {y} L96 {y+6} L102 {y+12}" fill="none" stroke="{d}" stroke-width="3"/>'
