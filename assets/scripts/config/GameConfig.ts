@@ -91,22 +91,22 @@ export interface EnemyDef {
 }
 
 export const ENEMIES: Record<string, EnemyDef> = {
-    paperman: { id: 'paperman', name: '小纸人', char: '纸', element: 'wood', hp: 80, speed: 60, radius: 22, damage: 5, xp: 1, move: 'straight' },
-    jiangshi: { id: 'jiangshi', name: '跳尸', char: '尸', element: 'earth', hp: 120, speed: 70, radius: 26, damage: 10, xp: 2, move: 'hop' },
-    foxfire: { id: 'foxfire', name: '狐火', char: '狐', element: 'fire', hp: 38, speed: 110, radius: 18, damage: 5, xp: 1, move: 'sine' },
+    paperman: { id: 'paperman', name: '小纸人', char: '纸', element: 'wood', hp: 80, speed: 60, radius: 25, damage: 5, xp: 1, move: 'straight' },
+    jiangshi: { id: 'jiangshi', name: '跳尸', char: '尸', element: 'earth', hp: 120, speed: 70, radius: 30, damage: 10, xp: 2, move: 'hop' },
+    foxfire: { id: 'foxfire', name: '狐火', char: '狐', element: 'fire', hp: 38, speed: 110, radius: 21, damage: 5, xp: 1, move: 'sine' },
     lantern: {
-        id: 'lantern', name: '灯笼鬼', char: '灯', element: 'fire', hp: 700, speed: 40, radius: 36, damage: 20, xp: 10,
+        id: 'lantern', name: '灯笼鬼', char: '灯', element: 'fire', hp: 700, speed: 40, radius: 42, damage: 20, xp: 10,
         move: 'straight', elite: true, splitInto: 'foxfire', splitCount: 3,
     },
     heishan: {
-        id: 'heishan', name: '黑山老妖', char: '山', element: 'earth', hp: 2600, speed: 22, radius: 70, damage: 15, xp: 0,
+        id: 'heishan', name: '黑山老妖', char: '山', element: 'earth', hp: 2600, speed: 22, radius: 80, damage: 15, xp: 0,
         move: 'straight', boss: true, summon: 'jiangshi', summonCount: 2, summonInterval: 5,
     },
     // ---- 第二章 · 古寺 ----
-    tongjia: { id: 'tongjia', name: '铜甲尸', char: '铜', element: 'metal', hp: 240, speed: 45, radius: 28, damage: 15, xp: 3, move: 'straight', armor: 5 },
-    shuigui: { id: 'shuigui', name: '水鬼', char: '水', element: 'water', hp: 80, speed: 80, radius: 22, damage: 8, xp: 2, move: 'straight', dive: true },
+    tongjia: { id: 'tongjia', name: '铜甲尸', char: '铜', element: 'metal', hp: 240, speed: 45, radius: 32, damage: 15, xp: 3, move: 'straight', armor: 5 },
+    shuigui: { id: 'shuigui', name: '水鬼', char: '水', element: 'water', hp: 80, speed: 80, radius: 25, damage: 8, xp: 2, move: 'straight', dive: true },
     baigu: {
-        id: 'baigu', name: '白骨夫人', char: '骨', element: 'metal', hp: 5000, speed: 20, radius: 70, damage: 18, xp: 0,
+        id: 'baigu', name: '白骨夫人', char: '骨', element: 'metal', hp: 5000, speed: 20, radius: 80, damage: 18, xp: 0,
         move: 'straight', boss: true, summon: 'shuigui', summonCount: 2, summonInterval: 6,
         phases: ['metal', 'water', 'fire'],
     },
@@ -152,7 +152,7 @@ export interface LevelDef { name: string; desc: string; bg: string; waves: WaveD
 
 export const LEVELS: LevelDef[] = [
     { name: '第一关 · 荒村', desc: 'Boss：黑山老妖', bg: '#141428', waves: LEVEL1_WAVES, startPicks: 0, hpMult: 1.0 },
-    { name: '第二关 · 古寺', desc: 'Boss：白骨夫人（三相变化）\n新妖：铜甲尸（护甲）、水鬼（潜水无敌）', bg: '#1E1A2B', waves: LEVEL2_WAVES, startPicks: 2, hpMult: 1.2 },
+    { name: '第二关 · 古寺', desc: 'Boss：白骨夫人（三相）\n新妖：铜甲尸、水鬼', bg: '#1E1A2B', waves: LEVEL2_WAVES, startPicks: 2, hpMult: 1.2 },
 ];
 
 /** 本地存档：已解锁关卡数（默认 1，即只开放第一关） */
