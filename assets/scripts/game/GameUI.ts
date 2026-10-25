@@ -381,23 +381,21 @@ export class GameUI {
     }
 
     /**
-     * 结算板。CD PASS-with-notes：
-     *   Win 封挂：ui_settle_panel + fx_settle_win（缺图回退 banner/card）
-     *   Lose：不挂 fx_settle_lose（等 Art Must）；沿用 overlay + banner/card 回退
+     * 结算板。CD D re-spot PASS：win/lose settle 全封挂
+     *   Win：ui_settle_panel + fx_settle_win
+     *   Lose：fx_settle_lose + banner/card 回退（无专属 lose 匾则用横卡）
      */
     showResult(win: boolean, kills: number, time: number, buttons: { text: string; cb: () => void }[]): void {
         const ov = this.openOverlay();
         const RESULT_BANNER = 'ui_title_banner';
-        const RESULT_PLAQUE_WIN = 'ui_settle_panel'; // 已封挂
+        const RESULT_PLAQUE_WIN = 'ui_settle_panel';
         const RESULT_PLAQUE_FALLBACK = 'ui_level_card';
-        const RESULT_FX_WIN = 'fx_settle_win';       // 已封挂；lose FX 不挂
+        const RESULT_FX = win ? 'fx_settle_win' : 'fx_settle_lose';
 
         const settleVfx = makeNode('settleVfx', ov);
         settleVfx.setPosition(0, 300);
-        if (win) {
-            const fx = spriteNode(RESULT_FX_WIN, 128, 128, settleVfx);
-            if (fx) popIn(fx, 0.3);
-        }
+        const fx = spriteNode(RESULT_FX, 128, 128, settleVfx);
+        if (fx) popIn(fx, 0.3);
 
         const banner = spriteNode(RESULT_BANNER, 620, 150, ov);
         if (banner) {

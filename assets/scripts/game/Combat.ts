@@ -10,7 +10,7 @@ import { SkillSystem } from './SkillSystem';
 import { paintElement, drawHp } from './EnemyView';
 import { Feedback } from './Feedback';
 import { AudioManager } from '../core/AudioManager';
-import { FX, burst, flashCombat, flashCastGlow } from './ParticleFX';
+import { FX, burst, flash, flashCombat, flashCastGlow } from './ParticleFX';
 import { hitPulse } from './Anim';
 import { FrameAnim, FrameClip } from './FrameAnim';
 
@@ -254,7 +254,7 @@ export class Combat {
         return true;
     }
 
-    /** E：相生合击 VFX/SFX 统一入口（combo_sheng 已封；VFX 贴图仍等 CD Art） */
+    /** E：相生合击 VFX/SFX（burn 贴图已挂；river 金芯 Art Must → 仅双色粒子） */
     private static readonly COMBO_SHENG: Record<'burn' | 'river', { mother: string; child: string }> = {
         burn: { mother: '#5FBF6A', child: '#F06A4A' },   // 木→火
         river: { mother: '#F5D76E', child: '#5AB4F0' },  // 金→水
@@ -263,9 +263,15 @@ export class Combat {
     playComboSheng(comboId: 'burn' | 'river', x: number, y: number): void {
         const c = Combat.COMBO_SHENG[comboId];
         if (!c) return;
+        // 双色粒子（river 仍靠此；burn 作底）
         burst(this.fxLayer, x, y, FX.combo(x, y, c.mother));
         burst(this.fxLayer, x, y, FX.combo(x, y, c.child));
-        // E：combo_sheng 已封；缺轨仍 fallback combo（不挂 fx_combo_sheng 贴图）
+        if (comboId === 'burn') {
+            // CD PASS-with-notes：挂 burn；可选 base 加强 T1/T3
+            flash(this.fxLayer, 'fx_combo_sheng', x, y, 0.4, { size: 96, startScale: 0.75, endScale: 1.15, startAlpha: 200 });
+            flash(this.fxLayer, 'fx_combo_sheng_burn', x, y, 0.42, { size: 88, startScale: 0.85, endScale: 1.22 });
+        }
+        // river：不挂 fx_combo_sheng_river（等 Art 金芯 Must）
         this.audio?.playSfxPrefer('combo_sheng', 'combo', 0.8);
     }
 
