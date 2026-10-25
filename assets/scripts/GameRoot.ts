@@ -5,6 +5,7 @@ import { loadArt, spriteNode } from './core/Art';
 import { loadAudio, AudioManager } from './core/AudioManager';
 
 const BG_ART = ['bg_level1_village', 'bg_level2_temple']; // 与 LEVELS 下标对应
+const BGM_BY_LEVEL = ['village', 'temple'] as const; // 与 LEVELS 下标对应
 const BG_ART_RATIO = 2340 / 1080;
 import { SkillSystem } from './game/SkillSystem';
 import { Combat } from './game/Combat';
@@ -48,8 +49,8 @@ export class GameRoot extends Component {
 
         this.bg = makeNode('bgHolder', this.node);
         this.world = makeNode('world', this.node);
-        this.ui = new GameUI(makeNode('ui', this.node));
         this.audio = new AudioManager(this.node);
+        this.ui = new GameUI(makeNode('ui', this.node), this.audio);
 
         // 底部区域拖动 = 移动；上方战场按住 = 瞄准并连发
         let mode: 'move' | 'aim' | null = null;
@@ -84,8 +85,8 @@ export class GameRoot extends Component {
 
         // 先加载美术素材再进菜单；加载失败时各处退回色块绘制
         loadArt().then(() => this.showMenu());
-        // 音频异步加载，失败静默（无声音仍可玩）
-        loadAudio().then(() => this.audio.playBgm('village'));
+        // 音频异步加载，失败静默（无声音仍可玩）；按当前状态切 BGM
+        loadAudio().then(() => this.syncBgm());
     }
 
     onDestroy(): void {
@@ -115,9 +116,16 @@ export class GameRoot extends Component {
         else if (this.skills.pending > 0) this.openPick();
     }
 
+    /** 菜单播荒村曲；关卡按索引切村/寺 BGM（音频未就绪时静默） */
+    private syncBgm(): void {
+        if (this.state === 'menu') this.audio.playBgm('village');
+        else this.audio.playBgm(BGM_BY_LEVEL[this.levelIndex] ?? 'village');
+    }
+
     private showMenu(): void {
         this.world.destroyAllChildren();
         this.state = 'menu';
+        this.syncBgm();
         this.ui.showLevels(LEVELS, this.unlocked, (i) => this.startLevel(i));
     }
 
@@ -142,6 +150,7 @@ export class GameRoot extends Component {
         this.skills.pending = level.startPicks;
         this.time = 0;
         this.state = 'play';
+        this.syncBgm();
         this.ui.showToast(level.name);
     }
 
@@ -180,7 +189,7 @@ export class GameRoot extends Component {
         this.audio.playSfx('levelup', 0.7);
         this.ui.showPick('灵气充盈 · 择一而修', this.skills.rollOptions(), (opt) => {
             this.skills.pending--;
-            this.audio.playSfx('click', 0.6);
+            // click 由 GameUI 卡牌点击统一播放
             if (opt.type === 'heal') {
                 this.combat.wallHp = Math.min(GAME.wallHp, this.combat.wallHp + 30);
             } else {

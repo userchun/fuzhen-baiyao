@@ -1,7 +1,8 @@
-import { Node, Graphics, Label, EventTouch } from 'cc';
+import { Node, Graphics, Label, EventTouch, UITransform } from 'cc';
 import { GAME, TALISMANS, COMBOS, LevelDef, ELEMENT_NAME, ELEMENT_COLOR, TalismanId, PASSIVES } from '../config/GameConfig';
 import { makeNode, addLabel, rectNode, hex, setOpacity, circleNode } from '../core/Draw';
 import { spriteNode } from '../core/Art';
+import { AudioManager } from '../core/AudioManager';
 import { SkillSystem, Option } from './SkillSystem';
 import { Combat } from './Combat';
 import { popIn, breathe } from './Anim';
@@ -12,9 +13,9 @@ const BAR_W = 600;
 // 状态条都放在城墙下方、玩家脚下，屏幕顶部留给妖怪进场
 const WALL_BAR_OFFSET = -94;      // 结界血条中心相对城墙顶部
 const XP_BAR_OFFSET = -120;       // 灵气条中心相对城墙顶部（紧贴血条下方）
-const TALISMAN_ICON_W = 56;  // 符牌图标显示尺寸（素材 128×192）
-const TALISMAN_ICON_H = 84;
-const CD_MASK_R = 30;     // 与符咒图标半径一致
+const TALISMAN_ICON_W = 40;  // 符牌图标显示尺寸（素材 128×192；相对原 56 约缩 30%）
+const TALISMAN_ICON_H = 60;
+const CD_MASK_R = 22;     // 与符咒图标半径一致
 const CD_MASK_ALPHA = 150; // 冷却遮罩不透明度
 
 // HUD、升级三选一面板、结算面板、提示
@@ -31,7 +32,7 @@ export class GameUI {
     private toastT = 0;
     private overlay: Node | null = null;
 
-    constructor(private root: Node) {
+    constructor(private root: Node, private audio?: AudioManager) {
         this.wallBar = makeNode('wallBar', root).addComponent(Graphics);
         this.wallText = addLabel(this.wallBar.node, '', 18);
         this.wallBar.node.setPosition(0, GAME.wallY + WALL_BAR_OFFSET);
@@ -100,14 +101,14 @@ export class GameUI {
             // 符牌图片（竖长）+ 中央空白符面叠字；无图时退回圆形色块
             let icon = spriteNode('icon_talisman_' + id, TALISMAN_ICON_W, TALISMAN_ICON_H, panel);
             const art = !!icon;
-            if (icon) addLabel(icon, d.name[0], 24, ELEMENT_COLOR[d.element]);
-            else icon = circleNode('talisman', 30, ELEMENT_COLOR[d.element], d.name[0], panel);
+            if (icon) addLabel(icon, d.name[0], 18, ELEMENT_COLOR[d.element]);
+            else icon = circleNode('talisman', 22, ELEMENT_COLOR[d.element], d.name[0], panel);
             icon.setPosition(0, y);
             // 遮罩在等级角标之前加入，角标仍显示在最上层
-            this.cdMasks.set(id, makeNode('cd', icon, 60, 60).addComponent(Graphics));
-            this.levelBadge(icon, st.level >= d.maxLevel ? 'MAX' : `${st.level}`, 22, art ? -34 : -22);
-            addLabel(panel, d.name, 16, '#E8E0F0').node.setPosition(0, y - (art ? 54 : 44));
-            y -= art ? 116 : 100;
+            this.cdMasks.set(id, makeNode('cd', icon, 44, 44).addComponent(Graphics));
+            this.levelBadge(icon, st.level >= d.maxLevel ? 'MAX' : `${st.level}`, 16, art ? -24 : -16);
+            addLabel(panel, d.name, 14, '#E8E0F0').node.setPosition(0, y - (art ? 40 : 32));
+            y -= art ? 84 : 72;
         });
         s.passives.forEach((lv, id) => {
             const d = PASSIVES[id];
@@ -161,6 +162,7 @@ export class GameUI {
             breathe(card, 0.02, 2.0 + i * 0.3);
             card.on(Node.EventType.TOUCH_END, (e: EventTouch) => {
                 e.propagationStopped = true;
+                this.audio?.playSfx('click', 0.6);
                 onPick(o);
             });
         });
@@ -169,18 +171,63 @@ export class GameUI {
     /** 选关菜单；下标 ≥ unlocked 的关卡显示为锁定，点击无效 */
     showLevels(levels: LevelDef[], unlocked: number, onPick: (index: number) => void): void {
         const ov = this.openOverlay();
-        addLabel(ov, '符镇百妖', 72, '#FFD700').node.setPosition(0, 420);
-        addLabel(ov, '选择关卡', 30, '#DDDDDD').node.setPosition(0, 330);
+        // 半写实仙侠菜单底图（无图时保留半透明黑底）
+        const menuBg = spriteNode('bg_menu', GAME.width, GAME.height, ov);
+        if (menuBg) menuBg.setPosition(0, 0);
+        // 标题牌 + 叠字
+        const banner = spriteNode('ui_title_banner', 620, 150, ov);
+        if (banner) {
+            banner.setPosition(0, 430);
+            addLabel(banner, '符镇百妖', 56, '#FFD700').node.setPosition(0, 8);
+        } else {
+            addLabel(ov, '符镇百妖', 72, '#FFD700').node.setPosition(0, 420);
+        }
+        addLabel(ov, '选择关卡', 28, '#E8E2D0').node.setPosition(0, 320);
+
+        // 卡面花边留白：文案落在 600×190 安全区（约 ±210×±52）
+        const CARD_W = 560;
+        const CARD_H = 176;
+        const TEXT_W = 400;       // 避开左右纹饰
+        const TITLE_Y = 28;       // 标题固定偏上
+        const DESC_Y = -22;       // 描述固定偏下，两行也不贴边
+        const CARD_GAP = 250;     // 卡间距加大，避免叠边
+
         levels.forEach((lv, i) => {
             const open = i < unlocked;
-            const card = this.button(ov, lv.name, () => { if (open) onPick(i); }, 580, 180, open ? '#2C2440' : '#1C1A24', 0, 150 - i * 220);
-            const title = card.getChildByName('label');
-            title.setPosition(0, 40);
-            if (open) {
-                addLabel(card, lv.desc, 22, '#BBBBBB').node.setPosition(0, -30);
+            const y = 130 - i * CARD_GAP;
+            let card = spriteNode('ui_level_card', CARD_W, CARD_H, ov);
+            if (card) {
+                card.setPosition(0, y);
+                card.on(Node.EventType.TOUCH_END, (e: EventTouch) => {
+                    e.propagationStopped = true;
+                    if (open) {
+                        this.audio?.playSfx('click', 0.6);
+                        onPick(i);
+                    }
+                });
             } else {
-                title.getComponent(Label).color = hex('#6A6478');
-                addLabel(card, '通关上一关后解锁', 24, '#6A6478').node.setPosition(0, -30);
+                card = this.button(ov, '', () => { if (open) onPick(i); }, CARD_W, CARD_H, open ? '#2C2440' : '#1C1A24', 0, y);
+            }
+            // 标题：统一字号与 Y，水平居中并限制宽度
+            const title = addLabel(card, lv.name, 32, open ? '#FFD700' : '#6A6478');
+            title.horizontalAlign = Label.HorizontalAlign.CENTER;
+            title.overflow = Label.Overflow.SHRINK;
+            title.node.getComponent(UITransform).setContentSize(TEXT_W, 40);
+            title.node.setPosition(0, TITLE_Y);
+
+            // 描述 / 锁定提示：小号、可换行，限制在花边内
+            const descText = open ? lv.desc : '通关上一关后解锁';
+            const desc = addLabel(card, descText, 18, open ? '#DDD6C8' : '#6A6478');
+            desc.horizontalAlign = Label.HorizontalAlign.CENTER;
+            desc.verticalAlign = Label.VerticalAlign.TOP;
+            desc.overflow = Label.Overflow.RESIZE_HEIGHT;
+            desc.lineHeight = 24;
+            desc.node.getComponent(UITransform).setContentSize(TEXT_W, 0);
+            desc.node.setPosition(0, DESC_Y);
+
+            if (!open) {
+                const seal = spriteNode('ui_lock_seal', 56, 56, card);
+                if (seal) seal.setPosition(190, 8);
             }
         });
     }
@@ -203,6 +250,7 @@ export class GameUI {
         addLabel(btn, text, 34, '#FFD700');
         btn.on(Node.EventType.TOUCH_END, (e: EventTouch) => {
             e.propagationStopped = true;
+            this.audio?.playSfx('click', 0.6);
             cb();
         });
         return btn;
