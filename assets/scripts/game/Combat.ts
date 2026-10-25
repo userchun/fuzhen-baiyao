@@ -72,6 +72,13 @@ export class Combat {
     private enemyMoveClips = new Map<string, FrameClip>();
     /** 节点 → FrameAnim（池化复用） */
     private enemyAnims = new Map<Node, FrameAnim>();
+    /** 死亡 SFX 按敌人 id；无 key 的精英仍用 explode */
+    private static readonly ENEMY_DEATH_SFX: Record<string, 'paperman_death' | 'foxfire_snuff' | 'tongjia_break' | 'shuigui_death'> = {
+        paperman: 'paperman_death',
+        foxfire: 'foxfire_snuff',
+        tongjia: 'tongjia_break',
+        shuigui: 'shuigui_death',
+    };
     /**
      * move 规格：fps + 可选 Y-bob（仅 art 子节点；碰撞仍用 e.x/e.y）。
      * foxfire/tongjia/shuigui bob=0；paperman 轻 bob；jiangshi 保持 12px hop。
@@ -603,8 +610,10 @@ export class Combat {
             } else {
                 burst(this.fxLayer, e.x, py, FX.hit(e.x, py, '#FFFFFF'));
                 if (tier === 'resist') this.audio?.playSfx('resist', 0.6);
-                else this.audio?.playSfx('hit', 0.5);
+                else this.audio?.playSfx('hit', 0.5); // 符纸·朱砂 hit — do not replace
             }
+            // 敌人受击薄层（非玩家 hit）；与 crit/resist/hit 叠加
+            this.audio?.playSfx('enemy_hurt', 0.28);
         }
         if (e.def.elite || e.def.boss) drawHp(e);
         if (e.hp <= 0) this.kill(e);
@@ -634,10 +643,14 @@ export class Combat {
             this.audio?.playSfx('win', 0.9);
             this.fb.hitStop(0.3);
             this.fb.shake(20, 0.5);
-        } else if (e.def.elite) {
-            this.audio?.playSfx('explode', 0.6);
-            this.fb.hitStop(0.06);
-            this.fb.shake(8, 0.2);
+        } else {
+            const deathKey = Combat.ENEMY_DEATH_SFX[e.def.id];
+            if (deathKey) this.audio?.playSfx(deathKey, 0.65);
+            else if (e.def.elite) this.audio?.playSfx('explode', 0.6); // lantern 等无专属死亡音
+            if (e.def.elite) {
+                this.fb.hitStop(0.06);
+                this.fb.shake(8, 0.2);
+            }
         }
         // 灯笼鬼：死亡播 3f 分裂体序列，再按原配置召唤 foxfire（不改 splitInto）
         if (e.def.id === 'lantern') {
