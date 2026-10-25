@@ -1,4 +1,4 @@
-"""程序化合成第一关（荒村）音频：全套 SFX + 荒村 BGM。
+"""程序化合成第一关（荒村）音频：全套 SFX + 荒村/古寺 BGM。
 
 用 numpy 直接合成 WAV，再经 ffmpeg 转 mp3（Web/native 通用）。
 中式志怪、深色夜景氛围，音色以「钟磬 / 木鱼 / 箫类长音 / 低频 pad」为主。
@@ -310,6 +310,55 @@ def bgm_village():
     return _norm(out, 0.6)
 
 
+
+
+def bgm_temple():
+    """古寺 BGM：更深 pad + 更密钟磬/木鱼，偏庄严空寂。约 32 秒可循环。"""
+    total = 32.0
+    n = int(SR * total)
+    t = _t(total)
+    out = np.zeros(n)
+
+    breath = 0.55 + 0.45 * np.sin(2 * np.pi * 0.04 * t)
+    pad = (0.55 * np.sin(2 * np.pi * 82.5 * t)
+           + 0.35 * np.sin(2 * np.pi * 165.0 * t)
+           + 0.2 * np.sin(2 * np.pi * 247.5 * t)) * breath
+    out += 0.2 * pad
+
+    bells = [(0.0, 311.13, 0.55), (3.0, 392.0, 0.45), (6.0, 261.63, 0.5),
+             (9.0, 349.23, 0.45), (12.0, 293.66, 0.55), (15.0, 440.0, 0.4),
+             (18.0, 311.13, 0.5), (21.0, 392.0, 0.45), (24.0, 261.63, 0.55),
+             (27.0, 349.23, 0.4), (30.0, 293.66, 0.5)]
+    for at, f, a in bells:
+        seg = _bell(f, 2.4, a)
+        i0 = int(SR * at)
+        if i0 + len(seg) <= n:
+            out[i0:i0 + len(seg)] += seg
+
+    def flute(f, dur):
+        nn = int(SR * dur)
+        tt = np.linspace(0, dur, nn, endpoint=False)
+        vib = 1 + 0.008 * np.sin(2 * np.pi * 4.5 * tt)
+        e = np.sin(np.pi * tt / dur)
+        return e * vib * np.sin(2 * np.pi * f * tt)
+
+    for at, f, dur in ((1.5, 196.0, 9.0), (12.0, 246.94, 8.0), (22.0, 220.0, 7.0)):
+        seg = flute(f, dur)
+        i0 = int(SR * at)
+        if i0 + len(seg) <= n:
+            out[i0:i0 + len(seg)] += 0.18 * seg
+
+    for at in np.arange(2.0, 32.0, 2.0):
+        wood = _noise(0.05, 0.001, 0.04, 0.28, 350, 1400)
+        i0 = int(SR * at)
+        if i0 + len(wood) <= n:
+            out[i0:i0 + len(wood)] += wood
+
+    fade = int(SR * 1.5)
+    out[:fade] *= np.linspace(0, 1, fade)
+    out[-fade:] *= np.linspace(1, 0, fade)
+    return _norm(out, 0.58)
+
 # ---------- 输出 ----------
 
 def to_mp3(wav_path, mp3_path, bitrate='128k'):
@@ -335,11 +384,12 @@ def main():
         print(f'  {name}.mp3')
 
     print('合成 BGM ...')
-    wav = os.path.join(TMP, 'village.wav')
-    mp3 = os.path.join(OUT_BGM, 'village.mp3')
-    _write(wav, bgm_village())
-    to_mp3(wav, mp3, bitrate='160k')
-    print('  village.mp3')
+    for name, fn in (('village', bgm_village), ('temple', bgm_temple)):
+        wav = os.path.join(TMP, name + '.wav')
+        mp3 = os.path.join(OUT_BGM, name + '.mp3')
+        _write(wav, fn())
+        to_mp3(wav, mp3, bitrate='160k')
+        print(f'  {name}.mp3')
 
     # 清理临时 wav
     for f in os.listdir(TMP):

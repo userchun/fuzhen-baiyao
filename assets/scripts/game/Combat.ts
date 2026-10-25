@@ -220,6 +220,7 @@ export class Combat {
                 const ang = base + (i - (count - 1) / 2) * 0.12;
                 this.shoot('metal', ox, oy, Math.sin(ang) * 1000, Math.cos(ang) * 1000, dmg, { pierce: lv, radius: 10 });
             }
+            this.audio?.playSfx('shoot', 0.45);
         } else if (id === 'water' || id === 'fire') {
             const used = new Set<Enemy>();
             for (let i = 0; i < count; i++) {

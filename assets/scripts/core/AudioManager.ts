@@ -11,7 +11,7 @@ const SFX_KEYS = [
     'levelup', 'combo', 'boss', 'win', 'lose', 'click',
 ] as const;
 
-const BGM_KEYS = ['village'] as const;
+const BGM_KEYS = ['village', 'temple'] as const;
 
 export type SfxName = typeof SFX_KEYS[number];
 export type BgmName = typeof BGM_KEYS[number];
@@ -68,7 +68,7 @@ export class AudioManager {
         this.playClip(sfxPath(key), volume, false);
     }
 
-    /** 播放/切换 BGM；同一首重复调用不重启 */
+    /** 播放/切换 BGM；同一首且正在播时不重启；停过后同曲可续播 */
     playBgm(key: BgmName, volume = 0.6): void {
         const path = bgmPath(key);
         const clip = clips.get(path);
@@ -79,9 +79,13 @@ export class AudioManager {
             this.sfxNode.addChild(n);
             this.bgmSource = n.addComponent(AudioSource);
         }
-        if (this.bgmSource.clip !== clip) {
+        const same = this.bgmSource.clip === clip;
+        if (!same) {
             this.bgmSource.clip = clip;
             this.bgmSource.loop = true;
+            this.bgmSource.volume = volume;
+            this.bgmSource.play();
+        } else if (!this.bgmSource.playing) {
             this.bgmSource.volume = volume;
             this.bgmSource.play();
         }
