@@ -72,6 +72,8 @@ export class Combat {
     private enemyMoveClips = new Map<string, FrameClip>();
     /** 节点 → FrameAnim（池化复用） */
     private enemyAnims = new Map<Node, FrameAnim>();
+    /** 白骨夫人三相 idle：metal/water/fire → clip */
+    private baiguPhaseClips = new Map<string, FrameClip>();
     /** 死亡 SFX 按敌人 id；无 key 的精英仍用 explode */
     private static readonly ENEMY_DEATH_SFX: Record<string, 'paperman_death' | 'foxfire_snuff' | 'tongjia_break' | 'shuigui_death'> = {
         paperman: 'paperman_death',
@@ -80,16 +82,20 @@ export class Combat {
         shuigui: 'shuigui_death',
     };
     /**
-     * move 规格：fps + 可选 Y-bob（仅 art 子节点；碰撞仍用 e.x/e.y）。
+     * move/idle 规格：fps + 可选 Y-bob（仅 art 子节点；碰撞仍用 e.x/e.y）。
+     * prefix 缺省 → anim/enemy_{id}/move；boss 用 idle 路径。
      * foxfire/tongjia/shuigui bob=0；paperman 轻 bob；jiangshi 保持 12px hop。
+     * heishan/baigu：idle 循环，bob=0。
      */
-    private static readonly ENEMY_MOVE: Record<string, { fps: number; bobPx: number }> = {
+    private static readonly ENEMY_MOVE: Record<string, { fps: number; bobPx: number; prefix?: string }> = {
         jiangshi: { fps: 8, bobPx: 12 },
         paperman: { fps: 9, bobPx: 4 },
         foxfire: { fps: 9, bobPx: 0 },
         tongjia: { fps: 11, bobPx: 0 },
         shuigui: { fps: 8, bobPx: 0 }, // 略慢以缓和 f6–f7 观感；无 bob
         lantern: { fps: 9, bobPx: 0 }, // 漂浮精英；无 bob（CD notes）
+        heishan: { fps: 9, bobPx: 0, prefix: 'anim/boss_heishan/idle' }, // 6f idle；无 bob
+        baigu: { fps: 9, bobPx: 0, prefix: 'anim/boss_baigu_metal/idle' }, // 默认金相；三相见 baiguPhaseClips
     };
     /** 灯笼鬼死亡分裂 3f one-shot（非独立敌人类型；splitInto 仍为 foxfire） */
     private lanternSplitClip: FrameClip | null = null;
@@ -113,8 +119,14 @@ export class Combat {
     private setupEnemyMoveClips(): void {
         for (const id of Object.keys(Combat.ENEMY_MOVE)) {
             const spec = Combat.ENEMY_MOVE[id];
-            const clip = this.makeClip(`anim/enemy_${id}/move`, spec.fps, true);
+            const clip = this.makeClip(spec.prefix ?? `anim/enemy_${id}/move`, spec.fps, true);
             if (clip) this.enemyMoveClips.set(id, clip);
+        }
+        // 白骨夫人三相 idle（phase 切换时换 clip；静态 boss_baigu_* 仍作 fallback）
+        const baiguFps = Combat.ENEMY_MOVE.baigu?.fps ?? 9;
+        for (const el of ['metal', 'water', 'fire']) {
+            const clip = this.makeClip(`anim/boss_baigu_${el}/idle`, baiguFps, true);
+            if (clip) this.baiguPhaseClips.set(el, clip);
         }
         // 3f @12fps ≈ 0.25s burst；静态 enemy_lantern_split 作首帧/回退
         this.lanternSplitClip = this.makeClip('anim/enemy_lantern_split/move', 12, false);
@@ -123,6 +135,38 @@ export class Combat {
     private makeClip(prefix: string, fps: number, loop: boolean): FrameClip | null {
         const frames = getFrames(prefix);
         return frames.length > 0 ? { frames, fps, loop } : null;
+    }
+
+    /** 白骨夫人：按当前五行相播放对应 idle clip */
+    private playBaiguPhaseIdle(node: Node, el: string): void {
+        const clip = this.baiguPhaseClips.get(el) ?? this.enemyMoveClips.get('baigu');
+        if (!clip) return;
+        let anim = this.enemyAnims.get(node);
+        if (!anim) {
+            const art = node.getChildByName('art');
+            if (!art) return;
+            anim = new FrameAnim(art);
+            this.enemyAnims.set(node, anim);
+        }
+        anim.play(clip);
+    }
+
+    /** spawn/池化：挂上 move/idle FrameAnim（baigu 按 element 选相） */
+    private ensureEnemyAnim(node: Node, id: string, element?: string): void {
+        if (id === 'baigu') {
+            this.playBaiguPhaseIdle(node, element ?? 'metal');
+            return;
+        }
+        const clip = this.enemyMoveClips.get(id);
+        if (!clip) return;
+        let anim = this.enemyAnims.get(node);
+        if (!anim) {
+            const art = node.getChildByName('art');
+            if (!art) return;
+            anim = new FrameAnim(art);
+            this.enemyAnims.set(node, anim);
+        }
+        anim.play(clip);
     }
 
     private setupPlayerAnim(): void {
@@ -153,6 +197,8 @@ export class Combat {
         node.setPosition(x, y);
         node.setScale(depthScale(depth), depthScale(depth), 1);
         if (def.phases) paintElement(node, def, def.element);
+        // 池化复用：确保 boss idle / 白骨起始相 clip 重新挂上
+        this.ensureEnemyAnim(node, id, def.element);
         if (def.boss) {
             this.audio?.playSfx('boss', 0.9);
             this.fb.shake(12, 0.4);
@@ -627,6 +673,7 @@ export class Combat {
         if (ph[idx] === e.element) return;
         e.element = ph[idx];
         paintElement(e.node, e.def, e.element);
+        if (e.def.id === 'baigu') this.playBaiguPhaseIdle(e.node, e.element);
         this.fb.shake(14, 0.4);
         this.fb.hitStop(0.15);
         for (let i = 0; i < 4; i++) {
