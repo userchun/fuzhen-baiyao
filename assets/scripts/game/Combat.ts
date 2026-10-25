@@ -82,7 +82,11 @@ export class Combat {
         foxfire: { fps: 9, bobPx: 0 },
         tongjia: { fps: 11, bobPx: 0 },
         shuigui: { fps: 8, bobPx: 0 }, // 略慢以缓和 f6–f7 观感；无 bob
+        lantern: { fps: 9, bobPx: 0 }, // 漂浮精英；无 bob（CD notes）
     };
+    /** 灯笼鬼死亡分裂 3f one-shot（非独立敌人类型；splitInto 仍为 foxfire） */
+    private lanternSplitClip: FrameClip | null = null;
+    private splitFx: { node: Node; anim: FrameAnim; life: number }[] = [];
 
     constructor(layer: Node, private skills: SkillSystem, private fb: Feedback, private onKill: (e: Enemy) => void, private audio?: AudioManager) {
         this.pool = new Pool((key) => this.create(key));
@@ -105,6 +109,8 @@ export class Combat {
             const clip = this.makeClip(`anim/enemy_${id}/move`, spec.fps, true);
             if (clip) this.enemyMoveClips.set(id, clip);
         }
+        // 3f @12fps ≈ 0.25s burst；静态 enemy_lantern_split 作首帧/回退
+        this.lanternSplitClip = this.makeClip('anim/enemy_lantern_split/move', 12, false);
     }
 
     private makeClip(prefix: string, fps: number, loop: boolean): FrameClip | null {
@@ -490,16 +496,22 @@ export class Combat {
             }
         }
 
-        // 纸人存在感：任一纸人在移动（未冻）则循环 rustle，否则停
+        // 存在感循环：任一存活未冻则 loop，否则停（dive_in/out 仍由切换触发，不改）
         let papermanMoving = false;
+        let foxfireAlive = false;
+        let shuiguiAlive = false;
         for (const e of this.enemies) {
-            if (e.alive && e.def.id === 'paperman' && e.freezeT <= 0) {
-                papermanMoving = true;
-                break;
-            }
+            if (!e.alive || e.freezeT > 0) continue;
+            if (e.def.id === 'paperman') papermanMoving = true;
+            else if (e.def.id === 'foxfire') foxfireAlive = true;
+            else if (e.def.id === 'shuigui') shuiguiAlive = true;
         }
         if (papermanMoving) this.audio?.playLoopSfx('paperman_rustle', 0.32);
         else this.audio?.stopLoopSfx('paperman_rustle');
+        if (foxfireAlive) this.audio?.playLoopSfx('foxfire_whoosh', 0.28);
+        else this.audio?.stopLoopSfx('foxfire_whoosh');
+        if (shuiguiAlive) this.audio?.playLoopSfx('shuigui_presence', 0.28);
+        else this.audio?.stopLoopSfx('shuigui_presence');
     }
 
     private updateBullets(dt: number): void {
@@ -627,6 +639,12 @@ export class Combat {
             this.fb.hitStop(0.06);
             this.fb.shake(8, 0.2);
         }
+        // 灯笼鬼：死亡播 3f 分裂体序列，再按原配置召唤 foxfire（不改 splitInto）
+        if (e.def.id === 'lantern') {
+            const art = ENEMY_ART.lantern;
+            const size = e.def.radius * 2 * (art?.scale ?? 2.75);
+            this.spawnLanternSplitFx(e.x, e.y, size);
+        }
         if (e.def.splitInto) {
             for (let i = 0; i < (e.def.splitCount ?? 0); i++) {
                 this.spawnEnemy(e.def.splitInto, e.x + (i - 1) * 40, e.depth);
@@ -646,6 +664,16 @@ export class Combat {
     }
 
     private updateFx(dt: number): void {
+        if (this.splitFx.length) {
+            const next: { node: Node; anim: FrameAnim; life: number }[] = [];
+            for (const f of this.splitFx) {
+                f.anim.update(dt);
+                f.life -= dt;
+                if (f.life > 0) next.push(f);
+                else f.node.destroy();
+            }
+            this.splitFx = next;
+        }
         for (const f of this.fx) {
             f.life -= dt;
             if (f.life <= 0) { f.alive = false; continue; }
@@ -665,6 +693,18 @@ export class Combat {
             if (d < bestD) { bestD = d; best = e; }
         }
         return best;
+    }
+
+    private spawnLanternSplitFx(x: number, y: number, size: number): void {
+        if (!this.lanternSplitClip) return;
+        const n = spriteNode('enemy_lantern_split', size, size, this.fxLayer);
+        if (!n) return;
+        n.setPosition(x, y);
+        const anim = new FrameAnim(n);
+        const clip = this.lanternSplitClip;
+        const life = clip.frames.length / Math.max(1, clip.fps) + 0.05;
+        anim.play(clip);
+        this.splitFx.push({ node: n, anim, life });
     }
 
     private cleanup(): void {

@@ -10,6 +10,7 @@ const SFX_KEYS = [
     'shoot', 'hit', 'crit', 'resist', 'explode', 'freeze', 'thunder',
     'levelup', 'combo', 'boss', 'win', 'lose', 'click',
     'paperman_rustle', 'tongjia_clank', 'shuigui_dive_in', 'shuigui_dive_out',
+    'foxfire_whoosh', 'shuigui_presence',
 ] as const;
 
 const BGM_KEYS = ['village', 'temple'] as const;
