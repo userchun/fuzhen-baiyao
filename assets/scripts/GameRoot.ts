@@ -1,5 +1,5 @@
 import { _decorator, Component, Node, UITransform, EventTouch, view, ResolutionPolicy, input, Input, sys, Graphics } from 'cc';
-import { GAME, LEVELS, applyScreen, SAVE_KEY_UNLOCKED } from './config/GameConfig';
+import { GAME, LEVELS, COMBOS, applyScreen, SAVE_KEY_UNLOCKED } from './config/GameConfig';
 import { makeNode, rectNode, hex } from './core/Draw';
 import { loadArt, spriteNode } from './core/Art';
 import { loadAudio, AudioManager } from './core/AudioManager';
@@ -107,12 +107,14 @@ export class GameRoot extends Component {
             return;
         }
         this.time += dt;
+        // D：Boss death/settle 起手停刷（含 death 动画期间）
+        if (this.combat.spawnStopped) this.spawner.stop();
         this.spawner.update(dt);
         this.combat.update(dt);
         this.ui.refresh(this.combat, this.skills, this.time);
 
         if (this.combat.wallHp <= 0) this.end(false);
-        else if (this.combat.bossDead) this.end(true);
+        else if (this.combat.bossDead) this.end(true); // bossDead 仅 death onDone / 无帧 fallback 后置位 → 面板不中途弹出
         else if (this.skills.pending > 0) this.openPick();
     }
 
@@ -193,8 +195,15 @@ export class GameRoot extends Component {
             if (opt.type === 'heal') {
                 this.combat.wallHp = Math.min(GAME.wallHp, this.combat.wallHp + 30);
             } else {
-                this.skills.apply(opt).forEach((name) => this.ui.showToast(`五行相生 · ${name}`));
-                if (this.skills.combos.size > 0) this.audio.playSfx('combo', 0.8);
+                const unlocked = this.skills.apply(opt);
+                unlocked.forEach((id) => {
+                    const def = COMBOS.find((c) => c.id === id);
+                    this.ui.showToast(`五行相生 · ${def ? `${def.name}：${def.desc}` : id}`);
+                    // E T1：toast 同帧相生仪式（sfx 含在 playComboSheng）
+                    if (id === 'burn' || id === 'river') {
+                        this.combat.playComboSheng(id, 0, GAME.wallY + 80);
+                    }
+                });
             }
             this.ui.clearOverlay();
             this.state = 'play';
@@ -203,7 +212,9 @@ export class GameRoot extends Component {
 
     private end(win: boolean): void {
         this.state = 'over';
+        this.spawner.stop(); // D：胜/负均停刷
         this.combat.stopHold();
+        // D：win/lose 各只在此播一次（Combat 不再播 win）
         this.audio.playSfx(win ? 'win' : 'lose', 0.9);
         if (win && this.levelIndex + 2 > this.unlocked) {
             this.unlocked = Math.min(LEVELS.length, this.levelIndex + 2);

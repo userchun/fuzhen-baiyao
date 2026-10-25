@@ -80,7 +80,7 @@ export class SkillSystem {
         return picked;
     }
 
-    /** 应用选项，返回本次新解锁的合击技名称 */
+    /** 应用选项，返回本次新解锁的合击 id（burn/river）；展示名由调用方查 COMBOS */
     apply(opt: Option): string[] {
         if (opt.type === 'talisman') {
             const id = opt.id as TalismanId;
@@ -99,7 +99,7 @@ export class SkillSystem {
             if (this.combos.has(c.id)) continue;
             if (c.need.every((id) => this.talismanLevel(id) >= c.level)) {
                 this.combos.add(c.id);
-                unlocked.push(`${c.name}：${c.desc}`);
+                unlocked.push(c.id);
             }
         }
         return unlocked;

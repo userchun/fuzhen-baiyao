@@ -380,14 +380,44 @@ export class GameUI {
         });
     }
 
+    /**
+     * 结算板。皮肤挂钩（现有 card/banner；Art 匾额到了只换键）：
+     *   RESULT_BANNER → ui_title_banner
+     *   RESULT_PLAQUE → ui_level_card（Art settle 匾额替换此键）
+     *   settleVfx 空节点供结算 VFX 挂载
+     */
     showResult(win: boolean, kills: number, time: number, buttons: { text: string; cb: () => void }[]): void {
         const ov = this.openOverlay();
-        const title = addLabel(ov, win ? '镇妖成功' : '结界破碎', 64, win ? '#FFD700' : '#E74C3C');
-        title.node.setPosition(0, 200);
-        popIn(title.node, 0.4);
-        addLabel(ov, `击杀 ${kills}    用时 ${Math.floor(time)} 秒`, 30).node.setPosition(0, 80);
+        // Art 定稿换键即可，勿另造图
+        const RESULT_BANNER = 'ui_title_banner';
+        const RESULT_PLAQUE = 'ui_level_card';
+        const RESULT_SEAL = win ? 'ui_seal_heishan' : 'ui_lock_seal';
+
+        const settleVfx = makeNode('settleVfx', ov); // D：结算 VFX 挂点（Art 后续）
+        settleVfx.setPosition(0, 120);
+
+        const banner = spriteNode(RESULT_BANNER, 620, 150, ov);
+        if (banner) {
+            banner.setPosition(0, 240);
+            const title = addLabel(banner, win ? '镇妖成功' : '结界破碎', 56, win ? '#FFD700' : '#E74C3C');
+            title.node.setPosition(0, 8);
+            popIn(banner, 0.4);
+        } else {
+            const title = addLabel(ov, win ? '镇妖成功' : '结界破碎', 64, win ? '#FFD700' : '#E74C3C');
+            title.node.setPosition(0, 200);
+            popIn(title.node, 0.4);
+        }
+
+        let plaque = spriteNode(RESULT_PLAQUE, 560, 176, ov);
+        if (!plaque) plaque = rectNode('resultPlaque', 560, 160, '#2C2440', ov, 16);
+        plaque.setPosition(0, 40);
+        const seal = spriteNode(RESULT_SEAL, 72, 72, plaque);
+        if (seal) seal.setPosition(-210, 8);
+        addLabel(plaque, `击杀 ${kills}    用时 ${Math.floor(time)} 秒`, 30, '#E8E2D0').node.setPosition(20, 0);
+        popIn(plaque, 0.35);
+
         buttons.forEach((b, i) => {
-            const btn = this.button(ov, b.text, b.cb, 300, 90, i === 0 ? '#8E2C2C' : '#3A3350', 0, -80 - i * 120);
+            const btn = this.button(ov, b.text, b.cb, 300, 90, i === 0 ? '#8E2C2C' : '#3A3350', 0, -120 - i * 120);
             popIn(btn, 0.25 + i * 0.08);
         });
     }

@@ -50,12 +50,16 @@ export class Combat {
     wallHp = GAME.wallHp;
     kills = 0;
     bossDead = false;
+    /** D：Boss 进入 death/settle 后停刷杂鱼（GameRoot → Spawner.stop） */
+    spawnStopped = false;
     hpMult = 1; // 关卡血量倍率
 
     private bullets: Bullet[] = [];
     private zones: Zone[] = [];
     private fx: Fx[] = [];
     private riverT = RIVER_INTERVAL;
+    /** E T3：焚林燎原 FX 节流（≤2Hz） */
+    private burnShengT = 0;
     private manualCd = 0;
     private aimX = 0;
     private aimY = top();
@@ -212,7 +216,7 @@ export class Combat {
         }
     }
 
-    /** Boss death oneshot 一次；settle onDone 仍可播 win。 */
+    /** Boss death oneshot 一次；win 仅在 GameRoot.end(true) 播一次。 */
     private playBossDeathSfx(e: Enemy): void {
         if (e.def.id === 'heishan') this.audio?.playSfx('heishan_death', 0.9);
         else if (e.def.id === 'baigu') this.audio?.playSfx('baigu_death', 0.9);
@@ -244,10 +248,25 @@ export class Combat {
         anim.play(clip, () => {
             e.dying = false;
             e.alive = false;
-            this.bossDead = true; // GameRoot → Victory；以 anim finished 为准，非残片启发式
-            this.audio?.playSfx('win', 0.9);
+            this.bossDead = true; // GameRoot → Victory；以 anim finished 为准（面板在 death 后）
+            // win SFX 仅 GameRoot.end(true) 播一次（D dedupe）
         });
         return true;
+    }
+
+    /** E：相生合击 VFX/SFX 统一入口；复用 FX.combo + combo 槽（fx/sfx_combo_sheng 未到前） */
+    private static readonly COMBO_SHENG: Record<'burn' | 'river', { mother: string; child: string }> = {
+        burn: { mother: '#5FBF6A', child: '#F06A4A' },   // 木→火
+        river: { mother: '#F5D76E', child: '#5AB4F0' },  // 金→水
+    };
+
+    playComboSheng(comboId: 'burn' | 'river', x: number, y: number): void {
+        const c = Combat.COMBO_SHENG[comboId];
+        if (!c) return;
+        // 母色芯 + 子色沿（双 burst；资产到位后可换 fx_combo_sheng）
+        burst(this.fxLayer, x, y, FX.combo(x, y, c.mother));
+        burst(this.fxLayer, x, y, FX.combo(x, y, c.child));
+        this.audio?.playSfx('combo', 0.8);
     }
 
     private resumeBossIdle(e: Enemy): void {
@@ -412,8 +431,7 @@ export class Combat {
                 this.riverT = RIVER_INTERVAL;
                 const dmg = (s.damage('metal') + s.damage('water')) * 2;
                 this.shoot('river', 0, GAME.wallY, 0, 500, dmg, { radius: 30, life: 3 });
-                burst(this.fxLayer, 0, GAME.wallY + 60, FX.combo(0, GAME.wallY + 60, '#5AB4F0'));
-                this.audio?.playSfx('combo', 0.8);
+                this.playComboSheng('river', 0, GAME.wallY + 60); // E T2 天河起手双色
                 this.fb.shake(6, 0.3);
             }
         }
@@ -526,6 +544,7 @@ export class Combat {
     // ---------- 更新 ----------
 
     private updateZones(dt: number): void {
+        this.burnShengT = Math.max(0, this.burnShengT - dt);
         for (const e of this.enemies) e.slow = 0;
         for (const z of this.zones) {
             z.life -= dt;
@@ -535,6 +554,11 @@ export class Combat {
                 if (Math.hypot(e.x - z.x, e.y - z.y) < z.r + e.def.radius * 0.5 * depthScale(e.depth)) {
                     e.slow = Math.max(e.slow, z.slow);
                     this.hurt(e, z.dps * dt, z.el, false);
+                    // E T3：焚林区 tick 节流 ≤2Hz（不改 ×3）
+                    if (z.key === 'zone:burn' && this.burnShengT <= 0) {
+                        this.burnShengT = 0.5;
+                        this.playComboSheng('burn', e.x, e.y);
+                    }
                 }
             }
         }
@@ -794,8 +818,9 @@ export class Combat {
         // Boss：优先播 death oneshot，settle 延后到 FrameAnim onDone（B2）
         if (e.def.boss && this.playBossDeath(e)) {
             e.dying = true;
+            this.spawnStopped = true; // D：death 起手即停刷，等 anim→bossDead→面板
             this.kills++;
-            this.playBossDeathSfx(e); // A2/A4 oneshot；win 仍在 settle onDone
+            this.playBossDeathSfx(e); // A2/A4 oneshot；win 仅 end(true)
             burst(this.fxLayer, e.x, e.y, FX.death(e.x, e.y, ELEMENT_COLOR[e.element]));
             this.fb.hitStop(0.3);
             this.fb.shake(20, 0.5);
@@ -807,10 +832,10 @@ export class Combat {
         this.kills++;
         burst(this.fxLayer, e.x, e.y, FX.death(e.x, e.y, ELEMENT_COLOR[e.element]));
         if (e.def.boss) {
-            // 无 death 帧：即时 settle（静态 fallback）；仍播一次 death 再 win
+            // 无 death 帧：即时 settle（静态 fallback）；win 仅 GameRoot.end(true)
             this.playBossDeathSfx(e);
             this.bossDead = true;
-            this.audio?.playSfx('win', 0.9);
+            this.spawnStopped = true;
             this.fb.hitStop(0.3);
             this.fb.shake(20, 0.5);
         } else {
