@@ -1,7 +1,7 @@
-import { Node, Graphics, Label, EventTouch, UITransform } from 'cc';
+import { Node, Graphics, Label, EventTouch, UITransform, Sprite } from 'cc';
 import { GAME, TALISMANS, COMBOS, LevelDef, ELEMENT_NAME, ELEMENT_COLOR, TalismanId, PASSIVES } from '../config/GameConfig';
 import { makeNode, addLabel, rectNode, hex, setOpacity, circleNode } from '../core/Draw';
-import { spriteNode } from '../core/Art';
+import { spriteNode, hasArt } from '../core/Art';
 import { AudioManager } from '../core/AudioManager';
 import { SkillSystem, Option } from './SkillSystem';
 import { Combat } from './Combat';
@@ -13,16 +13,53 @@ const BAR_W = 600;
 // 状态条都放在城墙下方、玩家脚下，屏幕顶部留给妖怪进场
 const WALL_BAR_OFFSET = -94;      // 结界血条中心相对城墙顶部
 const XP_BAR_OFFSET = -120;       // 灵气条中心相对城墙顶部（紧贴血条下方）
+const WALL_BAR_H = 20;            // U1：16–24
+const XP_BAR_H = 10;              // U3：8–12
+const WALL_FILL_COLOR = '#9B3D2E'; // 暗朱砂
+const XP_FILL_COLOR = '#E8C56A';   // 骨白→淡金
+const WALL_CAP = 36;              // SLICES.md
+const XP_CAP = 18;
 const TALISMAN_ICON_W = 40;  // 符牌图标显示尺寸（素材 128×192；相对原 56 约缩 30%）
 const TALISMAN_ICON_H = 60;
 const CD_MASK_ALPHA = 150; // 冷却遮罩不透明度（上→下 burn）
 
+/** 9-slice 卷轴框：只左右保轴头，上下 0 */
+function applyHSlice(node: Node | null, left: number, right: number): void {
+    if (!node) return;
+    const sp = node.getComponent(Sprite);
+    if (!sp || !sp.spriteFrame) return;
+    const sf = sp.spriteFrame;
+    sf.insetLeft = left;
+    sf.insetRight = right;
+    sf.insetTop = 0;
+    sf.insetBottom = 0;
+    sp.type = Sprite.Type.SLICED;
+}
+
+/** HUD 条：贴图 bg/fill/frame，缺图退回 Graphics；贴图在 loadArt 后延迟挂上 */
+interface HudBar {
+    root: Node;
+    text: Label;
+    fillNode: Node | null;
+    fillUt: UITransform | null;
+    fillInnerW: number;
+    fillInset: number;
+    gfx: Graphics | null;
+    h: number;
+    fillColor: string;
+    bgKey: string;
+    fillKey: string;
+    frameKey: string;
+    capL: number;
+    capR: number;
+    srcW: number;
+    artReady: boolean;
+}
+
 // HUD、升级三选一面板、结算面板、提示
 export class GameUI {
-    private wallBar: Graphics;
-    private wallText: Label;
-    private xpBar: Graphics;
-    private xpText: Label;
+    private wallBar: HudBar;
+    private xpBar: HudBar;
     private info: Label;
     private skillPanel: Node;
     private skillSig = '';
@@ -32,12 +69,18 @@ export class GameUI {
     private overlay: Node | null = null;
 
     constructor(private root: Node, private audio?: AudioManager) {
-        this.wallBar = makeNode('wallBar', root).addComponent(Graphics);
-        this.wallText = addLabel(this.wallBar.node, '', 18);
-        this.wallBar.node.setPosition(0, GAME.wallY + WALL_BAR_OFFSET);
-        this.xpBar = makeNode('xpBar', root).addComponent(Graphics);
-        this.xpText = addLabel(this.xpBar.node, '', 14);
-        this.xpBar.node.setPosition(0, GAME.wallY + XP_BAR_OFFSET);
+        this.wallBar = this.makeHudBar(
+            'wallBar', WALL_BAR_H, WALL_FILL_COLOR,
+            'ui_barrier_bar_bg', 'ui_barrier_bar_fill', 'ui_barrier_bar_frame',
+            WALL_CAP, WALL_CAP, 328,
+        );
+        this.wallBar.root.setPosition(0, GAME.wallY + WALL_BAR_OFFSET);
+        this.xpBar = this.makeHudBar(
+            'xpBar', XP_BAR_H, XP_FILL_COLOR,
+            'ui_xp_bar_bg', 'ui_xp_bar_fill', 'ui_xp_bar_frame',
+            XP_CAP, XP_CAP, 292,
+        );
+        this.xpBar.root.setPosition(0, GAME.wallY + XP_BAR_OFFSET);
         // 击杀 / 时间：右上角小字，不加底板
         this.info = addLabel(root, '', 20, '#B8B0C8');
         this.info.node.setPosition(GAME.width / 2 - 100, top() - SAFE_TOP);
@@ -53,12 +96,80 @@ export class GameUI {
         this.toast.node.setPosition(0, 250);
     }
 
+    private makeHudBar(
+        name: string, h: number, fillColor: string,
+        bgKey: string, fillKey: string, frameKey: string,
+        capL: number, capR: number, srcW: number,
+    ): HudBar {
+        const root = makeNode(name, this.root, BAR_W, h);
+        const text = addLabel(root, '', name === 'wallBar' ? 18 : 14);
+        // loadArt 在 GameUI 构造之后才完成，先挂 Graphics，首帧 refresh 再换皮
+        const gfx = root.addComponent(Graphics);
+        return {
+            root, text, fillNode: null, fillUt: null, fillInnerW: BAR_W, fillInset: 0, gfx,
+            h, fillColor, bgKey, fillKey, frameKey, capL, capR, srcW, artReady: false,
+        };
+    }
+
+    /** loadArt 完成后把 Graphics 条换成卷轴贴图；素材缺失则保持 Graphics */
+    private tryAttachBarArt(bar: HudBar): void {
+        if (bar.artReady) return;
+        if (!hasArt(bar.bgKey) || !hasArt(bar.fillKey) || !hasArt(bar.frameKey)) return;
+        const root = bar.root;
+        if (bar.gfx) {
+            bar.gfx.destroy();
+            bar.gfx = null;
+        }
+        const scale = BAR_W / bar.srcW;
+        const inset = Math.round(((bar.capL + bar.capR) / 2) * scale);
+        const fillH = Math.max(6, bar.h - 4);
+        const fillInnerW = Math.max(40, BAR_W - inset * 2);
+        spriteNode(bar.bgKey, fillInnerW, fillH, root)?.setPosition(0, 0);
+        const fillNode = spriteNode(bar.fillKey, fillInnerW, fillH, root);
+        const frame = spriteNode(bar.frameKey, BAR_W, bar.h, root);
+        applyHSlice(frame, bar.capL, bar.capR);
+        // 文字保持在最上层
+        bar.text.node.setSiblingIndex(root.children.length - 1);
+        let fillUt: UITransform | null = null;
+        if (fillNode) {
+            fillUt = fillNode.getComponent(UITransform);
+            fillUt.setAnchorPoint(0, 0.5);
+            fillNode.setPosition(-fillInnerW / 2, 0);
+            fillUt.setContentSize(fillInnerW, fillH);
+        }
+        bar.fillNode = fillNode;
+        bar.fillUt = fillUt;
+        bar.fillInnerW = fillInnerW;
+        bar.fillInset = inset;
+        bar.artReady = true;
+    }
+
+    private setBar(bar: HudBar, ratio: number): void {
+        this.tryAttachBarArt(bar);
+        const r = Math.max(0, Math.min(1, ratio));
+        if (bar.fillUt) {
+            bar.fillUt.setContentSize(bar.fillInnerW * r, bar.fillUt.contentSize.height);
+            if (bar.fillNode) bar.fillNode.active = r > 0.001;
+            return;
+        }
+        if (!bar.gfx) return;
+        const g = bar.gfx;
+        const h = bar.h;
+        g.clear();
+        g.fillColor = hex('#12101C', 200);
+        g.rect(-BAR_W / 2, -h / 2, BAR_W, h);
+        g.fill();
+        g.fillColor = hex(bar.fillColor);
+        g.rect(-BAR_W / 2, -h / 2, BAR_W * r, h);
+        g.fill();
+    }
+
     refresh(c: Combat, s: SkillSystem, time: number): void {
-        this.drawBar(this.wallBar, c.wallHp / GAME.wallHp, '#C0392B', 24);
-        this.drawBar(this.xpBar, s.xp / s.xpNeed, '#8E44AD', 16);
+        this.setBar(this.wallBar, c.wallHp / GAME.wallHp);
+        this.setBar(this.xpBar, s.xp / s.xpNeed);
         const t = Math.floor(time);
-        this.wallText.string = `结界 ${Math.ceil(c.wallHp)}/${GAME.wallHp}`;
-        this.xpText.string = `Lv${s.level}`;
+        this.wallBar.text.string = `结界 ${Math.ceil(c.wallHp)}/${GAME.wallHp}`;
+        this.xpBar.text.string = `Lv${s.level}`;
         const mm = Math.floor(t / 60);
         const ss = Math.floor(t % 60);
         this.info.string = `击杀 ${c.kills}   ${mm}:${ss < 10 ? '0' + ss : ss}`;
@@ -143,18 +254,51 @@ export class GameUI {
         setOpacity(this.toast.node, 255);
     }
 
+    /** 三选一：竖符纸 2:3；稀有度=五行描边叠层；禁满铺黄裱 */
     showPick(title: string, opts: Option[], onPick: (o: Option) => void): void {
         const ov = this.openOverlay();
         const titleNode = addLabel(ov, title, 40, '#FFD700');
-        titleNode.node.setPosition(0, 380);
+        titleNode.node.setPosition(0, 420);
         popIn(titleNode.node, 0.3);
+
+        const CARD_W = 200;
+        const CARD_H = 300; // 2:3
+        const GAP = 18;
+        const n = opts.length;
+        const totalW = n * CARD_W + Math.max(0, n - 1) * GAP;
+        const TEXT_W = 160;
+
         opts.forEach((o, i) => {
-            const card = rectNode('card', 580, 170, '#2C2440', ov, 16);
-            card.setPosition(0, 200 - i * 200);
+            const x = -totalW / 2 + CARD_W / 2 + i * (CARD_W + GAP);
+            const y = 40;
+            let card = spriteNode('ui_card_pick_base', CARD_W, CARD_H, ov);
+            if (!card) card = rectNode('card', CARD_W, CARD_H, '#2C2440', ov, 16);
+            card.setPosition(x, y);
+
+            // 符咒：叠五行描边；passive/heal 仅底牌
+            if (o.type === 'talisman') {
+                const rarityKey = 'ui_card_rarity_' + o.id;
+                const edge = spriteNode(rarityKey, CARD_W, CARD_H, card);
+                if (edge) edge.setPosition(0, 0);
+            }
+
             const tal = o.type === 'talisman' ? TALISMANS[o.id as TalismanId] : null;
             const el = tal && ELEMENT_NAME[tal.element] ? `【${ELEMENT_NAME[tal.element]}】` : '';
-            addLabel(card, el + o.title, 34, tal ? ELEMENT_COLOR[tal.element] : '#FFD700').node.setPosition(0, 40);
-            addLabel(card, o.desc, 24, '#DDDDDD').node.setPosition(0, -25);
+            const titleColor = '#C45C4A'; // 朱砂标题（非满黄）
+            const tLab = addLabel(card, el + o.title, 26, titleColor);
+            tLab.horizontalAlign = Label.HorizontalAlign.CENTER;
+            tLab.overflow = Label.Overflow.SHRINK;
+            tLab.node.getComponent(UITransform).setContentSize(TEXT_W, 56);
+            tLab.node.setPosition(0, 90);
+
+            const dLab = addLabel(card, o.desc, 18, '#DDD6C8');
+            dLab.horizontalAlign = Label.HorizontalAlign.CENTER;
+            dLab.verticalAlign = Label.VerticalAlign.TOP;
+            dLab.overflow = Label.Overflow.RESIZE_HEIGHT;
+            dLab.lineHeight = 24;
+            dLab.node.getComponent(UITransform).setContentSize(TEXT_W, 0);
+            dLab.node.setPosition(0, 10);
+
             popIn(card, 0.22 + i * 0.06);
             breathe(card, 0.02, 2.0 + i * 0.3);
             card.on(Node.EventType.TOUCH_END, (e: EventTouch) => {
@@ -184,10 +328,12 @@ export class GameUI {
         // 卡面花边留白：文案落在 600×190 安全区（约 ±210×±52）
         const CARD_W = 560;
         const CARD_H = 176;
-        const TEXT_W = 400;       // 避开左右纹饰
+        const TEXT_W = 340;       // 避开左右纹饰与名章
         const TITLE_Y = 28;       // 标题固定偏上
         const DESC_Y = -22;       // 描述固定偏下，两行也不贴边
         const CARD_GAP = 250;     // 卡间距加大，避免叠边
+        const BOSS_SEALS = ['ui_seal_heishan', 'ui_seal_baigu'] as const;
+        const SEAL_SIZE = 80;
 
         levels.forEach((lv, i) => {
             const open = i < unlocked;
@@ -205,12 +351,17 @@ export class GameUI {
             } else {
                 card = this.button(ov, '', () => { if (open) onPick(i); }, CARD_W, CARD_H, open ? '#2C2440' : '#1C1A24', 0, y);
             }
+            // Boss 名章：装饰于标题旁，不挡点按；锁定仍用 ui_lock_seal
+            if (i < BOSS_SEALS.length) {
+                const seal = spriteNode(BOSS_SEALS[i], SEAL_SIZE, SEAL_SIZE, card);
+                if (seal) seal.setPosition(-210, 8);
+            }
             // 标题：统一字号与 Y，水平居中并限制宽度
             const title = addLabel(card, lv.name, 32, open ? '#FFD700' : '#6A6478');
             title.horizontalAlign = Label.HorizontalAlign.CENTER;
             title.overflow = Label.Overflow.SHRINK;
             title.node.getComponent(UITransform).setContentSize(TEXT_W, 40);
-            title.node.setPosition(0, TITLE_Y);
+            title.node.setPosition(20, TITLE_Y);
 
             // 描述 / 锁定提示：小号、可换行，限制在花边内
             const descText = open ? lv.desc : '通关上一关后解锁';
@@ -220,7 +371,7 @@ export class GameUI {
             desc.overflow = Label.Overflow.RESIZE_HEIGHT;
             desc.lineHeight = 24;
             desc.node.getComponent(UITransform).setContentSize(TEXT_W, 0);
-            desc.node.setPosition(0, DESC_Y);
+            desc.node.setPosition(20, DESC_Y);
 
             if (!open) {
                 const seal = spriteNode('ui_lock_seal', 56, 56, card);
@@ -264,15 +415,5 @@ export class GameUI {
         this.clearOverlay();
         this.overlay = rectNode('overlay', GAME.width, GAME.height, '#000000', this.root, 0, 170);
         return this.overlay;
-    }
-
-    private drawBar(g: Graphics, ratio: number, color: string, h: number): void {
-        g.clear();
-        g.fillColor = hex('#000000', 150);
-        g.rect(-BAR_W / 2, -h / 2, BAR_W, h);
-        g.fill();
-        g.fillColor = hex(color);
-        g.rect(-BAR_W / 2, -h / 2, BAR_W * Math.max(0, Math.min(1, ratio)), h);
-        g.fill();
     }
 }
