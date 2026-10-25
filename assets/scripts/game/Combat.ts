@@ -10,7 +10,7 @@ import { SkillSystem } from './SkillSystem';
 import { paintElement, drawHp } from './EnemyView';
 import { Feedback } from './Feedback';
 import { AudioManager } from '../core/AudioManager';
-import { FX, burst } from './ParticleFX';
+import { FX, burst, flashCombat, flashCastGlow } from './ParticleFX';
 import { hitPulse } from './Anim';
 import { FrameAnim, FrameClip } from './FrameAnim';
 
@@ -247,8 +247,9 @@ export class Combat {
         this.playerAnim.play(this.playerIdle);
     }
 
-    /** 施法：播 cast once，结束回 idle；无帧则 noop */
+    /** 施法：播 cast once，结束回 idle；无帧则 noop。同步暖朱砂 cast_glow（跟 cast 帧）。 */
     private playPlayerCast(): void {
+        flashCastGlow(this.fxLayer, this.playerX, GAME.playerY + 8);
         if (!this.playerAnim || !this.playerCast) return;
         this.playerAnim.play(this.playerCast, () => this.playPlayerIdle());
     }
@@ -717,8 +718,10 @@ export class Combat {
             this.fb.text(e.x, e.y + e.def.radius * depthScale(e.depth), dmg, tier);
             e.flashT = 0.08;
             hitPulse(e.node, 1.12);
-            // 命中火花 + 音效
+            // 命中火花 + 音效；P0 sprite flash（hit_seal/crit/resist/el）叠薄粒子层
             const py = e.y + e.def.radius * depthScale(e.depth);
+            const atkEl: Element = el === 'none' ? 'none' : el;
+            flashCombat(this.fxLayer, e.x, py, tier, atkEl);
             if (tier === 'crit') {
                 burst(this.fxLayer, e.x, py, FX.crit(e.x, py, ELEMENT_COLOR[el === 'none' ? e.element : el]));
                 this.audio?.playSfx('crit', 0.8);

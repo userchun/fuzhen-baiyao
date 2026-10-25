@@ -1,9 +1,10 @@
-import { Node, ParticleSystem2D, UITransform, Layers, Color, v2 } from 'cc';
+import { Node, ParticleSystem2D, UITransform, Layers, Color, v2, Sprite, UIOpacity, tween, Vec3 } from 'cc';
 import { getFrame } from '../core/Art';
+import type { Element, HitTier } from '../config/GameConfig';
 
 // 粒子特效：统一用 ParticleSystem2D，共享一张白色径向圆点贴图（fx_dot.png），
 // 通过 startColor 上色，避免为每种特效单独出贴图。
-// 贴图缺失时静默跳过（不播放），与 Art.ts 的退回策略一致。
+// 另：GOAL-VFX-COMBAT-001 命中/暴击/抗性/五行/施法 用一次性 Sprite flash（贴图缺失静默跳过）。
 
 function makeNode(name: string, parent: Node): Node {
     const n = new Node(name);
@@ -65,6 +66,99 @@ export function burst(parent: Node, x: number, y: number, spec: FxSpec): void {
     ps.gravity = v2(0, -spec.gravity);
     ps.autoRemoveOnFinish = true;
     ps.resetSystem();
+}
+
+// ---------- Sprite one-shot flashes (VFX combat P0) ----------
+
+const MAX_SPRITE_FX = 18;
+const activeFlashes: Node[] = [];
+
+const EL_FX: Partial<Record<Element, string>> = {
+    metal: 'fx_el_metal',
+    wood: 'fx_el_wood',
+    water: 'fx_el_water',
+    fire: 'fx_el_fire',
+    earth: 'fx_el_earth',
+};
+
+export interface FlashOpts {
+    size?: number;
+    startScale?: number;
+    endScale?: number;
+    startAlpha?: number;
+    endAlpha?: number;
+}
+
+function pruneFlashes(): void {
+    for (let i = activeFlashes.length - 1; i >= 0; i--) {
+        if (!activeFlashes[i].isValid) activeFlashes.splice(i, 1);
+    }
+}
+
+/** 一次性 Sprite 闪：淡出+微扩，自动销毁；同屏上限内丢最旧 */
+export function flash(parent: Node, key: string, x: number, y: number, duration: number, opts?: FlashOpts): void {
+    const sf = getFrame(key);
+    if (!sf || !parent?.isValid) return;
+
+    pruneFlashes();
+    while (activeFlashes.length >= MAX_SPRITE_FX) {
+        const old = activeFlashes.shift();
+        if (old?.isValid) old.destroy();
+    }
+
+    const size = opts?.size ?? 64;
+    const startScale = opts?.startScale ?? 0.9;
+    const endScale = opts?.endScale ?? 1.2;
+    const startAlpha = opts?.startAlpha ?? 255;
+    const endAlpha = opts?.endAlpha ?? 0;
+
+    const n = makeNode('fx_flash', parent);
+    n.setPosition(x, y);
+    n.setScale(startScale, startScale, 1);
+    n.getComponent(UITransform)!.setContentSize(size, size);
+    const sp = n.addComponent(Sprite);
+    sp.sizeMode = Sprite.SizeMode.CUSTOM;
+    sp.spriteFrame = sf;
+    const op = n.addComponent(UIOpacity);
+    op.opacity = startAlpha;
+    activeFlashes.push(n);
+
+    const dur = Math.max(0.05, duration);
+    tween(n)
+        .to(dur, { scale: new Vec3(endScale, endScale, 1) }, { easing: 'quadOut' })
+        .call(() => {
+            const i = activeFlashes.indexOf(n);
+            if (i >= 0) activeFlashes.splice(i, 1);
+            if (n.isValid) n.destroy();
+        })
+        .start();
+    tween(op)
+        .to(dur, { opacity: endAlpha }, { easing: 'quadIn' })
+        .start();
+}
+
+/**
+ * 命中层：crit→fx_crit；resist→fx_resist；else→fx_hit_seal；
+ * 五行攻击另叠 fx_el_*（偏小，不糊剪影）。时长对齐验收锁。
+ */
+export function flashCombat(parent: Node, x: number, y: number, tier: HitTier, el: Element): void {
+    if (tier === 'crit') {
+        flash(parent, 'fx_crit', x, y, 0.42, { size: 72, startScale: 0.88, endScale: 1.28 });
+    } else if (tier === 'resist') {
+        flash(parent, 'fx_resist', x, y, 0.25, { size: 56, startScale: 1.0, endScale: 1.12 });
+    } else {
+        flash(parent, 'fx_hit_seal', x, y, 0.28, { size: 56, startScale: 0.92, endScale: 1.18 });
+    }
+    const elKey = EL_FX[el];
+    if (elKey) {
+        // 略偏上、尺寸 ~48–56，避免盖住怪身剪影
+        flash(parent, elKey, x, y + 10, 0.32, { size: 48, startScale: 0.7, endScale: 1.05, startAlpha: 210 });
+    }
+}
+
+/** 施法暖朱砂符光；跟 cast 帧（5f@12fps ≈ 0.42s） */
+export function flashCastGlow(parent: Node, x: number, y: number): void {
+    flash(parent, 'fx_player_cast_glow', x, y, 0.4, { size: 96, startScale: 0.72, endScale: 1.12, startAlpha: 230 });
 }
 
 // ---------- 各特效 ----------
