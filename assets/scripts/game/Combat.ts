@@ -20,6 +20,8 @@ export interface Enemy {
     depth: number; // 2.5D 纵深：0=远(地平线) → 1=近(城墙)
     hp: number; maxHp: number; t: number; slow: number; freezeT: number; summonT: number; flashT: number;
     alive: boolean;
+    /** Boss death oneshot in progress; blocks hurt/move; settle deferred to anim onDone */
+    dying: boolean;
 }
 
 interface Bullet {
@@ -74,6 +76,11 @@ export class Combat {
     private enemyAnims = new Map<Node, FrameAnim>();
     /** 白骨夫人三相 idle：metal/water/fire → clip */
     private baiguPhaseClips = new Map<string, FrameClip>();
+    /** Boss hit oneshot：heishan 单 clip；baigu 按相 */
+    private heishanHitClip: FrameClip | null = null;
+    private heishanDeathClip: FrameClip | null = null;
+    private baiguHitClips = new Map<string, FrameClip>();
+    private baiguDeathClips = new Map<string, FrameClip>();
     /** 死亡 SFX 按敌人 id；无 key 的精英仍用 explode */
     private static readonly ENEMY_DEATH_SFX: Record<string, 'paperman_death' | 'foxfire_snuff' | 'tongjia_break' | 'shuigui_death'> = {
         paperman: 'paperman_death',
@@ -130,6 +137,15 @@ export class Combat {
         }
         // 3f @12fps ≈ 0.25s burst；静态 enemy_lantern_split 作首帧/回退
         this.lanternSplitClip = this.makeClip('anim/enemy_lantern_split/move', 12, false);
+        // ANIM-005：Boss hit 4f / death 5f oneshot（无帧则静态 fallback，不改数值）
+        this.heishanHitClip = this.makeClip('anim/boss_heishan/hit', 10, false);
+        this.heishanDeathClip = this.makeClip('anim/boss_heishan/death', 10, false);
+        for (const el of ['metal', 'water', 'fire']) {
+            const hit = this.makeClip(`anim/boss_baigu_${el}/hit`, 10, false);
+            const death = this.makeClip(`anim/boss_baigu_${el}/death`, 10, false);
+            if (hit) this.baiguHitClips.set(el, hit);
+            if (death) this.baiguDeathClips.set(el, death);
+        }
     }
 
     private makeClip(prefix: string, fps: number, loop: boolean): FrameClip | null {
@@ -169,6 +185,53 @@ export class Combat {
         anim.play(clip);
     }
 
+    private getOrCreateEnemyAnim(node: Node): FrameAnim | null {
+        let anim = this.enemyAnims.get(node);
+        if (anim) return anim;
+        const art = node.getChildByName('art');
+        if (!art) return null;
+        anim = new FrameAnim(art);
+        this.enemyAnims.set(node, anim);
+        return anim;
+    }
+
+    /** 非致命受击：hit oneshot → 回当前相 idle/move；无帧则 noop（静帧 fallback） */
+    private playBossHit(e: Enemy): void {
+        if (e.dying || !e.alive) return;
+        let clip: FrameClip | null = null;
+        if (e.def.id === 'heishan') clip = this.heishanHitClip;
+        else if (e.def.id === 'baigu') clip = this.baiguHitClips.get(e.element) ?? null;
+        if (!clip) return;
+        const anim = this.getOrCreateEnemyAnim(e.node);
+        if (!anim) return;
+        anim.play(clip, () => {
+            if (e.dying || !e.alive) return;
+            this.resumeBossIdle(e);
+        });
+    }
+
+    /** 致命：death oneshot 一次；onDone → bossDead settle。返回 false 则调用方走即时 settle。 */
+    private playBossDeath(e: Enemy): boolean {
+        let clip: FrameClip | null = null;
+        if (e.def.id === 'heishan') clip = this.heishanDeathClip;
+        else if (e.def.id === 'baigu') clip = this.baiguDeathClips.get(e.element) ?? null;
+        if (!clip) return false;
+        const anim = this.getOrCreateEnemyAnim(e.node);
+        if (!anim) return false;
+        anim.play(clip, () => {
+            e.dying = false;
+            e.alive = false;
+            this.bossDead = true; // GameRoot → Victory；以 anim finished 为准，非残片启发式
+            this.audio?.playSfx('win', 0.9);
+        });
+        return true;
+    }
+
+    private resumeBossIdle(e: Enemy): void {
+        if (e.def.id === 'baigu') this.playBaiguPhaseIdle(e.node, e.element);
+        else this.ensureEnemyAnim(e.node, e.def.id, e.element);
+    }
+
     private setupPlayerAnim(): void {
         this.playerIdle = this.makeClip('anim/player_taoist/idle', 8, true);
         this.playerCast = this.makeClip('anim/player_taoist/cast', 12, false);
@@ -205,7 +268,7 @@ export class Combat {
         }
         const e: Enemy = {
             def, node, element: def.element, diving: false, x, y, baseX: x, depth, hp: def.hp * this.hpMult, maxHp: def.hp * this.hpMult, t: 0, slow: 0, freezeT: 0,
-            summonT: def.summonInterval ?? 0, flashT: 0, alive: true,
+            summonT: def.summonInterval ?? 0, flashT: 0, alive: true, dying: false,
         };
         this.enemies.push(e);
         drawHp(e);
@@ -384,7 +447,7 @@ export class Combat {
                 this.audio?.playSfx('thunder', 0.5);
                 this.fb.shake(3, 0.08);
                 for (const e of this.enemies) {
-                    if (!e.alive || Math.hypot(e.x - cx, e.y - cy) > r + e.def.radius * depthScale(e.depth)) continue;
+                    if (!e.alive || e.dying || Math.hypot(e.x - cx, e.y - cy) > r + e.def.radius * depthScale(e.depth)) continue;
                     this.hurt(e, dmg, 'earth');
                     if (!e.def.boss) {
                         e.depth = Math.max(0, e.depth - 50 / lanePixels()); // 击退（推远）
@@ -394,7 +457,7 @@ export class Combat {
             }
         } else if (id === 'thunder') {
             for (let i = 0; i < count; i++) {
-                const targets = this.enemies.filter((e) => e.alive && !e.diving);
+                const targets = this.enemies.filter((e) => e.alive && !e.dying && !e.diving);
                 if (targets.length === 0) return;
                 let cur: Enemy | null = targets[Math.floor(Math.random() * targets.length)];
                 const hit = new Set<Enemy>();
@@ -444,7 +507,7 @@ export class Combat {
             z.life -= dt;
             if (z.life <= 0) { z.alive = false; continue; }
             for (const e of this.enemies) {
-                if (!e.alive) continue;
+                if (!e.alive || e.dying) continue;
                 if (Math.hypot(e.x - z.x, e.y - z.y) < z.r + e.def.radius * 0.5 * depthScale(e.depth)) {
                     e.slow = Math.max(e.slow, z.slow);
                     this.hurt(e, z.dps * dt, z.el, false);
@@ -455,6 +518,12 @@ export class Combat {
 
     private updateEnemies(dt: number): void {
         for (const e of this.enemies) {
+            // death oneshot：只推进帧，不移动/攻城/召唤；播完由 onDone settle
+            if (e.dying) {
+                this.enemyAnims.get(e.node)?.update(dt);
+                e.node.setPosition(e.x, e.y);
+                continue;
+            }
             if (!e.alive) continue;
             e.t += dt;
             const d = e.def;
@@ -583,7 +652,7 @@ export class Combat {
 
             if (b.kind === 'river') {
                 for (const e of this.enemies) {
-                    if (e.alive && !b.hit.has(e) && Math.abs(e.y - b.y) < b.radius + e.def.radius * depthScale(e.depth)) {
+                    if (e.alive && !e.dying && !b.hit.has(e) && Math.abs(e.y - b.y) < b.radius + e.def.radius * depthScale(e.depth)) {
                         b.hit.add(e);
                         e.freezeT = 1;
                         this.hurt(e, b.damage, 'water');
@@ -593,7 +662,7 @@ export class Combat {
             }
 
             for (const e of this.enemies) {
-                if (!e.alive || e.diving || b.hit.has(e)) continue;
+                if (!e.alive || e.dying || e.diving || b.hit.has(e)) continue;
                 const rr = b.radius + e.def.radius * depthScale(e.depth);
                 if ((e.x - b.x) ** 2 + (e.y - b.y) ** 2 < rr * rr) {
                     this.onHit(b, e);
@@ -632,14 +701,14 @@ export class Combat {
         this.audio?.playSfx('explode', 0.7);
         this.fb.shake(4, 0.1);
         for (const e of this.enemies) {
-            if (e.alive && Math.hypot(e.x - b.x, e.y - b.y) < b.explodeR + e.def.radius * depthScale(e.depth)) {
+            if (e.alive && !e.dying && Math.hypot(e.x - b.x, e.y - b.y) < b.explodeR + e.def.radius * depthScale(e.depth)) {
                 this.hurt(e, b.damage, 'fire');
             }
         }
     }
 
     private hurt(e: Enemy, amount: number, el: Element, show = true): void {
-        if (!e.alive || e.diving) return;
+        if (!e.alive || e.diving || e.dying) return;
         const tier = elementTier(el, e.element);
         let dmg = amount * TIER_MULT[tier];
         if (show && e.def.armor) dmg = Math.max(MIN_HIT_DAMAGE, dmg - e.def.armor);
@@ -663,7 +732,10 @@ export class Combat {
         }
         if (e.def.elite || e.def.boss) drawHp(e);
         if (e.hp <= 0) this.kill(e);
-        else if (e.def.phases) this.checkPhase(e);
+        else {
+            if (e.def.phases) this.checkPhase(e); // G2：中相换相≠settle；先换相再 hit
+            if (e.def.boss) this.playBossHit(e); // B0：受伤→当前相 hit
+        }
     }
 
     // Boss 按血量切换属性，切换时召唤一批小怪
@@ -682,10 +754,23 @@ export class Combat {
     }
 
     private kill(e: Enemy): void {
+        if (e.dying) return; // death already playing — no re-entry / no loop
+        // Boss：优先播 death oneshot，settle 延后到 FrameAnim onDone（B2）
+        if (e.def.boss && this.playBossDeath(e)) {
+            e.dying = true;
+            this.kills++;
+            burst(this.fxLayer, e.x, e.y, FX.death(e.x, e.y, ELEMENT_COLOR[e.element]));
+            this.fb.hitStop(0.3);
+            this.fb.shake(20, 0.5);
+            this.addFx(e.x, e.y, e.def.radius * 1.2);
+            this.onKill(e);
+            return;
+        }
         e.alive = false;
         this.kills++;
         burst(this.fxLayer, e.x, e.y, FX.death(e.x, e.y, ELEMENT_COLOR[e.element]));
         if (e.def.boss) {
+            // 无 death 帧：即时 settle（静态 fallback）
             this.bossDead = true;
             this.audio?.playSfx('win', 0.9);
             this.fb.hitStop(0.3);
@@ -748,7 +833,7 @@ export class Combat {
         let best: Enemy | null = null;
         let bestD = maxDist * maxDist;
         for (const e of this.enemies) {
-            if (!e.alive || e.diving || (exclude && exclude.has(e))) continue;
+            if (!e.alive || e.dying || e.diving || (exclude && exclude.has(e))) continue;
             const d = (e.x - x) ** 2 + (e.y - y) ** 2;
             if (d < bestD) { bestD = d; best = e; }
         }
@@ -769,7 +854,7 @@ export class Combat {
 
     private cleanup(): void {
         this.enemies = this.enemies.filter((e) => {
-            if (e.alive) return true;
+            if (e.alive || e.dying) return true;
             const bobSpec = Combat.ENEMY_MOVE[e.def.id];
             if (bobSpec && bobSpec.bobPx > 0) {
                 const art = e.node.getChildByName('art');
