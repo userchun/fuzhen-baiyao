@@ -12,6 +12,11 @@ const SFX_KEYS = [
     'paperman_rustle', 'tongjia_clank', 'shuigui_dive_in', 'shuigui_dive_out',
     'foxfire_whoosh', 'shuigui_presence',
     'paperman_death', 'foxfire_snuff', 'tongjia_break', 'shuigui_death', 'enemy_hurt',
+    // GOAL-AUDIO-BOSS-P1
+    'heishan_hit', 'heishan_death',
+    'baigu_hit_metal', 'baigu_hit_water', 'baigu_hit_fire', 'baigu_death',
+    'baigu_phase_metal', 'baigu_phase_water', 'baigu_phase_fire',
+    'barrier_crack',
     'amb_village', 'amb_temple',
 ] as const;
 

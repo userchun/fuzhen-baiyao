@@ -195,6 +195,29 @@ export class Combat {
         return anim;
     }
 
+
+    /** Boss 受击厚层：黑山岩裂 / 白骨三相；无专属则静默。不换 BGM。 */
+    private playBossHurtSfx(e: Enemy): void {
+        if (e.def.id === 'heishan') {
+            this.audio?.playSfx('heishan_hit', 0.75);
+            return;
+        }
+        if (e.def.id === 'baigu') {
+            const key = ({
+                metal: 'baigu_hit_metal',
+                water: 'baigu_hit_water',
+                fire: 'baigu_hit_fire',
+            } as const)[e.element as 'metal' | 'water' | 'fire'];
+            if (key) this.audio?.playSfx(key, 0.75);
+        }
+    }
+
+    /** Boss death oneshot 一次；settle onDone 仍可播 win。 */
+    private playBossDeathSfx(e: Enemy): void {
+        if (e.def.id === 'heishan') this.audio?.playSfx('heishan_death', 0.9);
+        else if (e.def.id === 'baigu') this.audio?.playSfx('baigu_death', 0.9);
+    }
+
     /** 非致命受击：hit oneshot → 回当前相 idle/move；无帧则 noop（静帧 fallback） */
     private playBossHit(e: Enemy): void {
         if (e.dying || !e.alive) return;
@@ -577,7 +600,7 @@ export class Combat {
             } else if (e.y - r <= GAME.wallY) {
                 this.wallHp -= d.damage;
                 this.fb.shake(d.boss ? 30 : 10, 0.25);
-                this.audio?.playSfx('hit', 0.6);
+                this.audio?.playSfx('barrier_crack', 0.55); // A7 结界远距龟裂（替 generic hit）
                 burst(this.fxLayer, e.x, GAME.wallY, FX.barrier(e.x, GAME.wallY));
                 e.alive = false;
                 this.addFx(e.x, GAME.wallY, d.radius * 1.5);
@@ -728,10 +751,11 @@ export class Combat {
             } else {
                 burst(this.fxLayer, e.x, py, FX.hit(e.x, py, '#FFFFFF'));
                 if (tier === 'resist') this.audio?.playSfx('resist', 0.6);
-                else this.audio?.playSfx('hit', 0.5); // 符纸·朱砂 hit — do not replace
+                else if (!e.def.boss) this.audio?.playSfx('hit', 0.5); // A6 符纸·朱砂 — 非 Boss
             }
-            // 敌人受击薄层（非玩家 hit）；与 crit/resist/hit 叠加
-            this.audio?.playSfx('enemy_hurt', 0.28);
+            // Boss 厚一档专属受击；小怪仍走 enemy_hurt。不双叠 generic hit。
+            if (e.def.boss) this.playBossHurtSfx(e);
+            else this.audio?.playSfx('enemy_hurt', 0.28);
         }
         if (e.def.elite || e.def.boss) drawHp(e);
         if (e.hp <= 0) this.kill(e);
@@ -748,7 +772,16 @@ export class Combat {
         if (ph[idx] === e.element) return;
         e.element = ph[idx];
         paintElement(e.node, e.def, e.element);
-        if (e.def.id === 'baigu') this.playBaiguPhaseIdle(e.node, e.element);
+        if (e.def.id === 'baigu') {
+            this.playBaiguPhaseIdle(e.node, e.element);
+            // A5 相变层 brief（≠ death）；不换 BGM track
+            const phaseKey = ({
+                metal: 'baigu_phase_metal',
+                water: 'baigu_phase_water',
+                fire: 'baigu_phase_fire',
+            } as const)[e.element as 'metal' | 'water' | 'fire'];
+            if (phaseKey) this.audio?.playSfx(phaseKey, 0.7);
+        }
         this.fb.shake(14, 0.4);
         this.fb.hitStop(0.15);
         for (let i = 0; i < 4; i++) {
@@ -762,6 +795,7 @@ export class Combat {
         if (e.def.boss && this.playBossDeath(e)) {
             e.dying = true;
             this.kills++;
+            this.playBossDeathSfx(e); // A2/A4 oneshot；win 仍在 settle onDone
             burst(this.fxLayer, e.x, e.y, FX.death(e.x, e.y, ELEMENT_COLOR[e.element]));
             this.fb.hitStop(0.3);
             this.fb.shake(20, 0.5);
@@ -773,7 +807,8 @@ export class Combat {
         this.kills++;
         burst(this.fxLayer, e.x, e.y, FX.death(e.x, e.y, ELEMENT_COLOR[e.element]));
         if (e.def.boss) {
-            // 无 death 帧：即时 settle（静态 fallback）
+            // 无 death 帧：即时 settle（静态 fallback）；仍播一次 death 再 win
+            this.playBossDeathSfx(e);
             this.bossDead = true;
             this.audio?.playSfx('win', 0.9);
             this.fb.hitStop(0.3);
