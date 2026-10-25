@@ -303,6 +303,183 @@ def sfx_click():
     )
 
 
+def sfx_paperman_rustle():
+    """纸人存在感：干宣纸扑簌循环。稀疏、近距、无 whoosh。~2.2s 无缝。"""
+    total = 2.2
+    n = int(SR * total)
+    out = np.zeros(n)
+
+    def place(seg, at, amp=1.0):
+        i0 = int(SR * at)
+        seg = np.asarray(seg, dtype=float) * amp
+        i1 = min(n, i0 + len(seg))
+        if i1 > i0:
+            out[i0:i1] += seg[: i1 - i0]
+
+    # 稀疏纸纤维爆发（中高频 1.5–7kHz），错落分布
+    bursts = [
+        (0.12, 0.09, 0.22),
+        (0.48, 0.07, 0.18),
+        (0.85, 0.11, 0.20),
+        (1.18, 0.06, 0.16),
+        (1.55, 0.10, 0.21),
+        (1.92, 0.08, 0.17),
+    ]
+    for at, dur, amp in bursts:
+        burst = _noise(dur, 0.003, dur * 0.85, amp, 1500, 7000)
+        nb = len(burst)
+        tb = np.linspace(0, dur, nb, endpoint=False)
+        # 软 flutter AM（纸页轻颤），无上升 whoosh
+        burst *= (0.78 + 0.22 * np.sin(2 * np.pi * 27 * tb))
+        place(burst, at, 1.0)
+
+    # 极低底噪（近距干纸纤维气声），便于循环下垫
+    bed = _noise(total, 0.05, total * 0.95, 0.045, 1800, 5500)
+    out += bed
+
+    # 整体压低，可在战斗下循环
+    out *= 0.55
+
+    # 首尾交叉淡化，无缝循环
+    xfade = int(SR * 0.06)  # 60ms
+    head = out[:xfade].copy()
+    tail = out[-xfade:].copy()
+    fade_out = np.linspace(1.0, 0.0, xfade)
+    fade_in = np.linspace(0.0, 1.0, xfade)
+    out[-xfade:] = tail * fade_out + head * fade_in
+    # 均衡端点，避免循环跳变
+    out[0] = out[-1]
+    return out
+
+
+def sfx_tongjia_clank():
+    """铜甲脚步：氧化青铜闷响 + 葬布摩擦。短、干夜、留出符纸朱砂空间。~0.32s。"""
+    total = 0.32
+    n = int(SR * total)
+    out = np.zeros(n)
+
+    def place(seg, at, amp=1.0):
+        i0 = int(SR * at)
+        seg = np.asarray(seg, dtype=float) * amp
+        i1 = min(n, i0 + len(seg))
+        if i1 > i0:
+            out[i0:i1] += seg[: i1 - i0]
+
+    # 非谐金属分音（氧化青铜，中低频，忌过亮）
+    clank_dur = 0.22
+    nc = int(SR * clank_dur)
+    tc = np.linspace(0, clank_dur, nc, endpoint=False)
+    partials = [
+        (185, 1.00, 9.0),
+        (310, 0.55, 11.0),
+        (470, 0.35, 14.0),
+        (680, 0.22, 18.0),
+        (870, 0.12, 22.0),
+    ]
+    metal = np.zeros(nc)
+    for f, a, decay in partials:
+        metal += a * np.sin(2 * np.pi * f * tc) * np.exp(-tc * decay)
+    metal *= _env(nc, 0.001, 0.18)
+    # 轻微非谐拍频（锈蚀感）
+    metal += 0.08 * np.sin(2 * np.pi * 203 * tc) * np.exp(-tc * 12)
+    place(metal, 0.0, 0.7)
+
+    # 葬布刮擦（低中频干噪）
+    scrape = _noise(0.14, 0.004, 0.12, 0.35, 250, 1800)
+    place(scrape, 0.02, 0.55)
+
+    # 干、短尾；整体压低，勿盖过 shoot
+    fade = int(SR * 0.04)
+    out[-fade:] *= np.linspace(1, 0, fade)
+    out *= 0.62
+    return out
+
+
+def sfx_shuigui_dive_in():
+    """水鬼入水：下潜滤波噪声 + 短促闷击。干夜空气，少混响。~0.4s。"""
+    total = 0.4
+    n = int(SR * total)
+    out = np.zeros(n)
+
+    # 下行滤波噪声（plunge）
+    plunge_dur = 0.28
+    np_ = int(SR * plunge_dur)
+    x = RNG.standard_normal(np_)
+    spec = np.fft.rfft(x)
+    freqs = np.fft.rfftfreq(np_, 1 / SR)
+    # 随时间收窄到低频：按帧滑动高切
+    plunge = np.zeros(np_)
+    # 分段滤波近似：整段先宽，再与下滑包络叠
+    mask = (freqs >= 80) & (freqs <= 4500)
+    spec2 = spec.copy()
+    spec2[~mask] = 0
+    wide = np.fft.irfft(spec2, np_)
+    wide = wide / (np.max(np.abs(wide)) + 1e-9)
+    t = np.linspace(0, plunge_dur, np_, endpoint=False)
+    # 高切收紧：用低通倾向（指数衰减高频感）+ 下滑
+    lp = np.exp(-t * 6.5)
+    plunge = wide * lp * _env(np_, 0.008, 0.22)
+    # 轻微下扫低音
+    sweep_f = np.linspace(220, 70, np_)
+    plunge += 0.35 * np.sin(2 * np.pi * np.cumsum(sweep_f) / SR) * _env(np_, 0.005, 0.2)
+
+    # 入水闷击
+    thud = _mix(
+        _sine(90, 0.08, 0.002, 0.06, 0.9),
+        _sine(55, 0.1, 0.003, 0.08, 0.55),
+        _noise(0.05, 0.002, 0.04, 0.3, 100, 600),
+    )
+
+    out[:len(plunge)] += 0.75 * plunge
+    i0 = int(SR * 0.04)
+    thud = np.asarray(thud)
+    i1 = min(n, i0 + len(thud))
+    out[i0:i1] += 0.85 * thud[: i1 - i0]
+
+    fade = int(SR * 0.05)
+    out[-fade:] *= np.linspace(1, 0, fade)
+    out *= 0.7
+    return out
+
+
+def sfx_shuigui_dive_out():
+    """水鬼出水：上行溅水 + 水珠滴答。~0.42s。"""
+    total = 0.42
+    n = int(SR * total)
+    out = np.zeros(n)
+
+    def place(seg, at, amp=1.0):
+        i0 = int(SR * at)
+        seg = np.asarray(seg, dtype=float) * amp
+        i1 = min(n, i0 + len(seg))
+        if i1 > i0:
+            out[i0:i1] += seg[: i1 - i0]
+
+    # 上行溅水（更亮噪声爆发）
+    splash_dur = 0.22
+    ns = int(SR * splash_dur)
+    splash = _noise(splash_dur, 0.004, 0.18, 0.85, 600, 9000)
+    ts = np.linspace(0, splash_dur, ns, endpoint=False)
+    # 上扫亮感
+    sweep_f = np.linspace(180, 1400, ns)
+    splash = splash * (0.55 + 0.45 * (ts / splash_dur))
+    splash += 0.28 * np.sin(2 * np.pi * np.cumsum(sweep_f) / SR) * _env(ns, 0.003, 0.16)
+    place(splash, 0.0, 0.9)
+
+    # 水珠滴答（短 tick）
+    for at, amp in ((0.16, 0.45), (0.24, 0.35), (0.31, 0.25)):
+        tick = _mix(
+            _noise(0.025, 0.001, 0.018, amp, 2500, 10000),
+            0.3 * _sine(2100 + amp * 400, 0.02, 0.0008, 0.015, amp),
+        )
+        place(tick, at, 1.0)
+
+    fade = int(SR * 0.05)
+    out[-fade:] *= np.linspace(1, 0, fade)
+    out *= 0.72
+    return out
+
+
 SFX = {
     'shoot': sfx_shoot,
     'hit': sfx_hit,
@@ -317,6 +494,10 @@ SFX = {
     'win': sfx_win,
     'lose': sfx_lose,
     'click': sfx_click,
+    'paperman_rustle': sfx_paperman_rustle,
+    'tongjia_clank': sfx_tongjia_clank,
+    'shuigui_dive_in': sfx_shuigui_dive_in,
+    'shuigui_dive_out': sfx_shuigui_dive_out,
 }
 
 
@@ -466,5 +647,35 @@ def main():
     print('完成。')
 
 
+def write_named(names):
+    """仅写出指定 SFX 名（不触碰 BGM / 未点名的 SFX）。"""
+    os.makedirs(TMP, exist_ok=True)
+    os.makedirs(OUT_SFX, exist_ok=True)
+    for name in names:
+        if name not in SFX:
+            raise KeyError(f'unknown sfx: {name}')
+        wav = os.path.join(TMP, name + '.wav')
+        mp3 = os.path.join(OUT_SFX, name + '.mp3')
+        _write(wav, SFX[name]())
+        to_mp3(wav, mp3)
+        print(f'  {name}.mp3')
+        try:
+            os.remove(wav)
+        except OSError:
+            pass
+    # 若 TMP 空则收掉
+    try:
+        if os.path.isdir(TMP) and not os.listdir(TMP):
+            os.rmdir(TMP)
+    except OSError:
+        pass
+
+
 if __name__ == '__main__':
-    main()
+    import sys
+    if len(sys.argv) > 1:
+        print('合成选定 SFX ...')
+        write_named(sys.argv[1:])
+        print('完成。')
+    else:
+        main()

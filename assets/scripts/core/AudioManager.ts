@@ -9,6 +9,7 @@ const clips = new Map<string, AudioClip>();
 const SFX_KEYS = [
     'shoot', 'hit', 'crit', 'resist', 'explode', 'freeze', 'thunder',
     'levelup', 'combo', 'boss', 'win', 'lose', 'click',
+    'paperman_rustle', 'tongjia_clank', 'shuigui_dive_in', 'shuigui_dive_out',
 ] as const;
 
 const BGM_KEYS = ['village', 'temple'] as const;
@@ -40,6 +41,8 @@ export function loadAudio(): Promise<void> {
  */
 export class AudioManager {
     private bgmSource: AudioSource | null = null;
+    /** 可停止的循环 SFX（如纸人存在感），按 key 复用 AudioSource */
+    private loopSources = new Map<SfxName, AudioSource>();
     private sfxNode: Node;
 
     constructor(private root: Node) {
@@ -66,6 +69,40 @@ export class AudioManager {
 
     playSfx(key: SfxName, volume = 1): void {
         this.playClip(sfxPath(key), volume, false);
+    }
+
+    /**
+     * 循环 SFX：同一 key 已在播则不重启（可改音量）；用于纸人等存在感底噪。
+     * 素材缺失时静默跳过。
+     */
+    playLoopSfx(key: SfxName, volume = 1): void {
+        const path = sfxPath(key);
+        const clip = clips.get(path);
+        if (!clip) return;
+        let src = this.loopSources.get(key);
+        if (!src) {
+            const n = new Node('sfx-loop-' + key);
+            n.layer = this.sfxNode.layer;
+            this.sfxNode.addChild(n);
+            src = n.addComponent(AudioSource);
+            this.loopSources.set(key, src);
+        }
+        if (src.clip !== clip) {
+            src.clip = clip;
+            src.loop = true;
+            src.volume = volume;
+            src.play();
+        } else if (!src.playing) {
+            src.volume = volume;
+            src.play();
+        } else {
+            src.volume = volume;
+        }
+    }
+
+    stopLoopSfx(key: SfxName): void {
+        const src = this.loopSources.get(key);
+        if (src && src.playing) src.stop();
     }
 
     /** 播放/切换 BGM；同一首且正在播时不重启；停过后同曲可续播 */

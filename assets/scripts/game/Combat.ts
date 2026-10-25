@@ -416,8 +416,12 @@ export class Combat {
             e.depth = Math.max(0, Math.min(1, e.depth));
             e.y = depthY(e.depth);
             e.x = Math.max(-HALF_W, Math.min(HALF_W, e.x));
-            // 水鬼：每 3 秒潜水 1 秒，潜水时无敌
+            // 水鬼：每 3 秒潜水 1 秒，潜水时无敌；潜水进出播 dive_in / dive_out
+            const wasDiving = e.diving;
             e.diving = !!d.dive && e.t % 3 > 2;
+            if (d.dive && wasDiving !== e.diving) {
+                this.audio?.playSfx(e.diving ? 'shuigui_dive_in' : 'shuigui_dive_out', 0.55);
+            }
             setOpacity(e.node, e.diving ? 60 : e.freezeT > 0 ? 150 : 255);
             // 命中闪一下：放大（叠加在纵深缩放之上）
             if (e.flashT > 0) e.flashT -= dt;
@@ -474,7 +478,28 @@ export class Combat {
                 }
             }
             e.node.setPosition(e.x, e.y);
+
+            // 铜甲：移动脚步闷响（冻结时不响；相位按 baseX 错开避免齐步）
+            if (e.def.id === 'tongjia' && e.freezeT <= 0) {
+                const period = 0.38;
+                const phase = (((e.baseX % 100) + 100) % 100) * 0.0038;
+                const t0 = e.t + phase;
+                if (Math.floor(t0 / period) !== Math.floor((t0 - dt) / period)) {
+                    this.audio?.playSfx('tongjia_clank', 0.4);
+                }
+            }
         }
+
+        // 纸人存在感：任一纸人在移动（未冻）则循环 rustle，否则停
+        let papermanMoving = false;
+        for (const e of this.enemies) {
+            if (e.alive && e.def.id === 'paperman' && e.freezeT <= 0) {
+                papermanMoving = true;
+                break;
+            }
+        }
+        if (papermanMoving) this.audio?.playLoopSfx('paperman_rustle', 0.32);
+        else this.audio?.stopLoopSfx('paperman_rustle');
     }
 
     private updateBullets(dt: number): void {
