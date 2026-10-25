@@ -15,8 +15,7 @@ const WALL_BAR_OFFSET = -94;      // 结界血条中心相对城墙顶部
 const XP_BAR_OFFSET = -120;       // 灵气条中心相对城墙顶部（紧贴血条下方）
 const TALISMAN_ICON_W = 40;  // 符牌图标显示尺寸（素材 128×192；相对原 56 约缩 30%）
 const TALISMAN_ICON_H = 60;
-const CD_MASK_R = 22;     // 与符咒图标半径一致
-const CD_MASK_ALPHA = 150; // 冷却遮罩不透明度
+const CD_MASK_ALPHA = 150; // 冷却遮罩不透明度（上→下 burn）
 
 // HUD、升级三选一面板、结算面板、提示
 export class GameUI {
@@ -76,7 +75,7 @@ export class GameUI {
         this.drawCooldowns(s);
     }
 
-    /** 冷却遮罩：剩余冷却占比越大，暗色扇形越大，从 12 点方向顺时针消退 */
+    /** 冷却遮罩：上→下 burn；ratio 为剩余 CD，暗色盖住底部 ratio*H，顶部先露出 */
     private drawCooldowns(s: SkillSystem): void {
         this.cdMasks.forEach((g, id) => {
             const st = s.talismans.get(id);
@@ -84,9 +83,8 @@ export class GameUI {
             g.clear();
             if (ratio <= 0) return;
             g.fillColor = hex('#000000', CD_MASK_ALPHA);
-            g.moveTo(0, 0);
-            g.arc(0, 0, CD_MASK_R, Math.PI / 2, Math.PI / 2 + Math.PI * 2 * ratio, true);
-            g.close();
+            // y-up、原点在图标中心：底部矩形从 -H/2 起高 ratio*H
+            g.rect(-TALISMAN_ICON_W / 2, -TALISMAN_ICON_H / 2, TALISMAN_ICON_W, ratio * TALISMAN_ICON_H);
             g.fill();
         });
     }
@@ -98,14 +96,13 @@ export class GameUI {
         let y = 0;
         s.talismans.forEach((st, id) => {
             const d = TALISMANS[id];
-            // 符牌图片（竖长）+ 中央空白符面叠字；无图时退回圆形色块
+            // 符牌图片（竖长）；有图不叠 name[0]，无图退回圆形色块+字
             let icon = spriteNode('icon_talisman_' + id, TALISMAN_ICON_W, TALISMAN_ICON_H, panel);
             const art = !!icon;
-            if (icon) addLabel(icon, d.name[0], 18, ELEMENT_COLOR[d.element]);
-            else icon = circleNode('talisman', 22, ELEMENT_COLOR[d.element], d.name[0], panel);
+            if (!icon) icon = circleNode('talisman', 22, ELEMENT_COLOR[d.element], d.name[0], panel);
             icon.setPosition(0, y);
-            // 遮罩在等级角标之前加入，角标仍显示在最上层
-            this.cdMasks.set(id, makeNode('cd', icon, 44, 44).addComponent(Graphics));
+            // CD 遮罩与符牌同尺寸（上→下 burn）；角标仍在最上层
+            this.cdMasks.set(id, makeNode('cd', icon, TALISMAN_ICON_W, TALISMAN_ICON_H).addComponent(Graphics));
             this.levelBadge(icon, st.level >= d.maxLevel ? 'MAX' : `${st.level}`, 16, art ? -24 : -16);
             addLabel(panel, d.name, 14, '#E8E0F0').node.setPosition(0, y - (art ? 40 : 32));
             y -= art ? 84 : 72;
@@ -113,8 +110,8 @@ export class GameUI {
         s.passives.forEach((lv, id) => {
             const d = PASSIVES[id];
             let icon = spriteNode('icon_passive_' + id, 44, 44, panel);
-            if (icon) addLabel(icon, d.name[0], 18, '#E8E2D0');
-            else icon = circleNode('passive', 20, '#6F6888', d.name[0], panel);
+            // 有图不叠字；被动无 CD 遮罩
+            if (!icon) icon = circleNode('passive', 20, '#6F6888', d.name[0], panel);
             icon.setPosition(0, y + 10);
             this.levelBadge(icon, lv >= d.maxLevel ? 'MAX' : `${lv}`, 15, -15);
             y -= 56;
