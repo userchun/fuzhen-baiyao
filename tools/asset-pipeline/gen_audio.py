@@ -114,23 +114,91 @@ def _write(path, x):
 # ---------- SFX 合成 ----------
 
 def sfx_shoot():
-    """符纸破空：高频嗖声，频率快速下滑。"""
-    dur = 0.12
-    n = int(SR * dur)
-    t = _t(dur)
-    f = np.linspace(3200, 900, n)
-    phase = 2 * np.pi * np.cumsum(f) / SR
-    x = np.sin(phase) * _env(n, 0.003, 0.08)
-    x += 0.3 * _noise(dur, 0.003, 0.06, 0.5, 1500, 7000)
-    return x
+    """写符 / cast：干宣纸扑簌+撕裂 + 笔锋，收尾朱砂落印（共用印章层）。
+    近距干夜空气，少混响；忌枪口 whoosh / EDM riser。~150–170ms。"""
+    # 1) 纸纤维扑簌（中高频窄带噪声，短颤）
+    flutter = _noise(0.09, 0.002, 0.07, 0.55, 1800, 6500)
+    # 轻微振幅颤动模拟纸页抖动
+    n_f = len(flutter)
+    t_f = np.linspace(0, 0.09, n_f, endpoint=False)
+    flutter *= (0.75 + 0.25 * np.sin(2 * np.pi * 38 * t_f))
+
+    # 2) 撕裂：极短噪声尖峰 + 下滑摩擦
+    tear_dur = 0.045
+    n_t = int(SR * tear_dur)
+    tear = _noise(tear_dur, 0.001, 0.035, 0.7, 2500, 9000)
+    fric_f = np.linspace(2400, 700, n_t)
+    fric = 0.35 * np.sin(2 * np.pi * np.cumsum(fric_f) / SR) * _env(n_t, 0.001, 0.03)
+    tear = tear + fric
+
+    # 3) 笔锋：短促中高频摩擦（干笔走纸）
+    brush = _mix(
+        _noise(0.055, 0.003, 0.045, 0.4, 900, 4500),
+        0.2 * _sine(920, 0.05, 0.002, 0.04, 0.35),
+    )
+
+    # 4) 朱砂落印（seal-land，bake 进同一文件尾）
+    stamp = _mix(
+        _sine(140, 0.07, 0.001, 0.055, 0.85),   # 印面闷击
+        _sine(280, 0.05, 0.001, 0.04, 0.35),
+        _noise(0.035, 0.001, 0.025, 0.45, 600, 2800),  # 纸面受印
+    )
+
+    # 时间轴排布：扑簌 → 撕/笔 → 落印
+    total = 0.16
+    n = int(SR * total)
+    out = np.zeros(n)
+
+    def place(seg, at, amp=1.0):
+        i0 = int(SR * at)
+        seg = np.asarray(seg) * amp
+        i1 = min(n, i0 + len(seg))
+        out[i0:i1] += seg[: i1 - i0]
+
+    place(flutter, 0.0, 1.0)
+    place(tear, 0.035, 0.9)
+    place(brush, 0.04, 0.85)
+    place(stamp, 0.095, 1.0)
+
+    # 干、近：极短尾，无长混响
+    fade = int(SR * 0.02)
+    out[-fade:] *= np.linspace(1, 0, fade)
+    return out
 
 
 def sfx_hit():
-    """普通命中：短促低频砰。"""
-    return _mix(
-        _sine(180, 0.14, 0.002, 0.1, 1.0),
-        _noise(0.08, 0.001, 0.05, 0.5, 200, 3000),
+    """印上身 / hit：短纸拍+印章闷击 + 薄墨咬合。忌合成轰/肉拍。~100–120ms。"""
+    # 纸拍：宽带短噪声，偏干
+    slap = _noise(0.045, 0.001, 0.03, 0.75, 800, 5500)
+    # 印章闷击（与 shoot 共用印章语汇，略更实）
+    seal = _mix(
+        _sine(120, 0.08, 0.001, 0.06, 1.0),
+        _sine(240, 0.05, 0.001, 0.04, 0.4),
+        _noise(0.03, 0.001, 0.02, 0.4, 400, 2200),
     )
+    # 薄墨咬合：极短高频毛刺（墨洇/纤维）
+    ink = _mix(
+        _noise(0.025, 0.0008, 0.018, 0.55, 3500, 10000),
+        0.25 * _sine(2100, 0.02, 0.0005, 0.015, 0.4),
+    )
+
+    total = 0.11
+    n = int(SR * total)
+    out = np.zeros(n)
+
+    def place(seg, at, amp=1.0):
+        i0 = int(SR * at)
+        seg = np.asarray(seg) * amp
+        i1 = min(n, i0 + len(seg))
+        out[i0:i1] += seg[: i1 - i0]
+
+    place(slap, 0.0, 1.0)
+    place(seal, 0.012, 1.0)
+    place(ink, 0.028, 0.85)
+
+    fade = int(SR * 0.015)
+    out[-fade:] *= np.linspace(1, 0, fade)
+    return out
 
 
 def sfx_crit():
