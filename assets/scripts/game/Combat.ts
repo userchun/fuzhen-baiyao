@@ -5,13 +5,14 @@ import {
 } from '../config/GameConfig';
 import { Pool } from '../core/Pool';
 import { circleNode, rectNode, makeNode, hex, setOpacity, paintCircle, addLabel } from '../core/Draw';
-import { ENEMY_ART, hasArt, spriteNode } from '../core/Art';
+import { ENEMY_ART, hasArt, spriteNode, getFrames } from '../core/Art';
 import { SkillSystem } from './SkillSystem';
 import { paintElement, drawHp } from './EnemyView';
 import { Feedback } from './Feedback';
 import { AudioManager } from '../core/AudioManager';
 import { FX, burst } from './ParticleFX';
 import { hitPulse } from './Anim';
+import { FrameAnim, FrameClip } from './FrameAnim';
 
 export interface Enemy {
     def: EnemyDef; node: Node; element: Element; diving: boolean;
@@ -63,6 +64,13 @@ export class Combat {
     private enemyLayer: Node;
     private bulletLayer: Node;
     private fxLayer: Node;
+    private playerAnim: FrameAnim | null = null;
+    private playerIdle: FrameClip | null = null;
+    private playerCast: FrameClip | null = null;
+    private playerHit: FrameClip | null = null;
+    private jiangshiAnims = new Map<Node, FrameAnim>();
+    private jiangshiMove: FrameClip | null = null;
+    private static readonly JIANGSHI_HOP_PX = 12;
 
     constructor(layer: Node, private skills: SkillSystem, private fb: Feedback, private onKill: (e: Enemy) => void, private audio?: AudioManager) {
         this.pool = new Pool((key) => this.create(key));
@@ -75,6 +83,34 @@ export class Combat {
         this.player.setPosition(0, GAME.playerY);
         this.bulletLayer = makeNode('bullets', layer);
         this.fxLayer = makeNode('fx', layer);
+        this.setupPlayerAnim();
+        this.jiangshiMove = this.makeClip('anim/enemy_jiangshi/move', 8, true);
+    }
+
+    private makeClip(prefix: string, fps: number, loop: boolean): FrameClip | null {
+        const frames = getFrames(prefix);
+        return frames.length > 0 ? { frames, fps, loop } : null;
+    }
+
+    private setupPlayerAnim(): void {
+        this.playerIdle = this.makeClip('anim/player_taoist/idle', 8, true);
+        this.playerCast = this.makeClip('anim/player_taoist/cast', 12, false);
+        this.playerHit = this.makeClip('anim/player_taoist/hit', 10, false); // optional; reserved
+        // 仅当贴图玩家（spriteNode 成功）且至少有 idle 帧时启用
+        if (!hasArt('player_taoist') || !this.playerIdle) return;
+        this.playerAnim = new FrameAnim(this.player);
+        this.playPlayerIdle();
+    }
+
+    private playPlayerIdle(): void {
+        if (!this.playerAnim || !this.playerIdle) return;
+        this.playerAnim.play(this.playerIdle);
+    }
+
+    /** 施法：播 cast once，结束回 idle；无帧则 noop */
+    private playPlayerCast(): void {
+        if (!this.playerAnim || !this.playerCast) return;
+        this.playerAnim.play(this.playerCast, () => this.playPlayerIdle());
     }
 
     spawnEnemy(id: string, x = (Math.random() * 2 - 1) * HALF_W, depth = 0): void {
@@ -124,6 +160,7 @@ export class Combat {
         const dist = Math.hypot(dx, dy);
         const dmg = BASE_ATTACK.damage * (1 + 0.2 * this.skills.passive('power'));
         this.shoot('manual', ox, oy, dx / dist * BASE_ATTACK.speed, dy / dist * BASE_ATTACK.speed, dmg, { radius: 14, pierce: 1 });
+        this.playPlayerCast();
     }
 
     update(dt: number): void {
@@ -137,6 +174,7 @@ export class Combat {
         }
         this.wallHp = Math.min(GAME.wallHp, this.wallHp + this.skills.regen * dt);
         this.player.setPosition(this.playerX, GAME.playerY);
+        this.playerAnim?.update(dt);
         this.castAll(dt);
         this.updateZones(dt);
         this.updateEnemies(dt);
@@ -157,7 +195,14 @@ export class Combat {
                 // 图片比碰撞圆大（含描边和肢体）；汉字叠在腹部空白字印上
                 const size = d.radius * 2 * art.scale;
                 n = makeNode(key, undefined, d.radius * 2, d.radius * 2);
-                spriteNode(art.tex, size, size, n).name = 'art';
+                const artNode = spriteNode(art.tex, size, size, n)!;
+                artNode.name = 'art';
+                // 跳尸：挂 move 序列帧（无帧则保持静态贴图）
+                if (id === 'jiangshi' && this.jiangshiMove) {
+                    const anim = new FrameAnim(artNode);
+                    anim.play(this.jiangshiMove);
+                    this.jiangshiAnims.set(n, anim);
+                }
                 const ch = addLabel(n, d.char, Math.max(12, Math.round(size * art.sealR * 1.3)), '#1E1A26');
                 ch.node.setPosition(0, size * (0.5 - art.sealY));
             } else {
@@ -213,6 +258,7 @@ export class Combat {
         const count = 1 + s.extra;
         const ox = this.playerX;
         const oy = GAME.playerY + 30;
+        this.playPlayerCast();
 
         if (id === 'metal') {
             const base = this.aimAngle(ox, oy);
@@ -382,6 +428,25 @@ export class Combat {
                 e.alive = false;
                 this.addFx(e.x, GAME.wallY, d.radius * 1.5);
                 continue;
+            }
+            // 跳尸：序列帧 + art 子节点纵向 hop（逻辑坐标不变，碰撞仍用 e.x/e.y）
+            if (e.def.id === 'jiangshi') {
+                let anim = this.jiangshiAnims.get(e.node);
+                if (!anim && this.jiangshiMove) {
+                    const art = e.node.getChildByName('art');
+                    if (art) {
+                        anim = new FrameAnim(art);
+                        anim.play(this.jiangshiMove);
+                        this.jiangshiAnims.set(e.node, anim);
+                    }
+                }
+                anim?.update(dt);
+                const art = e.node.getChildByName('art');
+                if (art) {
+                    const hop = Math.abs(Math.sin(anim ? anim.progress * Math.PI * 2 : e.t * Math.PI * 4))
+                        * Combat.JIANGSHI_HOP_PX;
+                    art.setPosition(0, hop);
+                }
             }
             e.node.setPosition(e.x, e.y);
         }
@@ -555,6 +620,10 @@ export class Combat {
     private cleanup(): void {
         this.enemies = this.enemies.filter((e) => {
             if (e.alive) return true;
+            if (e.def.id === 'jiangshi') {
+                const art = e.node.getChildByName('art');
+                if (art) art.setPosition(0, 0);
+            }
             this.pool.put('enemy:' + e.def.id, e.node);
             return false;
         });
