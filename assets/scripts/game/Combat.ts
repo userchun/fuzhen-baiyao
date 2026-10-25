@@ -254,7 +254,7 @@ export class Combat {
         return true;
     }
 
-    /** E：相生合击 VFX/SFX 统一入口；复用 FX.combo + combo 槽（fx/sfx_combo_sheng 未到前） */
+    /** E：相生合击 VFX/SFX 统一入口（候选 / 待 CD spot；SFX 未封入 SFX_KEYS） */
     private static readonly COMBO_SHENG: Record<'burn' | 'river', { mother: string; child: string }> = {
         burn: { mother: '#5FBF6A', child: '#F06A4A' },   // 木→火
         river: { mother: '#F5D76E', child: '#5AB4F0' },  // 金→水
@@ -263,10 +263,10 @@ export class Combat {
     playComboSheng(comboId: 'burn' | 'river', x: number, y: number): void {
         const c = Combat.COMBO_SHENG[comboId];
         if (!c) return;
-        // 母色芯 + 子色沿（双 burst；资产到位后可换 fx_combo_sheng）
         burst(this.fxLayer, x, y, FX.combo(x, y, c.mother));
         burst(this.fxLayer, x, y, FX.combo(x, y, c.child));
-        this.audio?.playSfx('combo', 0.8);
+        // 候选：combo_sheng → fallback combo（待 CD audio PASS 再封 SFX_KEYS）
+        this.audio?.playSfxPrefer('combo_sheng', 'combo', 0.8);
     }
 
     private resumeBossIdle(e: Enemy): void {
@@ -667,14 +667,17 @@ export class Combat {
         }
 
         // 存在感循环：任一存活未冻则 loop，否则停（dive_in/out 仍由切换触发，不改）
+        // F jiangshi_presence：候选挂点（待 CD spot），不改刷怪/AI 时序
         let papermanMoving = false;
         let foxfireAlive = false;
         let shuiguiAlive = false;
+        let jiangshiAlive = false;
         for (const e of this.enemies) {
-            if (!e.alive || e.freezeT > 0) continue;
+            if (!e.alive || e.dying || e.freezeT > 0) continue;
             if (e.def.id === 'paperman') papermanMoving = true;
             else if (e.def.id === 'foxfire') foxfireAlive = true;
             else if (e.def.id === 'shuigui') shuiguiAlive = true;
+            else if (e.def.id === 'jiangshi') jiangshiAlive = true;
         }
         if (papermanMoving) this.audio?.playLoopSfx('paperman_rustle', 0.32);
         else this.audio?.stopLoopSfx('paperman_rustle');
@@ -682,6 +685,8 @@ export class Combat {
         else this.audio?.stopLoopSfx('foxfire_whoosh');
         if (shuiguiAlive) this.audio?.playLoopSfx('shuigui_presence', 0.28);
         else this.audio?.stopLoopSfx('shuigui_presence');
+        if (jiangshiAlive) this.audio?.playLoopSfxKey('jiangshi_presence', 0.28);
+        else this.audio?.stopLoopSfxKey('jiangshi_presence');
     }
 
     private updateBullets(dt: number): void {
@@ -841,7 +846,8 @@ export class Combat {
         } else {
             const deathKey = Combat.ENEMY_DEATH_SFX[e.def.id];
             if (deathKey) this.audio?.playSfx(deathKey, 0.65);
-            else if (e.def.elite) this.audio?.playSfx('explode', 0.6); // lantern 等无专属死亡音
+            // lantern 改走下方 lantern_split 候选（缺轨再 fallback explode），避免双响
+            else if (e.def.elite && e.def.id !== 'lantern') this.audio?.playSfx('explode', 0.6);
             if (e.def.elite) {
                 this.fb.hitStop(0.06);
                 this.fb.shake(8, 0.2);
@@ -852,6 +858,8 @@ export class Combat {
             const art = ENEMY_ART.lantern;
             const size = e.def.radius * 2 * (art?.scale ?? 2.75);
             this.spawnLanternSplitFx(e.x, e.y, size);
+            // F 候选：lantern_split oneshot（待 CD spot；缺轨静默）
+            this.audio?.playSfxPrefer('lantern_split', 'explode', 0.65);
         }
         if (e.def.splitInto) {
             for (let i = 0; i < (e.def.splitCount ?? 0); i++) {

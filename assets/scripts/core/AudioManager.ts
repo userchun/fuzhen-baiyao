@@ -20,6 +20,16 @@ const SFX_KEYS = [
     'amb_village', 'amb_temple',
 ] as const;
 
+/**
+ * 候选 SFX 挂点（待 CD spot）——预加载以便试听，但不并入 SFX_KEYS / 不算 PASS 封印。
+ * CD PASS 后再封入 SFX_KEYS。
+ */
+const CANDIDATE_SFX_KEYS = [
+    'combo_sheng',         // E 相生
+    'jiangshi_presence',   // F 小怪听感
+    'lantern_split',       // F 灯笼分裂
+] as const;
+
 const BGM_KEYS = ['village', 'temple'] as const;
 
 export type SfxName = typeof SFX_KEYS[number];
@@ -32,13 +42,17 @@ const AMBIENT_FOR_BGM: Record<BgmName, SfxName> = {
     temple: 'amb_temple',
 };
 
-function sfxPath(k: SfxName): string { return 'audio/sfx/' + k; }
+function sfxPath(k: string): string { return 'audio/sfx/' + k; }
 function bgmPath(k: BgmName): string { return 'audio/bgm/' + k; }
 
-/** 加载全部音频；失败不抛错，clips 保持为空 */
+/** 加载全部音频；失败不抛错，clips 保持为空。含候选键（待 CD spot）。 */
 export function loadAudio(): Promise<void> {
     return new Promise((resolve) => {
-        const paths = [...SFX_KEYS.map(sfxPath), ...BGM_KEYS.map(bgmPath)];
+        const paths = [
+            ...SFX_KEYS.map(sfxPath),
+            ...CANDIDATE_SFX_KEYS.map(sfxPath),
+            ...BGM_KEYS.map(bgmPath),
+        ];
         if (paths.length === 0) { resolve(); return; }
         let left = paths.length;
         paths.forEach((p) => {
@@ -57,7 +71,7 @@ export function loadAudio(): Promise<void> {
 export class AudioManager {
     private bgmSource: AudioSource | null = null;
     /** 可停止的循环 SFX（如纸人存在感），按 key 复用 AudioSource */
-    private loopSources = new Map<SfxName, AudioSource>();
+    private loopSources = new Map<string, AudioSource>();
     private sfxNode: Node;
 
     constructor(private root: Node) {
@@ -84,6 +98,47 @@ export class AudioManager {
 
     playSfx(key: SfxName, volume = 1): void {
         this.playClip(sfxPath(key), volume, false);
+    }
+
+    /**
+     * 候选软绑定：优先播 primary（任意 sfx 文件名）；未加载则 fallback 已封印键。
+     * 标注：候选 / 待 CD spot — 非 PASS。
+     */
+    playSfxPrefer(primary: string, fallback: SfxName, volume = 1): void {
+        const path = sfxPath(primary);
+        if (clips.has(path)) this.playClip(path, volume, false);
+        else this.playSfx(fallback, volume);
+    }
+
+    /** 候选循环：素材缺失则静默（不改行为时序）。待 CD spot。 */
+    playLoopSfxKey(key: string, volume = 1): void {
+        const path = sfxPath(key);
+        const clip = clips.get(path);
+        if (!clip) return;
+        let src = this.loopSources.get(key);
+        if (!src) {
+            const n = new Node('sfx-loop-' + key);
+            n.layer = this.sfxNode.layer;
+            this.sfxNode.addChild(n);
+            src = n.addComponent(AudioSource);
+            this.loopSources.set(key, src);
+        }
+        if (src.clip !== clip) {
+            src.clip = clip;
+            src.loop = true;
+            src.volume = volume;
+            src.play();
+        } else if (!src.playing) {
+            src.volume = volume;
+            src.play();
+        } else {
+            src.volume = volume;
+        }
+    }
+
+    stopLoopSfxKey(key: string): void {
+        const src = this.loopSources.get(key);
+        if (src && src.playing) src.stop();
     }
 
     /**

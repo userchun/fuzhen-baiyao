@@ -381,24 +381,27 @@ export class GameUI {
     }
 
     /**
-     * 结算板。皮肤挂钩（现有 card/banner；Art 匾额到了只换键）：
-     *   RESULT_BANNER → ui_title_banner
-     *   RESULT_PLAQUE → ui_level_card（Art settle 匾额替换此键）
-     *   settleVfx 空节点供结算 VFX 挂载
+     * 结算板。CD PASS-with-notes：
+     *   Win 封挂：ui_settle_panel + fx_settle_win（缺图回退 banner/card）
+     *   Lose：不挂 fx_settle_lose（等 Art Must）；沿用 overlay + banner/card 回退
      */
     showResult(win: boolean, kills: number, time: number, buttons: { text: string; cb: () => void }[]): void {
         const ov = this.openOverlay();
-        // Art 定稿换键即可，勿另造图
         const RESULT_BANNER = 'ui_title_banner';
-        const RESULT_PLAQUE = 'ui_level_card';
-        const RESULT_SEAL = win ? 'ui_seal_heishan' : 'ui_lock_seal';
+        const RESULT_PLAQUE_WIN = 'ui_settle_panel'; // 已封挂
+        const RESULT_PLAQUE_FALLBACK = 'ui_level_card';
+        const RESULT_FX_WIN = 'fx_settle_win';       // 已封挂；lose FX 不挂
 
-        const settleVfx = makeNode('settleVfx', ov); // D：结算 VFX 挂点（Art 后续）
-        settleVfx.setPosition(0, 120);
+        const settleVfx = makeNode('settleVfx', ov);
+        settleVfx.setPosition(0, 300);
+        if (win) {
+            const fx = spriteNode(RESULT_FX_WIN, 128, 128, settleVfx);
+            if (fx) popIn(fx, 0.3);
+        }
 
         const banner = spriteNode(RESULT_BANNER, 620, 150, ov);
         if (banner) {
-            banner.setPosition(0, 240);
+            banner.setPosition(0, win ? 200 : 240);
             const title = addLabel(banner, win ? '镇妖成功' : '结界破碎', 56, win ? '#FFD700' : '#E74C3C');
             title.node.setPosition(0, 8);
             popIn(banner, 0.4);
@@ -408,16 +411,26 @@ export class GameUI {
             popIn(title.node, 0.4);
         }
 
-        let plaque = spriteNode(RESULT_PLAQUE, 560, 176, ov);
+        // Win：竖匾 ui_settle_panel（384×512 封挂）；Lose / 缺图：横卡回退
+        let plaque: Node | null = null;
+        let usingSettlePanel = false;
+        if (win) {
+            plaque = spriteNode(RESULT_PLAQUE_WIN, 300, 400, ov);
+            usingSettlePanel = !!plaque;
+        }
+        if (!plaque) plaque = spriteNode(RESULT_PLAQUE_FALLBACK, 560, 176, ov);
         if (!plaque) plaque = rectNode('resultPlaque', 560, 160, '#2C2440', ov, 16);
-        plaque.setPosition(0, 40);
-        const seal = spriteNode(RESULT_SEAL, 72, 72, plaque);
-        if (seal) seal.setPosition(-210, 8);
-        addLabel(plaque, `击杀 ${kills}    用时 ${Math.floor(time)} 秒`, 30, '#E8E2D0').node.setPosition(20, 0);
+        plaque.setPosition(0, usingSettlePanel ? -20 : 40);
+        // 横卡回退时补装饰章；封挂竖匾自带纹样不叠
+        if (!usingSettlePanel) {
+            const seal = spriteNode(win ? 'ui_seal_heishan' : 'ui_lock_seal', 72, 72, plaque);
+            if (seal) seal.setPosition(-210, 8);
+        }
+        addLabel(plaque, `击杀 ${kills}    用时 ${Math.floor(time)} 秒`, 30, '#E8E2D0').node.setPosition(0, usingSettlePanel ? 40 : 0);
         popIn(plaque, 0.35);
 
         buttons.forEach((b, i) => {
-            const btn = this.button(ov, b.text, b.cb, 300, 90, i === 0 ? '#8E2C2C' : '#3A3350', 0, -120 - i * 120);
+            const btn = this.button(ov, b.text, b.cb, 300, 90, i === 0 ? '#8E2C2C' : '#3A3350', 0, -160 - i * 120);
             popIn(btn, 0.25 + i * 0.08);
         });
     }
