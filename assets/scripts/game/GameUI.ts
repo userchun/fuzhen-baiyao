@@ -282,17 +282,18 @@ export class GameUI {
                 if (edge) edge.setPosition(0, 0);
             }
 
-            // 卡心符面/心法图标（复用左侧技能栏同套 icon_*；heal 无图）
-            const PICK_ICON_TAL_W = 80;
-            const PICK_ICON_TAL_H = 120; // 素材 128×192 → 2:3
-            const PICK_ICON_PAS_S = 88;
+            // 卡心符面/心法：HUD 比例缩图（非牌套牌）；passive 边长=符面高，同卡心高度
+            // 略大于 HUD 40×60 → 48×72，仍 2:3；分符 72×72
+            const PICK_ICON_TAL_W = 48;
+            const PICK_ICON_TAL_H = 72;
+            const PICK_ICON_PAS_S = PICK_ICON_TAL_H;
             let pickIcon: Node | null = null;
             if (o.type === 'talisman') {
                 pickIcon = spriteNode('icon_talisman_' + o.id, PICK_ICON_TAL_W, PICK_ICON_TAL_H, card);
             } else if (o.type === 'passive') {
                 pickIcon = spriteNode('icon_passive_' + o.id, PICK_ICON_PAS_S, PICK_ICON_PAS_S, card);
             }
-            if (pickIcon) pickIcon.setPosition(0, 20);
+            if (pickIcon) pickIcon.setPosition(0, 5);
 
             const tal = o.type === 'talisman' ? TALISMANS[o.id as TalismanId] : null;
             const el = tal && ELEMENT_NAME[tal.element] ? `【${ELEMENT_NAME[tal.element]}】` : '';
@@ -301,7 +302,8 @@ export class GameUI {
             tLab.horizontalAlign = Label.HorizontalAlign.CENTER;
             tLab.overflow = Label.Overflow.SHRINK;
             tLab.node.getComponent(UITransform).setContentSize(TEXT_W, 56);
-            tLab.node.setPosition(0, 110);
+            // 挂孔约在牌顶；标题下移避开孔，且不压图标顶（图标顶≈5+36）
+            tLab.node.setPosition(0, 78);
 
             const dLab = addLabel(card, o.desc, 18, '#DDD6C8');
             dLab.horizontalAlign = Label.HorizontalAlign.CENTER;
@@ -309,7 +311,8 @@ export class GameUI {
             dLab.overflow = Label.Overflow.RESIZE_HEIGHT;
             dLab.lineHeight = 24;
             dLab.node.getComponent(UITransform).setContentSize(TEXT_W, 0);
-            dLab.node.setPosition(0, pickIcon ? -70 : 10);
+            // 图标底≈5-36=-31；描述落在其下
+            dLab.node.setPosition(0, pickIcon ? -55 : 10);
 
             popIn(card, 0.22 + i * 0.06);
             breathe(card, 0.02, 2.0 + i * 0.3);
