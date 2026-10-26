@@ -6,7 +6,7 @@ import { loadAudio, AudioManager } from './core/AudioManager';
 
 const BG_ART = ['bg_level1_village', 'bg_level2_temple']; // 与 LEVELS 下标对应
 const BGM_BY_LEVEL = ['village', 'temple'] as const; // 与 LEVELS 下标对应
-const BG_ART_RATIO = 2340 / 1080;
+const BG_ART_RATIO = 1280 / 720; // W2 pads 720×1280 (9:16); was 2340/1080 for old art
 import { SkillSystem } from './game/SkillSystem';
 import { Combat } from './game/Combat';
 import { Spawner } from './game/Spawner';
