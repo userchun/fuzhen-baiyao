@@ -10,15 +10,20 @@ import { SkillSystem } from './SkillSystem';
 import { paintElement, drawHp } from './EnemyView';
 import { Feedback } from './Feedback';
 import { AudioManager } from '../core/AudioManager';
-import { FX, burst, flash, flashCombat, flashCastGlow } from './ParticleFX';
+import { FX, burst, flash, flashCombat, flashCastGlow, flashMotionHit } from './ParticleFX';
 import { hitPulse } from './Anim';
 import { FrameAnim, FrameClip } from './FrameAnim';
+import { hasMotionRef, MotionRefId, MOTION_REF_TINT } from './MotionRef';
 
 export interface Enemy {
     def: EnemyDef; node: Node; element: Element; diving: boolean;
     x: number; y: number; baseX: number;
     depth: number; // 2.5D 纵深：0=远(地平线) → 1=近(城墙)
     hp: number; maxHp: number; t: number; slow: number; freezeT: number; summonT: number; flashT: number;
+    /** U11：受击闪缩放包络上限（秒）；与 flashT 同步写入 */
+    flashMax: number;
+    /** U11：受击时降权 move 帧推进的剩余秒 */
+    hitReactT: number;
     /** T2：黑山虚弱窗剩余秒；>0 时临时取消 armor 减免 */
     weakT: number;
     alive: boolean;
@@ -112,8 +117,15 @@ export class Combat {
         heishan: { fps: 9, bobPx: 0, prefix: 'anim/boss_heishan/idle' }, // 6f idle；无 bob
         baigu: { fps: 9, bobPx: 0, prefix: 'anim/boss_baigu_metal/idle' }, // 默认金相；三相见 baiguPhaseClips
     };
-    /** 灯笼鬼死亡分裂 3f one-shot（非独立敌人类型；splitInto 仍为 foxfire） */
+    /** U11：常见怪受击 easing 名单（无 hit sheet；不改伤） */
+    private static readonly HIT_REACT_MOBS = new Set([
+        'paperman', 'foxfire', 'jiangshi', 'lantern', 'shuigui', 'tongjia',
+    ]);
+    /** U11：更僵、优先加长回弹 */
+    private static readonly HIT_REACT_STIFF = new Set(['jiangshi', 'tongjia']);
+    /** 灯笼鬼死亡分裂 3f one-shot（非独立敌人类型；splitInto 仍为 foxfire）；U9 骨架优先 death 帧 */
     private lanternSplitClip: FrameClip | null = null;
+    private lanternDeathClip: FrameClip | null = null;
     private splitFx: { node: Node; anim: FrameAnim; life: number }[] = [];
 
     constructor(layer: Node, private skills: SkillSystem, private fb: Feedback, private onKill: (e: Enemy) => void, private audio?: AudioManager) {
@@ -143,8 +155,10 @@ export class Combat {
             const clip = this.makeClip(`anim/boss_baigu_${el}/idle`, baiguFps, true);
             if (clip) this.baiguPhaseClips.set(el, clip);
         }
-        // 3f @12fps ≈ 0.25s burst；静态 enemy_lantern_split 作首帧/回退
+        // 3f @12fps ≈ 0.25s burst；静态 enemy_lantern_split 作首帧/回退（U9 未过：仍旧 3f）
         this.lanternSplitClip = this.makeClip('anim/enemy_lantern_split/move', 12, false);
+        // U9 骨架：Art 交付 anim/enemy_lantern/death_* 后自动优先；无帧则 null（不拉长 3f 冒充）
+        this.lanternDeathClip = this.makeClip('anim/enemy_lantern/death', 10, false);
         // ANIM-005：Boss hit 4f / death 5f oneshot（无帧则静态 fallback，不改数值）
         this.heishanHitClip = this.makeClip('anim/boss_heishan/hit', 10, false);
         this.heishanDeathClip = this.makeClip('anim/boss_heishan/death', 10, false);
@@ -267,6 +281,8 @@ export class Combat {
     playComboSheng(comboId: 'burn' | 'river', x: number, y: number): void {
         const c = Combat.COMBO_SHENG[comboId];
         if (!c) return;
+        // U10：combo_sheng 挂点闸（已接线则播；缺 ref 空放）
+        if (!hasMotionRef('combo_sheng')) return;
         burst(this.fxLayer, x, y, FX.combo(x, y, c.mother));
         burst(this.fxLayer, x, y, FX.combo(x, y, c.child));
         // base 加强；专属贴图按合击
@@ -305,7 +321,16 @@ export class Combat {
 
     /** 施法：播 cast once，结束回 idle；无帧则 noop。同步暖朱砂 cast_glow（跟 cast 帧）。T7 A：疾书≥1 提亮/缩短 glow。 */
     private playPlayerCast(): void {
-        flashCastGlow(this.fxLayer, this.playerX, GAME.playerY + 8, this.skills.passive('haste'));
+        const hasteLv = this.skills.passive('haste');
+        // U10：疾书起手挂 haste_cast 才播增强 glow；无疾书仍播基础施法光（非空放）
+        if (hasteLv >= 1) {
+            if (hasMotionRef('haste_cast')) {
+                flashCastGlow(this.fxLayer, this.playerX, GAME.playerY + 8, hasteLv);
+            }
+            // 残影 = Should / 等 Art，本轮不做
+        } else {
+            flashCastGlow(this.fxLayer, this.playerX, GAME.playerY + 8, 0);
+        }
         if (!this.playerAnim || !this.playerCast) return;
         this.playerAnim.play(this.playerCast, () => this.playPlayerIdle());
     }
@@ -325,7 +350,7 @@ export class Combat {
         }
         const e: Enemy = {
             def, node, element: def.element, diving: false, x, y, baseX: x, depth, hp: def.hp * this.hpMult, maxHp: def.hp * this.hpMult, t: 0, slow: 0, freezeT: 0,
-            summonT: def.summonInterval ?? 0, flashT: 0, weakT: 0, alive: true, dying: false,
+            summonT: def.summonInterval ?? 0, flashT: 0, flashMax: 0, hitReactT: 0, weakT: 0, alive: true, dying: false,
         };
         this.enemies.push(e);
         drawHp(e);
@@ -524,7 +549,7 @@ export class Combat {
                     hit.add(cur);
                     this.addFx(cur.x, cur.y, 35, 'fx:thunder');
                     burst(this.fxLayer, cur.x, cur.y, FX.thunder(cur.x, cur.y));
-                    this.hurt(cur, dmg, 'none', true, true); // T4 天雷
+                    this.hurt(cur, dmg, 'none', true, 'thunder_hit'); // U10 天雷挂点（伤不变）
                     cur = this.nearest(cur.x, cur.y, hit, 250);
                 }
             }
@@ -624,11 +649,12 @@ export class Combat {
                 this.audio?.playSfx(e.diving ? 'shuigui_dive_in' : 'shuigui_dive_out', 0.55);
             }
             setOpacity(e.node, e.diving ? 60 : e.freezeT > 0 ? 150 : 255);
-            // 命中闪一下：放大（叠加在纵深缩放之上）
+            // U11：受击闪包络（平滑峰值→回落，不糊轮廓）
             if (e.flashT > 0) e.flashT -= dt;
+            if (e.hitReactT > 0) e.hitReactT -= dt;
             if (e.weakT > 0) e.weakT -= dt;
             const weakPulse = e.weakT > 0 ? 1 + 0.06 * Math.sin(e.t * 14) : 1;
-            const sc = depthScale(e.depth) * (e.flashT > 0 ? 1.15 : 1) * weakPulse;
+            const sc = depthScale(e.depth) * this.hitFlashBoost(e) * weakPulse;
             e.node.setScale(sc, sc, 1);
             // T2：虚弱窗可读——略提亮；有 armor 且非虚弱时保持常态
             if (e.def.id === 'heishan' && e.weakT > 0) setOpacity(e.node, 230);
@@ -681,7 +707,9 @@ export class Combat {
                         this.enemyAnims.set(e.node, anim);
                     }
                 }
-                anim?.update(dt);
+                // U11：受击期间降权 move 帧，减轻 idle↔hit 硬切感
+                const animDt = e.hitReactT > 0 ? dt * 0.18 : dt;
+                anim?.update(animDt);
                 if (moveSpec.bobPx > 0) {
                     const art = e.node.getChildByName('art');
                     if (art) {
@@ -769,7 +797,7 @@ export class Combat {
             this.hurt(e, b.damage, b.kind === 'metal' ? 'metal' : 'none');
             if (--b.pierce < 0) b.alive = false;
         } else if (b.kind === 'water') {
-            this.hurt(e, b.damage, 'water', true, true); // T4 寒冰
+            this.hurt(e, b.damage, 'water', true, 'ice_hit'); // U10 寒冰挂点
             e.freezeT = Math.max(e.freezeT, 0.6);
             const next = b.bounces > 0 ? this.nearest(b.x, b.y, b.hit, 350) : null;
             if (!next) { b.alive = false; return; }
@@ -793,12 +821,44 @@ export class Combat {
         this.fb.shake(4, 0.1);
         for (const e of this.enemies) {
             if (e.alive && !e.dying && Math.hypot(e.x - b.x, e.y - b.y) < b.explodeR + e.def.radius * depthScale(e.depth)) {
-                this.hurt(e, b.damage, 'fire', true, true); // T4 烈焰
+                this.hurt(e, b.damage, 'fire', true, 'fire_hit'); // U10 烈焰挂点
             }
         }
     }
 
-    private hurt(e: Enemy, amount: number, el: Element, show = true, skillFeel = false): void {
+    /** U11：受击包络写入 + art 子节点 hitPulse（根节点 scale 仍由 flash 曲线驱动） */
+    private applyHitReact(e: Enemy): void {
+        const id = e.def.id;
+        const stiff = Combat.HIT_REACT_STIFF.has(id);
+        if (Combat.HIT_REACT_MOBS.has(id)) {
+            e.flashMax = stiff ? 0.28 : 0.2;
+            e.flashT = e.flashMax;
+            e.hitReactT = stiff ? 0.2 : 0.14;
+            const art = e.node.getChildByName('art');
+            if (art) hitPulse(art, stiff ? 1.1 : 1.08, stiff);
+        } else {
+            // Boss / 其他：短闪，保持原可读
+            e.flashMax = 0.12;
+            e.flashT = 0.12;
+            hitPulse(e.node, 1.12, false);
+        }
+    }
+
+    /** U11：flashT 平滑峰值→回落，替代二值 1.15 硬切 */
+    private hitFlashBoost(e: Enemy): number {
+        if (e.flashT <= 0 || e.flashMax <= 0) return 1;
+        const u = 1 - e.flashT / e.flashMax; // 0 起击 → 1 结束
+        const peak = Combat.HIT_REACT_STIFF.has(e.def.id) ? 1.16 : 1.13;
+        if (u < 0.32) {
+            const t = u / 0.32;
+            return 1 + (peak - 1) * Math.sin(t * Math.PI * 0.5);
+        }
+        const t = (u - 0.32) / 0.68;
+        const s = t * t * (3 - 2 * t); // smoothstep
+        return peak + (1 - peak) * s;
+    }
+
+    private hurt(e: Enemy, amount: number, el: Element, show = true, motionRef?: MotionRefId): void {
         if (!e.alive || e.diving || e.dying) return;
         const tier = elementTier(el, e.element);
         let dmg = amount * TIER_MULT[tier];
@@ -807,25 +867,41 @@ export class Combat {
         e.hp -= dmg;
         if (show) {
             this.fb.text(e.x, e.y + e.def.radius * depthScale(e.depth), dmg, tier);
-            e.flashT = 0.08;
-            hitPulse(e.node, 1.12);
-            // 命中火花 + 音效；P0 sprite flash（hit_seal/crit/resist/el）叠薄粒子层
             const py = e.y + e.def.radius * depthScale(e.depth);
-            const atkEl: Element = el === 'none' ? 'none' : el;
-            flashCombat(this.fxLayer, e.x, py, tier, atkEl);
-            if (tier === 'crit') {
-                burst(this.fxLayer, e.x, py, FX.crit(e.x, py, ELEMENT_COLOR[el === 'none' ? e.element : el]));
-                this.audio?.playSfx('crit', 0.8);
-            } else {
-                burst(this.fxLayer, e.x, py, FX.hit(e.x, py, '#FFFFFF'));
-                if (tier === 'resist') this.audio?.playSfx('resist', 0.6);
-                else if (!e.def.boss) this.audio?.playSfx('hit', 0.5); // A6 符纸·朱砂 — 非 Boss
+            // U11：常见怪受击包络（不改伤）；跳尸/铜甲更长
+            this.applyHitReact(e);
+            // U10：有 motion_ref 才播对应闪/停/叠色；无 ref 的普攻仍走通用层
+            if (motionRef && hasMotionRef(motionRef)) {
+                if (motionRef === 'ice_hit' || motionRef === 'fire_hit' || motionRef === 'thunder_hit') {
+                    flashMotionHit(this.fxLayer, e.x, py, motionRef, tier);
+                    const tint = MOTION_REF_TINT[motionRef];
+                    if (tier === 'crit') {
+                        burst(this.fxLayer, e.x, py, FX.crit(e.x, py, tint));
+                        this.audio?.playSfx('crit', 0.8);
+                    } else {
+                        if (motionRef === 'ice_hit') burst(this.fxLayer, e.x, py, FX.freeze(e.x, py));
+                        else if (motionRef === 'fire_hit') burst(this.fxLayer, e.x, py, FX.hit(e.x, py, tint));
+                        else burst(this.fxLayer, e.x, py, FX.thunder(e.x, py));
+                        if (tier === 'resist') this.audio?.playSfx('resist', 0.6);
+                        else if (!e.def.boss) this.audio?.playSfx('hit', 0.5);
+                    }
+                    this.fb.hitStop(0.06);
+                }
+            } else if (!motionRef) {
+                const atkEl: Element = el === 'none' ? 'none' : el;
+                flashCombat(this.fxLayer, e.x, py, tier, atkEl);
+                if (tier === 'crit') {
+                    burst(this.fxLayer, e.x, py, FX.crit(e.x, py, ELEMENT_COLOR[el === 'none' ? e.element : el]));
+                    this.audio?.playSfx('crit', 0.8);
+                } else {
+                    burst(this.fxLayer, e.x, py, FX.hit(e.x, py, '#FFFFFF'));
+                    if (tier === 'resist') this.audio?.playSfx('resist', 0.6);
+                    else if (!e.def.boss) this.audio?.playSfx('hit', 0.5); // A6 符纸·朱砂 — 非 Boss
+                }
             }
             // Boss 厚一档专属受击；小怪仍走 enemy_hurt。不双叠 generic hit。
             if (e.def.boss) this.playBossHurtSfx(e);
             else this.audio?.playSfx('enemy_hurt', 0.28);
-            // T4：寒冰/烈焰/天雷「有打到」——受击闪已有；再加 0.06s 命中停顿（伤害表不动）
-            if (skillFeel) this.fb.hitStop(0.06);
         }
         if (e.def.elite || e.def.boss) drawHp(e);
         if (e.hp <= 0) {
@@ -934,11 +1010,11 @@ export class Combat {
                 this.fb.shake(8, 0.2);
             }
         }
-        // 灯笼鬼：死亡播 3f 分裂体序列，再按原配置召唤 foxfire（不改 splitInto）
+        // 灯笼鬼：U9 骨架 playLanternDeath（有 death 帧才用；否则仍旧 3f split，不冒充过 U9）
         if (e.def.id === 'lantern') {
             const art = ENEMY_ART.lantern;
             const size = e.def.radius * 2 * (art?.scale ?? 2.75);
-            this.spawnLanternSplitFx(e.x, e.y, size);
+            this.playLanternDeath(e.x, e.y, size);
             // F 已封挂 lantern_split oneshot
             this.audio?.playSfx('lantern_split', 0.65);
         }
@@ -990,6 +1066,26 @@ export class Combat {
             if (d < bestD) { bestD = d; best = e; }
         }
         return best;
+    }
+
+    /**
+     * U9 骨架：优先 anim/enemy_lantern/death；无资产则回退 3f split（不拉长冒充 Pass）。
+     * 不改 splitInto / splitCount / HP。
+     */
+    private playLanternDeath(x: number, y: number, size: number): void {
+        if (this.lanternDeathClip && this.lanternDeathClip.frames.length >= 5) {
+            const n = spriteNode('enemy_lantern', size, size, this.fxLayer)
+                ?? spriteNode('enemy_lantern_split', size, size, this.fxLayer);
+            if (!n) return;
+            n.setPosition(x, y);
+            const anim = new FrameAnim(n);
+            const clip = this.lanternDeathClip;
+            const life = clip.frames.length / Math.max(1, clip.fps) + 0.05;
+            anim.play(clip);
+            this.splitFx.push({ node: n, anim, life });
+            return;
+        }
+        this.spawnLanternSplitFx(x, y, size);
     }
 
     private spawnLanternSplitFx(x: number, y: number, size: number): void {

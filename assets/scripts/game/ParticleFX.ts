@@ -156,6 +156,31 @@ export function flashCombat(parent: Node, x: number, y: number, tier: HitTier, e
     }
 }
 
+/**
+ * U10：按 motion_ref 挂点播命中闪（有调用方先 hasMotionRef）。
+ * ice=冷白偏青；fire=暖符火；thunder=符箓紫电（不走五行 el 表，避免 none 空闪）。
+ */
+export function flashMotionHit(parent: Node, x: number, y: number, ref: 'ice_hit' | 'fire_hit' | 'thunder_hit', tier: HitTier): void {
+    if (ref === 'ice_hit') {
+        flashCombat(parent, x, y, tier, 'water');
+        // 加一层偏青冷白微闪，勿脏灰
+        flash(parent, 'fx_el_water', x, y + 8, 0.28, { size: 52, startScale: 0.75, endScale: 1.1, startAlpha: 200 });
+    } else if (ref === 'fire_hit') {
+        flashCombat(parent, x, y, tier, 'fire');
+    } else {
+        // thunder_hit：封印底 + 紫电粒子感（无黄电贴图）
+        if (tier === 'crit') {
+            flash(parent, 'fx_crit', x, y, 0.42, { size: 72, startScale: 0.88, endScale: 1.28 });
+        } else if (tier === 'resist') {
+            flash(parent, 'fx_resist', x, y, 0.25, { size: 56, startScale: 1.0, endScale: 1.12 });
+        } else {
+            flash(parent, 'fx_hit_seal', x, y, 0.28, { size: 56, startScale: 0.92, endScale: 1.18 });
+        }
+        // 紫电叠层：复用 hit_seal 略放大 + 粒子由调用方 FX.thunder
+        flash(parent, 'fx_hit_seal', x, y + 6, 0.22, { size: 44, startScale: 0.85, endScale: 1.2, startAlpha: 180 });
+    }
+}
+
 /** 施法暖朱砂符光；跟 cast 帧（5f@12fps ≈ 0.42s）。T7：haste≥1 时略提亮、时长 −15%（数值 GROWTH 不动）。 */
 export function flashCastGlow(parent: Node, x: number, y: number, hasteLv = 0): void {
     if (hasteLv >= 1) {

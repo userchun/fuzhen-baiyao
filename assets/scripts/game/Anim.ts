@@ -14,13 +14,29 @@ export function breathe(node: Node, amplitude = 0.04, period = 1.6): Tween<Node>
         );
 }
 
-/** 受击闪缩：快速放大再回弹 */
-export function hitPulse(node: Node, scale = 1.15): void {
+/**
+ * 受击闪缩（U11）：分段 easing，避免单段硬切。
+ * stiff=true（跳尸/铜甲）略加长回弹，带轻微压扁再回正。
+ * 建议打在 art 子节点，避免与根节点 depthScale 互盖。
+ */
+export function hitPulse(node: Node, scale = 1.15, stiff = false): void {
+    if (!node?.isValid) return;
+    Tween.stopAllByTarget(node);
     const base = node.scale.x;
-    tween(node)
-        .to(0.08, { scale: new Vec3(base * scale, base * scale, 1) }, { easing: 'sineOut' })
-        .to(0.14, { scale: new Vec3(base, base, 1) }, { easing: 'sineInOut' })
-        .start();
+    const baseY = node.scale.y;
+    if (stiff) {
+        tween(node)
+            .to(0.06, { scale: new Vec3(base * scale, baseY * scale * 0.94, 1) }, { easing: 'quadOut' })
+            .to(0.12, { scale: new Vec3(base * (1 + (scale - 1) * 0.55), baseY * scale * 0.98, 1) }, { easing: 'sineOut' })
+            .to(0.18, { scale: new Vec3(base, baseY, 1) }, { easing: 'sineInOut' })
+            .start();
+    } else {
+        tween(node)
+            .to(0.07, { scale: new Vec3(base * scale, baseY * scale, 1) }, { easing: 'sineOut' })
+            .to(0.10, { scale: new Vec3(base * 0.985, baseY * 0.985, 1) }, { easing: 'sineInOut' })
+            .to(0.14, { scale: new Vec3(base, baseY, 1) }, { easing: 'sineInOut' })
+            .start();
+    }
 }
 
 /** 死亡消散：缩小 + 上浮，结束后回调 */
