@@ -261,12 +261,22 @@ export class GameUI {
         titleNode.node.setPosition(0, 420);
         popIn(titleNode.node, 0.3);
 
+        // T-FIX / TF1–TF3：三卡齐高；槽 = 标题行 → 固定图标框 → 描述区（不叠）
         const CARD_W = 200;
-        const CARD_H = 300; // 2:3
+        const CARD_H = 300; // 2:3 齐高
         const GAP = 18;
         const n = opts.length;
         const totalW = n * CARD_W + Math.max(0, n - 1) * GAP;
-        const TEXT_W = 160;
+        const TEXT_W = 168;
+        // 卡心坐标（原点中心）：顶≈+150 / 底≈-150；顶孔约 +120↑ — 标题避开
+        const TITLE_Y = 102;
+        const TITLE_H = 34;
+        const ICON_W = 48;
+        const ICON_H = 72;
+        const ICON_Y = 28; // 框中心；顶=64 底=-8，与标题底≈85 留缝
+        const DESC_TOP_Y = -18; // 描述顶锚，严格在图标底之下
+        const DESC_H = 118;
+        const titleColor = '#C45C4A'; // 朱砂标题（非满黄）
 
         opts.forEach((o, i) => {
             const x = -totalW / 2 + CARD_W / 2 + i * (CARD_W + GAP);
@@ -275,46 +285,65 @@ export class GameUI {
             if (!card) card = rectNode('card', CARD_W, CARD_H, '#2C2440', ov, 16);
             card.setPosition(x, y);
 
-            // 符咒：叠五行描边；passive/heal 仅底牌
+            // 符咒：叠五行描边；passive/heal 仅底牌（描边在底层，勿盖标题）
             if (o.type === 'talisman') {
                 const rarityKey = 'ui_card_rarity_' + o.id;
                 const edge = spriteNode(rarityKey, CARD_W, CARD_H, card);
                 if (edge) edge.setPosition(0, 0);
             }
 
-            // 卡心：优先无框 *_frameless（START B）；缺图回退旧 icon_*；HUD 栏仍用旧图
-            // 尺寸保持 HUD 比例：符 48×72、被动 72×72（同卡心高度）
-            const PICK_ICON_TAL_W = 48;
-            const PICK_ICON_TAL_H = 72;
-            const PICK_ICON_PAS_S = PICK_ICON_TAL_H;
-            let pickIcon: Node | null = null;
-            if (o.type === 'talisman') {
-                pickIcon = spriteNode('icon_talisman_' + o.id + '_frameless', PICK_ICON_TAL_W, PICK_ICON_TAL_H, card)
-                    ?? spriteNode('icon_talisman_' + o.id, PICK_ICON_TAL_W, PICK_ICON_TAL_H, card);
-            } else if (o.type === 'passive') {
-                pickIcon = spriteNode('icon_passive_' + o.id + '_frameless', PICK_ICON_PAS_S, PICK_ICON_PAS_S, card)
-                    ?? spriteNode('icon_passive_' + o.id, PICK_ICON_PAS_S, PICK_ICON_PAS_S, card);
-            }
-            if (pickIcon) pickIcon.setPosition(0, 5);
-
+            // —— 1) 标题行：剥「(新)/（新）」→ 右上小角标，避免顶孔红糊 ——
             const tal = o.type === 'talisman' ? TALISMANS[o.id as TalismanId] : null;
             const el = tal && ELEMENT_NAME[tal.element] ? `【${ELEMENT_NAME[tal.element]}】` : '';
-            const titleColor = '#C45C4A'; // 朱砂标题（非满黄）
-            const tLab = addLabel(card, el + o.title, 26, titleColor);
+            const isNew = /[（(]新[）)]/.test(o.title);
+            const rawTitle = o.title.replace(/[（(]新[）)]/g, '').trim();
+            const tLab = addLabel(card, el + rawTitle, 22, titleColor);
             tLab.horizontalAlign = Label.HorizontalAlign.CENTER;
+            tLab.verticalAlign = Label.VerticalAlign.CENTER;
             tLab.overflow = Label.Overflow.SHRINK;
-            tLab.node.getComponent(UITransform).setContentSize(TEXT_W, 56);
-            // 挂孔约在牌顶；标题下移避开孔，且不压图标顶（图标顶≈5+36）
-            tLab.node.setPosition(0, 78);
+            const tUt = tLab.node.getComponent(UITransform)!;
+            tUt.setContentSize(TEXT_W - 28, TITLE_H); // 右侧留角标
+            tUt.setAnchorPoint(0.5, 0.5);
+            tLab.node.setPosition(0, TITLE_Y);
 
-            const dLab = addLabel(card, o.desc, 18, '#DDD6C8');
+            if (isNew) {
+                const badge = addLabel(card, '新', 13, '#E8D5C4');
+                badge.horizontalAlign = Label.HorizontalAlign.CENTER;
+                badge.verticalAlign = Label.VerticalAlign.CENTER;
+                badge.overflow = Label.Overflow.NONE;
+                const bUt = badge.node.getComponent(UITransform)!;
+                bUt.setContentSize(22, 18);
+                bUt.setAnchorPoint(0.5, 0.5);
+                // 右上角小标，避开顶孔中心；浅字+细描边感，不铺红晕
+                badge.enableOutline = true;
+                badge.outlineColor = hex('#5A2A22');
+                badge.outlineWidth = 2;
+                badge.node.setPosition(78, 118);
+            }
+
+            // —— 2) 固定图标框（主动/被动同规格 48×72 槽；被动方图居中）——
+            // 优先无框 *_frameless；缺图回退旧 icon_*；本轮不换图
+            let pickIcon: Node | null = null;
+            if (o.type === 'talisman') {
+                pickIcon = spriteNode('icon_talisman_' + o.id + '_frameless', ICON_W, ICON_H, card)
+                    ?? spriteNode('icon_talisman_' + o.id, ICON_W, ICON_H, card);
+            } else if (o.type === 'passive') {
+                const s = Math.min(ICON_W, ICON_H); // 方图落在同高槽内居中
+                pickIcon = spriteNode('icon_passive_' + o.id + '_frameless', s, s, card)
+                    ?? spriteNode('icon_passive_' + o.id, s, s, card);
+            }
+            if (pickIcon) pickIcon.setPosition(0, ICON_Y);
+
+            // —— 3) 描述区：定宽换行，顶锚向下生长，包围盒不进图标 ——
+            const dLab = addLabel(card, o.desc, 16, '#DDD6C8');
             dLab.horizontalAlign = Label.HorizontalAlign.CENTER;
             dLab.verticalAlign = Label.VerticalAlign.TOP;
-            dLab.overflow = Label.Overflow.RESIZE_HEIGHT;
-            dLab.lineHeight = 24;
-            dLab.node.getComponent(UITransform).setContentSize(TEXT_W, 0);
-            // 图标底≈5-36=-31；描述落在其下
-            dLab.node.setPosition(0, pickIcon ? -55 : 10);
+            dLab.overflow = Label.Overflow.SHRINK; // 固定框内收缩，防长文案上涌压图标
+            dLab.lineHeight = 22;
+            const dUt = dLab.node.getComponent(UITransform)!;
+            dUt.setAnchorPoint(0.5, 1);
+            dUt.setContentSize(TEXT_W, DESC_H);
+            dLab.node.setPosition(0, DESC_TOP_Y);
 
             popIn(card, 0.22 + i * 0.06);
             breathe(card, 0.02, 2.0 + i * 0.3);
