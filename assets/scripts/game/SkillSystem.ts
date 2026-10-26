@@ -11,6 +11,11 @@ export interface Option {
 
 // 局内成长：灵气、等级、符咒、心法、五行合击
 export class SkillSystem {
+    /** 六符主动 id（T6 保底判定） */
+    private static readonly ACTIVE_TALISMAN_IDS = new Set<string>([
+        'metal', 'wood', 'water', 'fire', 'earth', 'thunder',
+    ]);
+
     talismans = new Map<TalismanId, TalismanState>();
     passives = new Map<string, number>();
     combos = new Set<string>();
@@ -18,9 +23,15 @@ export class SkillSystem {
     xp = 0;
     xpNeed = GAME.xpBase;
     pending = 0; // 待选择的升级次数
+    /** 本局第几次打开三选（含 L2 startPicks），从 0；T6 前两次保底用 */
+    pickIndex = 0;
 
     /** @param rng 随机源，测试时注入固定序列保证确定性 */
     constructor(private rng: () => number = Math.random) {}
+
+    private isActiveTalisman(opt: Option): boolean {
+        return opt.type === 'talisman' && SkillSystem.ACTIVE_TALISMAN_IDS.has(opt.id);
+    }
 
     addXp(v: number): void {
         this.xp += v;
@@ -77,6 +88,25 @@ export class SkillSystem {
         }
         const picked = pool.slice(0, n);
         if (picked.length === 0) picked.push({ type: 'heal', id: 'heal', title: '灵气回体', desc: '结界值回复 30' });
+
+        // T6：前 2 次三选（pickIndex 0/1）保底 ≥1 主动符；≥2 同现网
+        const idx = this.pickIndex++;
+        if (idx >= 2) return picked;
+        if (picked.some((o) => this.isActiveTalisman(o))) return picked;
+
+        const t = pool.slice(n).find((o) => this.isActiveTalisman(o));
+        if (!t) return picked; // 池枯竭：跳过保底
+
+        const nonActiveIdxs: number[] = [];
+        for (let i = 0; i < picked.length; i++) {
+            if (!this.isActiveTalisman(picked[i])) nonActiveIdxs.push(i);
+        }
+        if (nonActiveIdxs.length === 0) {
+            if (picked.length < n) picked.push(t);
+        } else {
+            const ri = nonActiveIdxs[Math.floor(this.rng() * nonActiveIdxs.length)];
+            picked[ri] = t;
+        }
         return picked;
     }
 
