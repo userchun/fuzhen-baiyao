@@ -10,7 +10,7 @@ import { SkillSystem } from './SkillSystem';
 import { paintElement, drawHp } from './EnemyView';
 import { Feedback } from './Feedback';
 import { AudioManager } from '../core/AudioManager';
-import { FX, burst, flash, flashCombat, flashCastGlow, flashMotionHit } from './ParticleFX';
+import { FX, burst, flash, flashCombat, flashCastGlow, flashHasteTrail, flashMotionHit } from './ParticleFX';
 import { hitPulse } from './Anim';
 import { FrameAnim, FrameClip } from './FrameAnim';
 import { hasMotionRef, MotionRefId, MOTION_REF_TINT } from './MotionRef';
@@ -335,8 +335,9 @@ export class Combat {
         if (hasteLv >= 1) {
             if (hasMotionRef('haste_cast')) {
                 flashCastGlow(this.fxLayer, px, py, hasteLv, glow);
+                // W5：疾书残影 strip（≥3f / ≤0.35s）；挂点 haste_cast；不改数值/CD、无额外 hitstop
+                flashHasteTrail(this.fxLayer, px, py + 6);
             }
-            // 残影 = Should / 等 Art，本轮不做
         } else {
             flashCastGlow(this.fxLayer, px, py, 0, glow);
             if (powerLv >= 1) {

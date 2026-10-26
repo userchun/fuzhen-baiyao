@@ -1,5 +1,5 @@
 import { Node, ParticleSystem2D, UITransform, Layers, Color, v2, Sprite, UIOpacity, tween, Vec3 } from 'cc';
-import { getFrame } from '../core/Art';
+import { getFrame, getFrames } from '../core/Art';
 import type { Element, HitTier } from '../config/GameConfig';
 
 // 粒子特效：统一用 ParticleSystem2D，共享一张白色径向圆点贴图（fx_dot.png），
@@ -196,6 +196,66 @@ export function flashCastGlow(parent: Node, x: number, y: number, hasteLv = 0, c
             size: 96, startScale: 0.72, endScale: 1.12, startAlpha: 230, color,
         });
     }
+}
+
+
+/** W5 疾书残影：strip ≥3 帧、总时长 ≤0.35s；青绿 #5FBF6A；无 hitstop。贴图缺则静默跳过。 */
+export function flashHasteTrail(parent: Node, x: number, y: number): void {
+    const frames = getFrames('fx_haste_trail');
+    if (frames.length < 3 || !parent?.isValid) return;
+
+    pruneFlashes();
+    while (activeFlashes.length >= MAX_SPRITE_FX) {
+        const old = activeFlashes.shift();
+        if (old?.isValid) old.destroy();
+    }
+
+    const nFrames = Math.min(frames.length, 4);
+    const total = 0.32; // ≤0.35s；4f ≈ 12.5fps
+    const step = total / nFrames;
+    // 条带单帧 256×576 → 显示约 72×162，不挡怪剪影
+    const sizeW = 72;
+    const sizeH = 162;
+
+    const n = makeNode('fx_haste_trail', parent);
+    n.setPosition(x, y);
+    n.setScale(1, 1, 1);
+    n.getComponent(UITransform)!.setContentSize(sizeW, sizeH);
+    const sp = n.addComponent(Sprite);
+    sp.sizeMode = Sprite.SizeMode.CUSTOM;
+    sp.spriteFrame = frames[0];
+    // strip 已绘青绿；白 tint 保色相，避免叠乘发脏
+    sp.color = Color.WHITE;
+    const op = n.addComponent(UIOpacity);
+    op.opacity = 230;
+    activeFlashes.push(n);
+
+    let i = 0;
+    const advance = () => {
+        if (!n.isValid) return;
+        i += 1;
+        if (i >= nFrames) {
+            const idx = activeFlashes.indexOf(n);
+            if (idx >= 0) activeFlashes.splice(idx, 1);
+            if (n.isValid) n.destroy();
+            return;
+        }
+        sp.spriteFrame = frames[i];
+        // 末帧略淡，消散感
+        op.opacity = i === nFrames - 1 ? 140 : 230;
+        tween(n)
+            .delay(step)
+            .call(advance)
+            .start();
+    };
+    tween(n)
+        .delay(step)
+        .call(advance)
+        .start();
+    // 整体微上漂，像施法拖尾
+    tween(n)
+        .to(total, { position: new Vec3(x, y + 14, 0) }, { easing: 'quadOut' })
+        .start();
 }
 
 // ---------- 各特效 ----------
