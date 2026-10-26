@@ -134,8 +134,9 @@ export const LEVEL1_WAVES: WaveDef[] = [
 
 // 第 2 关：古寺
 export const LEVEL2_WAVES: WaveDef[] = [
-    { time: 0, enemy: 'paperman', count: 15, interval: 0.6 },
-    { time: 10, enemy: 'shuigui', count: 8, interval: 1.0 },
+    // T8：前 2 波 interval ×1.10（0.6→0.66，1.0→1.10）；time/count/怪种不动
+    { time: 0, enemy: 'paperman', count: 15, interval: 0.66 },
+    { time: 10, enemy: 'shuigui', count: 8, interval: 1.1 },
     { time: 25, enemy: 'tongjia', count: 6, interval: 2.0 },
     { time: 35, enemy: 'foxfire', count: 15, interval: 0.5 },
     { time: 50, enemy: 'lantern', count: 2, interval: 5 },

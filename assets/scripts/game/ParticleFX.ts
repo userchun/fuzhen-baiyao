@@ -156,9 +156,15 @@ export function flashCombat(parent: Node, x: number, y: number, tier: HitTier, e
     }
 }
 
-/** 施法暖朱砂符光；跟 cast 帧（5f@12fps ≈ 0.42s） */
-export function flashCastGlow(parent: Node, x: number, y: number): void {
-    flash(parent, 'fx_player_cast_glow', x, y, 0.4, { size: 96, startScale: 0.72, endScale: 1.12, startAlpha: 230 });
+/** 施法暖朱砂符光；跟 cast 帧（5f@12fps ≈ 0.42s）。T7：haste≥1 时略提亮、时长 −15%（数值 GROWTH 不动）。 */
+export function flashCastGlow(parent: Node, x: number, y: number, hasteLv = 0): void {
+    if (hasteLv >= 1) {
+        flash(parent, 'fx_player_cast_glow', x, y, 0.4 * 0.85, {
+            size: 104, startScale: 0.78, endScale: 1.2, startAlpha: 255,
+        });
+    } else {
+        flash(parent, 'fx_player_cast_glow', x, y, 0.4, { size: 96, startScale: 0.72, endScale: 1.12, startAlpha: 230 });
+    }
 }
 
 // ---------- 各特效 ----------

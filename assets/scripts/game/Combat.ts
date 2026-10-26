@@ -303,9 +303,9 @@ export class Combat {
         this.playerAnim.play(this.playerIdle);
     }
 
-    /** 施法：播 cast once，结束回 idle；无帧则 noop。同步暖朱砂 cast_glow（跟 cast 帧）。 */
+    /** 施法：播 cast once，结束回 idle；无帧则 noop。同步暖朱砂 cast_glow（跟 cast 帧）。T7 A：疾书≥1 提亮/缩短 glow。 */
     private playPlayerCast(): void {
-        flashCastGlow(this.fxLayer, this.playerX, GAME.playerY + 8);
+        flashCastGlow(this.fxLayer, this.playerX, GAME.playerY + 8, this.skills.passive('haste'));
         if (!this.playerAnim || !this.playerCast) return;
         this.playerAnim.play(this.playerCast, () => this.playPlayerIdle());
     }
