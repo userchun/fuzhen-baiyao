@@ -282,6 +282,18 @@ export class GameUI {
                 if (edge) edge.setPosition(0, 0);
             }
 
+            // 卡心符面/心法图标（复用左侧技能栏同套 icon_*；heal 无图）
+            const PICK_ICON_TAL_W = 80;
+            const PICK_ICON_TAL_H = 120; // 素材 128×192 → 2:3
+            const PICK_ICON_PAS_S = 88;
+            let pickIcon: Node | null = null;
+            if (o.type === 'talisman') {
+                pickIcon = spriteNode('icon_talisman_' + o.id, PICK_ICON_TAL_W, PICK_ICON_TAL_H, card);
+            } else if (o.type === 'passive') {
+                pickIcon = spriteNode('icon_passive_' + o.id, PICK_ICON_PAS_S, PICK_ICON_PAS_S, card);
+            }
+            if (pickIcon) pickIcon.setPosition(0, 20);
+
             const tal = o.type === 'talisman' ? TALISMANS[o.id as TalismanId] : null;
             const el = tal && ELEMENT_NAME[tal.element] ? `【${ELEMENT_NAME[tal.element]}】` : '';
             const titleColor = '#C45C4A'; // 朱砂标题（非满黄）
@@ -289,7 +301,7 @@ export class GameUI {
             tLab.horizontalAlign = Label.HorizontalAlign.CENTER;
             tLab.overflow = Label.Overflow.SHRINK;
             tLab.node.getComponent(UITransform).setContentSize(TEXT_W, 56);
-            tLab.node.setPosition(0, 90);
+            tLab.node.setPosition(0, 110);
 
             const dLab = addLabel(card, o.desc, 18, '#DDD6C8');
             dLab.horizontalAlign = Label.HorizontalAlign.CENTER;
@@ -297,7 +309,7 @@ export class GameUI {
             dLab.overflow = Label.Overflow.RESIZE_HEIGHT;
             dLab.lineHeight = 24;
             dLab.node.getComponent(UITransform).setContentSize(TEXT_W, 0);
-            dLab.node.setPosition(0, 10);
+            dLab.node.setPosition(0, pickIcon ? -70 : 10);
 
             popIn(card, 0.22 + i * 0.06);
             breathe(card, 0.02, 2.0 + i * 0.3);
