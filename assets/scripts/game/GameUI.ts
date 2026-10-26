@@ -271,14 +271,14 @@ export class GameUI {
         const totalW = n * CARD_W + Math.max(0, n - 1) * GAP;
         const TEXT_W = 180; // CARD_W - 20
         // 卡心坐标（原点中心）：顶≈+150 / 底≈-150；标题/角标须落在安全区内
-        const TITLE_Y = 131; // 顶≈141 < 150-8，长题全进卡内
-        const TITLE_H = 20;
-        // 竖纸源 256×384 → 显示约 160×228（~2:3），侧边距 ~20px，符面主导卡面
-        const ICON_W = 160;
-        const ICON_H = 228;
-        const ICON_Y = 10; // 略偏上；顶≈124 底≈-104，与标题底≈121 留缝
-        const DESC_TOP_Y = -108; // 描述顶锚，紧贴图标底之下
-        const DESC_H = 36; // 两行带
+        const TITLE_Y = 128; // 顶≈139 < 150-8，长题全进卡内
+        const TITLE_H = 22;
+        // CD/CoS 槽锁：宽 70–80%、高 55–65% 卡面 → 156×192（78%×64%）
+        const ICON_W = 156;
+        const ICON_H = 192;
+        const ICON_Y = 14; // 顶≈110 底≈-82，与标题底≈117 / 描述顶留缝
+        const DESC_TOP_Y = -86; // 描述顶锚，紧贴图标底之下
+        const DESC_H = 40; // 两行带
         const titleColor = '#C45C4A'; // 朱砂标题（非满黄）
 
         opts.forEach((o, i) => {
@@ -321,10 +321,10 @@ export class GameUI {
                 badge.enableOutline = true;
                 badge.outlineColor = hex('#5A2A22');
                 badge.outlineWidth = 2;
-                badge.node.setPosition(84, 134);
+                badge.node.setPosition(84, 132);
             }
 
-            // —— 2) 大图标槽（主动/被动同规格 ~160×220 竖纸；被动方图居中）——
+            // —— 2) 大图标槽（主动/被动同规格 ~156×192 竖纸；被动方图居中）——
             // 优先无框 *_frameless；缺图回退旧 icon_*
             let pickIcon: Node | null = null;
             if (o.type === 'talisman') {
