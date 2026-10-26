@@ -70,7 +70,8 @@ export class GameRoot extends Component {
             if (this.state !== 'play') return;
             if (mode === 'move') {
                 const lim = GAME.width / 2 - 40;
-                this.combat.playerX = Math.max(-lim, Math.min(lim, this.combat.playerX + e.getUIDelta().x));
+                // 缓动目标；实位由 Combat.update exp-smooth 追赶
+                this.combat.playerTargetX = Math.max(-lim, Math.min(lim, this.combat.playerTargetX + e.getUIDelta().x));
             } else if (mode === 'aim') {
                 const p = toLocal(e);
                 this.combat.setAim(p.x, p.y, true);

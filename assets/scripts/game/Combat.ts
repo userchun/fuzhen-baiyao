@@ -19,6 +19,8 @@ export interface Enemy {
     x: number; y: number; baseX: number;
     depth: number; // 2.5D 纵深：0=远(地平线) → 1=近(城墙)
     hp: number; maxHp: number; t: number; slow: number; freezeT: number; summonT: number; flashT: number;
+    /** T2：黑山虚弱窗剩余秒；>0 时临时取消 armor 减免 */
+    weakT: number;
     alive: boolean;
     /** Boss death oneshot in progress; blocks hurt/move; settle deferred to anim onDone */
     dying: boolean;
@@ -47,6 +49,8 @@ const PLAYER_ART_SIZE = 88; // 小道士图片显示边长（原圆章直径 64�
 export class Combat {
     enemies: Enemy[] = [];
     playerX = 0;
+    /** 位移目标 X；实位 playerX 每帧缓动跟上（sine/exp 平滑，避免拖动硬切） */
+    playerTargetX = 0;
     wallHp = GAME.wallHp;
     kills = 0;
     bossDead = false;
@@ -274,6 +278,9 @@ export class Combat {
             flash(this.fxLayer, 'fx_combo_sheng_river', x, y, 0.42, { size: 88, startScale: 0.85, endScale: 1.22 });
         }
         this.audio?.playSfxPrefer('combo_sheng', 'combo', 0.8);
+        // T5：屏中一字，补可读（E FX 已有；再叠字避免漏感）
+        const glyph = comboId === 'burn' ? '焚' : '河';
+        this.fb.announce(glyph, x, y + 36, 56, comboId === 'burn' ? '#F06A4A' : '#5AB4F0');
     }
 
     private resumeBossIdle(e: Enemy): void {
@@ -318,7 +325,7 @@ export class Combat {
         }
         const e: Enemy = {
             def, node, element: def.element, diving: false, x, y, baseX: x, depth, hp: def.hp * this.hpMult, maxHp: def.hp * this.hpMult, t: 0, slow: 0, freezeT: 0,
-            summonT: def.summonInterval ?? 0, flashT: 0, alive: true, dying: false,
+            summonT: def.summonInterval ?? 0, flashT: 0, weakT: 0, alive: true, dying: false,
         };
         this.enemies.push(e);
         drawHp(e);
@@ -365,6 +372,9 @@ export class Combat {
             if (t) this.manualShot(t.x, t.y, BASE_ATTACK.autoCd);
         }
         this.wallHp = Math.min(GAME.wallHp, this.wallHp + this.skills.regen * dt);
+        // 位移缓动：exp 平滑追 playerTargetX（≈sineOut 起步/刹停，无线性硬切）
+        const moveK = 1 - Math.exp(-14 * dt);
+        this.playerX += (this.playerTargetX - this.playerX) * moveK;
         this.player.setPosition(this.playerX, GAME.playerY);
         this.playerAnim?.update(dt);
         this.castAll(dt);
@@ -514,7 +524,7 @@ export class Combat {
                     hit.add(cur);
                     this.addFx(cur.x, cur.y, 35, 'fx:thunder');
                     burst(this.fxLayer, cur.x, cur.y, FX.thunder(cur.x, cur.y));
-                    this.hurt(cur, dmg, 'none');
+                    this.hurt(cur, dmg, 'none', true, true); // T4 天雷
                     cur = this.nearest(cur.x, cur.y, hit, 250);
                 }
             }
@@ -546,6 +556,11 @@ export class Combat {
             key, node, x, y, r, life, alive: true,
             dps: burn ? dps * 3 : dps, slow: burn ? 0.3 : 0.5, el: burn ? 'fire' : 'wood',
         });
+        // T5 漏挂：焚林落区时若节流空闲立刻闪一次（不改 ×3）
+        if (burn && this.burnShengT <= 0) {
+            this.burnShengT = 0.5;
+            this.playComboSheng('burn', x, y);
+        }
     }
 
     // ---------- 更新 ----------
@@ -588,7 +603,10 @@ export class Combat {
                 const sp = d.speed * (1 - e.slow);
                 const rate = sp / lanePixels(); // px/s → depth/s
                 if (d.move === 'hop') {
-                    if (e.t % 1.2 < 0.4) e.depth += rate * 3 * dt;
+                    // 缓动：正弦包络替代硬切窗口，起步/落地更顺
+                    const phase = (e.t % 1.2) / 1.2;
+                    const hopEnv = phase < 0.45 ? Math.sin((phase / 0.45) * Math.PI) : 0;
+                    e.depth += rate * (0.35 + 2.4 * hopEnv) * dt;
                 } else if (d.move === 'sine') {
                     e.depth += rate * dt;
                     e.x = e.baseX + Math.sin(e.t * 3) * 80;
@@ -608,8 +626,12 @@ export class Combat {
             setOpacity(e.node, e.diving ? 60 : e.freezeT > 0 ? 150 : 255);
             // 命中闪一下：放大（叠加在纵深缩放之上）
             if (e.flashT > 0) e.flashT -= dt;
-            const sc = depthScale(e.depth) * (e.flashT > 0 ? 1.15 : 1);
+            if (e.weakT > 0) e.weakT -= dt;
+            const weakPulse = e.weakT > 0 ? 1 + 0.06 * Math.sin(e.t * 14) : 1;
+            const sc = depthScale(e.depth) * (e.flashT > 0 ? 1.15 : 1) * weakPulse;
             e.node.setScale(sc, sc, 1);
+            // T2：虚弱窗可读——略提亮；有 armor 且非虚弱时保持常态
+            if (e.def.id === 'heishan' && e.weakT > 0) setOpacity(e.node, 230);
 
             if (d.summon) {
                 e.summonT -= dt;
@@ -617,6 +639,15 @@ export class Combat {
                     e.summonT = d.summonInterval;
                     for (let i = 0; i < (d.summonCount ?? 1); i++) {
                         this.spawnEnemy(d.summon, e.x + (i % 2 ? 1 : -1) * (d.radius + 30), e.depth);
+                    }
+                    // T2：召唤后岩裂虚弱窗（UI 字 + 闪），HP 不动
+                    if (e.def.id === 'heishan') {
+                        e.weakT = 2.8;
+                        const py = e.y + e.def.radius * depthScale(e.depth);
+                        this.fb.announce('岩裂·虚弱', e.x, py + 20, 40, '#FFE08A');
+                        flash(this.fxLayer, 'fx_hit_seal', e.x, py, 0.45, { size: 96, startScale: 0.8, endScale: 1.25, startAlpha: 220 });
+                        this.fb.hitStop(0.08);
+                        this.fb.shake(8, 0.25);
                     }
                 }
             }
@@ -738,7 +769,7 @@ export class Combat {
             this.hurt(e, b.damage, b.kind === 'metal' ? 'metal' : 'none');
             if (--b.pierce < 0) b.alive = false;
         } else if (b.kind === 'water') {
-            this.hurt(e, b.damage, 'water');
+            this.hurt(e, b.damage, 'water', true, true); // T4 寒冰
             e.freezeT = Math.max(e.freezeT, 0.6);
             const next = b.bounces > 0 ? this.nearest(b.x, b.y, b.hit, 350) : null;
             if (!next) { b.alive = false; return; }
@@ -762,16 +793,17 @@ export class Combat {
         this.fb.shake(4, 0.1);
         for (const e of this.enemies) {
             if (e.alive && !e.dying && Math.hypot(e.x - b.x, e.y - b.y) < b.explodeR + e.def.radius * depthScale(e.depth)) {
-                this.hurt(e, b.damage, 'fire');
+                this.hurt(e, b.damage, 'fire', true, true); // T4 烈焰
             }
         }
     }
 
-    private hurt(e: Enemy, amount: number, el: Element, show = true): void {
+    private hurt(e: Enemy, amount: number, el: Element, show = true, skillFeel = false): void {
         if (!e.alive || e.diving || e.dying) return;
         const tier = elementTier(el, e.element);
         let dmg = amount * TIER_MULT[tier];
-        if (show && e.def.armor) dmg = Math.max(MIN_HIT_DAMAGE, dmg - e.def.armor);
+        // T2：虚弱窗内不吃 armor；窗外照常减免
+        if (show && e.def.armor && e.weakT <= 0) dmg = Math.max(MIN_HIT_DAMAGE, dmg - e.def.armor);
         e.hp -= dmg;
         if (show) {
             this.fb.text(e.x, e.y + e.def.radius * depthScale(e.depth), dmg, tier);
@@ -792,13 +824,55 @@ export class Combat {
             // Boss 厚一档专属受击；小怪仍走 enemy_hurt。不双叠 generic hit。
             if (e.def.boss) this.playBossHurtSfx(e);
             else this.audio?.playSfx('enemy_hurt', 0.28);
+            // T4：寒冰/烈焰/天雷「有打到」——受击闪已有；再加 0.06s 命中停顿（伤害表不动）
+            if (skillFeel) this.fb.hitStop(0.06);
         }
         if (e.def.elite || e.def.boss) drawHp(e);
-        if (e.hp <= 0) this.kill(e);
-        else {
+        if (e.hp <= 0) {
+            // T3：白骨中相倒地 = 转阶段，禁止进 D settle；仅终相可 kill→bossDead
+            if (e.def.phases && e.def.phases.length > 1) {
+                const ph = e.def.phases;
+                let idx = ph.indexOf(e.element);
+                if (idx < 0) idx = Math.min(ph.length - 1, Math.floor((1 - Math.max(e.hp + dmg, 0) / e.maxHp) * ph.length));
+                if (idx < ph.length - 1) {
+                    this.forcePhaseAdvance(e, idx + 1);
+                    return;
+                }
+            }
+            this.kill(e);
+        } else {
             if (e.def.phases) this.checkPhase(e); // G2：中相换相≠settle；先换相再 hit
             if (e.def.boss) this.playBossHit(e); // B0：受伤→当前相 hit
         }
+    }
+
+    /** T3：中相 HP 归零 → 强制进下一相并回填该相血段，绝不 bossDead */
+    private forcePhaseAdvance(e: Enemy, nextIdx: number): void {
+        const ph = e.def.phases;
+        if (!ph || nextIdx < 0 || nextIdx >= ph.length) return;
+        e.dying = false;
+        e.alive = true;
+        // 回填到下一相血段顶部（略减 1 避免边界抖动）
+        e.hp = Math.max(1, e.maxHp * (ph.length - nextIdx) / ph.length - 1);
+        e.element = ph[nextIdx];
+        paintElement(e.node, e.def, e.element);
+        if (e.def.id === 'baigu') {
+            this.playBaiguPhaseIdle(e.node, e.element);
+            const phaseKey = ({
+                metal: 'baigu_phase_metal',
+                water: 'baigu_phase_water',
+                fire: 'baigu_phase_fire',
+            } as const)[e.element as 'metal' | 'water' | 'fire'];
+            if (phaseKey) this.audio?.playSfx(phaseKey, 0.7);
+        }
+        drawHp(e);
+        this.fb.announce(ELEMENT_NAME[e.element] ? `${ELEMENT_NAME[e.element]}相` : '转相', e.x, e.y + e.def.radius * depthScale(e.depth) + 24, 42, '#E8E0F0');
+        this.fb.shake(14, 0.4);
+        this.fb.hitStop(0.15);
+        for (let i = 0; i < 4; i++) {
+            this.spawnEnemy(e.def.summon ?? 'paperman', e.x + (i - 1.5) * 60, e.depth);
+        }
+        if (e.def.boss) this.playBossHit(e);
     }
 
     // Boss 按血量切换属性，切换时召唤一批小怪

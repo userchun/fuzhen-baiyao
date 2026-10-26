@@ -42,6 +42,20 @@ export class Feedback {
         this.hitStopT = Math.max(this.hitStopT, time);
     }
 
+    /** T2/T5：屏中可读大字（虚弱窗 / 相生一字），自动上浮淡出 */
+    announce(text: string, x = 0, y = 180, size = 48, color = '#FFD700'): void {
+        if (this.texts.length >= MAX_TEXTS) return;
+        const label = this.free.pop() ?? this.createLabel();
+        label.node.active = true;
+        label.string = text;
+        label.fontSize = size;
+        label.lineHeight = size + 8;
+        label.color = hex(color);
+        label.node.setPosition(x, y);
+        setOpacity(label.node, 255);
+        this.texts.push({ label, life: 1.0 });
+    }
+
     update(dt: number): void {
         this.texts = this.texts.filter((t) => {
             t.life -= dt;

@@ -18,8 +18,8 @@ export function breathe(node: Node, amplitude = 0.04, period = 1.6): Tween<Node>
 export function hitPulse(node: Node, scale = 1.15): void {
     const base = node.scale.x;
     tween(node)
-        .to(0.06, { scale: new Vec3(base * scale, base * scale, 1) }, { easing: 'quadOut' })
-        .to(0.12, { scale: new Vec3(base, base, 1) }, { easing: 'quadIn' })
+        .to(0.08, { scale: new Vec3(base * scale, base * scale, 1) }, { easing: 'sineOut' })
+        .to(0.14, { scale: new Vec3(base, base, 1) }, { easing: 'sineInOut' })
         .start();
 }
 
@@ -40,10 +40,10 @@ export function popIn(node: Node, dur = 0.25): void {
 }
 
 /** 浮起上移（飘字/提示用） */
-export function floatUp(node: Node, dy = 60, dur = 0.5): void {
+export function floatUp(node: Node, dy = 60, dur = 0.55): void {
     const p = node.position;
     tween(node)
-        .to(dur, { position: new Vec3(p.x, p.y + dy, 0) }, { easing: 'quadOut' })
+        .to(dur, { position: new Vec3(p.x, p.y + dy, 0) }, { easing: 'sineOut' })
         .start();
 }
 

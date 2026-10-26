@@ -101,6 +101,7 @@ export const ENEMIES: Record<string, EnemyDef> = {
     heishan: {
         id: 'heishan', name: '黑山老妖', char: '山', element: 'earth', hp: 2600, speed: 22, radius: 80, damage: 15, xp: 0,
         move: 'straight', boss: true, summon: 'jiangshi', summonCount: 2, summonInterval: 5,
+        armor: 10, // T2：常态岩甲；虚弱窗内 Combat 临时取消减免（不砍 Boss HP）
     },
     // ---- 第二章 · 古寺 ----
     tongjia: { id: 'tongjia', name: '铜甲尸', char: '铜', element: 'metal', hp: 240, speed: 45, radius: 32, damage: 15, xp: 3, move: 'straight', armor: 5 },
@@ -116,8 +117,9 @@ export interface WaveDef { time: number; enemy: string; count: number; interval:
 
 // 第 1 关：荒村
 export const LEVEL1_WAVES: WaveDef[] = [
-    { time: 0, enemy: 'paperman', count: 10, interval: 1.0 },
-    { time: 15, enemy: 'foxfire', count: 8, interval: 1.2 },
+    // T1：前 2 波间隔 +18%，缓开场墙压（不改 Boss HP / 全局移速）
+    { time: 0, enemy: 'paperman', count: 10, interval: 1.18 },
+    { time: 15, enemy: 'foxfire', count: 8, interval: 1.42 },
     { time: 25, enemy: 'paperman', count: 30, interval: 0.4 },
     { time: 45, enemy: 'jiangshi', count: 8, interval: 1.5 },
     { time: 60, enemy: 'lantern', count: 1, interval: 0 },
