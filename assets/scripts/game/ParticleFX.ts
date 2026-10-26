@@ -87,6 +87,8 @@ export interface FlashOpts {
     endScale?: number;
     startAlpha?: number;
     endAlpha?: number;
+    /** Sprite.color 色调（施法/爆炸按技能色族） */
+    color?: string;
 }
 
 function pruneFlashes(): void {
@@ -119,6 +121,7 @@ export function flash(parent: Node, key: string, x: number, y: number, duration:
     const sp = n.addComponent(Sprite);
     sp.sizeMode = Sprite.SizeMode.CUSTOM;
     sp.spriteFrame = sf;
+    if (opts?.color) sp.color = toColor(opts.color);
     const op = n.addComponent(UIOpacity);
     op.opacity = startAlpha;
     activeFlashes.push(n);
@@ -181,14 +184,17 @@ export function flashMotionHit(parent: Node, x: number, y: number, ref: 'ice_hit
     }
 }
 
-/** 施法暖朱砂符光；跟 cast 帧（5f@12fps ≈ 0.42s）。T7：haste≥1 时略提亮、时长 −15%（数值 GROWTH 不动）。 */
-export function flashCastGlow(parent: Node, x: number, y: number, hasteLv = 0): void {
+/** 施法符光；跟 cast 帧（5f@12fps ≈ 0.42s）。T7：haste≥1 时略提亮、时长 −15%（数值 GROWTH 不动）。
+ *  color：技能色族 tint（疾书青绿 / 朱砂朱红 / 五行施放色）；缺省暖朱砂。 */
+export function flashCastGlow(parent: Node, x: number, y: number, hasteLv = 0, color = '#E23B3B'): void {
     if (hasteLv >= 1) {
         flash(parent, 'fx_player_cast_glow', x, y, 0.4 * 0.85, {
-            size: 104, startScale: 0.78, endScale: 1.2, startAlpha: 255,
+            size: 104, startScale: 0.78, endScale: 1.2, startAlpha: 255, color,
         });
     } else {
-        flash(parent, 'fx_player_cast_glow', x, y, 0.4, { size: 96, startScale: 0.72, endScale: 1.12, startAlpha: 230 });
+        flash(parent, 'fx_player_cast_glow', x, y, 0.4, {
+            size: 96, startScale: 0.72, endScale: 1.12, startAlpha: 230, color,
+        });
     }
 }
 
@@ -201,8 +207,16 @@ export const FX = {
     crit(x: number, y: number, color: string): FxSpec {
         return { count: 14, duration: 0.3, life: 0.28, speed: 180, speedVar: 80, angle: 90, angleVar: 360, size: 11, sizeVar: 5, gravity: 50, color };
     },
-    explode(x: number, y: number, r: number): FxSpec {
-        return { count: 24, duration: 0.4, life: 0.35, speed: r * 3, speedVar: r, angle: 90, angleVar: 360, size: 12, sizeVar: 6, gravity: 30, color: '#F06A4A' };
+    explode(x: number, y: number, r: number, color = '#F06A4A'): FxSpec {
+        return { count: 24, duration: 0.4, life: 0.35, speed: r * 3, speedVar: r, angle: 90, angleVar: 360, size: 12, sizeVar: 6, gravity: 30, color };
+    },
+    /** 分符金尘裂（无独立爆炸时挂在施放点） */
+    goldDust(x: number, y: number): FxSpec {
+        return { count: 18, duration: 0.35, life: 0.28, speed: 120, speedVar: 50, angle: 90, angleVar: 360, size: 7, sizeVar: 3, gravity: 40, color: '#D4A84B' };
+    },
+    /** 朱砂朱红脉冲（无焰形；与烈焰暖橙爆区分） */
+    powerPulse(x: number, y: number): FxSpec {
+        return { count: 14, duration: 0.3, life: 0.25, speed: 90, speedVar: 40, angle: 90, angleVar: 360, size: 8, sizeVar: 3, gravity: 20, color: '#E23B3B' };
     },
     freeze(x: number, y: number): FxSpec {
         return { count: 16, duration: 0.35, life: 0.3, speed: 100, speedVar: 40, angle: 90, angleVar: 360, size: 6, sizeVar: 3, gravity: 20, color: '#5AB4F0' };

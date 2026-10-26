@@ -28,6 +28,6 @@ export const MOTION_REF_TINT: Record<MotionRefId, string> = {
     ice_hit: '#D8F4FF',      // 冷白偏青
     fire_hit: '#F06A4A',     // 暖符火
     thunder_hit: '#B48CFF',  // 符箓紫电（忌黄电）
-    haste_cast: '#FFB347',   // 暖符火提亮
+    haste_cast: '#3DB8A0',   // 疾书青绿（CD 色相）
     combo_sheng: '#E8E0F0',  // 跟既有焚/河，不另漂
 };

@@ -319,17 +319,32 @@ export class Combat {
         this.playerAnim.play(this.playerIdle);
     }
 
-    /** 施法：播 cast once，结束回 idle；无帧则 noop。同步暖朱砂 cast_glow（跟 cast 帧）。T7 A：疾书≥1 提亮/缩短 glow。 */
-    private playPlayerCast(): void {
+    /**
+     * 施法：播 cast once，结束回 idle；无帧则 noop。
+     * castColor：技能色族（缺省朱砂 #E23B3B）；疾书≥1 强制青绿 #3DB8A0。
+     * 分符≥1 时挂金尘裂；朱砂≥1 且无疾书时叠朱红脉冲（无焰形）。
+     */
+    private playPlayerCast(castColor = '#E23B3B'): void {
         const hasteLv = this.skills.passive('haste');
-        // U10：疾书起手挂 haste_cast 才播增强 glow；无疾书仍播基础施法光（非空放）
+        const powerLv = this.skills.passive('power');
+        const multiLv = this.skills.passive('multi');
+        const px = this.playerX;
+        const py = GAME.playerY + 8;
+        // 色优先：疾书青绿 > 调用方技能色 > 朱砂朱红
+        const glow = hasteLv >= 1 ? '#3DB8A0' : castColor;
         if (hasteLv >= 1) {
             if (hasMotionRef('haste_cast')) {
-                flashCastGlow(this.fxLayer, this.playerX, GAME.playerY + 8, hasteLv);
+                flashCastGlow(this.fxLayer, px, py, hasteLv, glow);
             }
             // 残影 = Should / 等 Art，本轮不做
         } else {
-            flashCastGlow(this.fxLayer, this.playerX, GAME.playerY + 8, 0);
+            flashCastGlow(this.fxLayer, px, py, 0, glow);
+            if (powerLv >= 1) {
+                burst(this.fxLayer, px, py, FX.powerPulse(px, py));
+            }
+        }
+        if (multiLv >= 1) {
+            burst(this.fxLayer, px, py, FX.goldDust(px, py));
         }
         if (!this.playerAnim || !this.playerCast) return;
         this.playerAnim.play(this.playerCast, () => this.playPlayerIdle());
@@ -485,7 +500,9 @@ export class Combat {
         const count = 1 + s.extra;
         const ox = this.playerX;
         const oy = GAME.playerY + 30;
-        this.playPlayerCast();
+        // 施放光跟技能色族（雷无五行 → 紫电；其余走 ELEMENT_COLOR）
+        const skillGlow = id === 'thunder' ? '#B48CFF' : (ELEMENT_COLOR[id as Element] ?? '#E23B3B');
+        this.playPlayerCast(skillGlow);
 
         if (id === 'metal') {
             const base = this.aimAngle(ox, oy);
@@ -816,7 +833,9 @@ export class Combat {
 
     private explode(b: Bullet): void {
         this.addFx(b.x, b.y, b.explodeR);
-        burst(this.fxLayer, b.x, b.y, FX.explode(b.x, b.y, b.explodeR));
+        // 烈焰暖橙红爆（跟色相表；与朱砂纯朱红脉冲区分）
+        const boom = b.kind === 'fire' ? ELEMENT_COLOR.fire : (ELEMENT_COLOR[b.kind as Element] ?? ELEMENT_COLOR.fire);
+        burst(this.fxLayer, b.x, b.y, FX.explode(b.x, b.y, b.explodeR, boom));
         this.audio?.playSfx('explode', 0.7);
         this.fb.shake(4, 0.1);
         for (const e of this.enemies) {

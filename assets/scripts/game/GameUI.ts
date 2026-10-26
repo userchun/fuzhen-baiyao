@@ -220,7 +220,9 @@ export class GameUI {
         });
         s.passives.forEach((lv, id) => {
             const d = PASSIVES[id];
-            let icon = spriteNode('icon_passive_' + id, 44, 44, panel);
+            // 优先竖纸 frameless（缩入侧栏槽）；缺图回退旧方图
+            let icon = spriteNode('icon_passive_' + id + '_frameless', 30, 44, panel)
+                ?? spriteNode('icon_passive_' + id, 44, 44, panel);
             // 有图不叠字；被动无 CD 遮罩
             if (!icon) icon = circleNode('passive', 20, '#6F6888', d.name[0], panel);
             icon.setPosition(0, y + 10);
@@ -328,9 +330,12 @@ export class GameUI {
                 pickIcon = spriteNode('icon_talisman_' + o.id + '_frameless', ICON_W, ICON_H, card)
                     ?? spriteNode('icon_talisman_' + o.id, ICON_W, ICON_H, card);
             } else if (o.type === 'passive') {
-                const s = Math.min(ICON_W, ICON_H); // 方图落在同高槽内居中
-                pickIcon = spriteNode('icon_passive_' + o.id + '_frameless', s, s, card)
-                    ?? spriteNode('icon_passive_' + o.id, s, s, card);
+                // 竖纸 *_frameless 与主动同槽 48×72；旧方图回退居中方槽
+                pickIcon = spriteNode('icon_passive_' + o.id + '_frameless', ICON_W, ICON_H, card);
+                if (!pickIcon) {
+                    const s = Math.min(ICON_W, ICON_H);
+                    pickIcon = spriteNode('icon_passive_' + o.id, s, s, card);
+                }
             }
             if (pickIcon) pickIcon.setPosition(0, ICON_Y);
 
