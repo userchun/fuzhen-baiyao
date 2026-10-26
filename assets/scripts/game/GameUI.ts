@@ -282,16 +282,18 @@ export class GameUI {
                 if (edge) edge.setPosition(0, 0);
             }
 
-            // 卡心符面/心法：HUD 比例缩图（非牌套牌）；passive 边长=符面高，同卡心高度
-            // 略大于 HUD 40×60 → 48×72，仍 2:3；分符 72×72
+            // 卡心：优先无框 *_frameless（START B）；缺图回退旧 icon_*；HUD 栏仍用旧图
+            // 尺寸保持 HUD 比例：符 48×72、被动 72×72（同卡心高度）
             const PICK_ICON_TAL_W = 48;
             const PICK_ICON_TAL_H = 72;
             const PICK_ICON_PAS_S = PICK_ICON_TAL_H;
             let pickIcon: Node | null = null;
             if (o.type === 'talisman') {
-                pickIcon = spriteNode('icon_talisman_' + o.id, PICK_ICON_TAL_W, PICK_ICON_TAL_H, card);
+                pickIcon = spriteNode('icon_talisman_' + o.id + '_frameless', PICK_ICON_TAL_W, PICK_ICON_TAL_H, card)
+                    ?? spriteNode('icon_talisman_' + o.id, PICK_ICON_TAL_W, PICK_ICON_TAL_H, card);
             } else if (o.type === 'passive') {
-                pickIcon = spriteNode('icon_passive_' + o.id, PICK_ICON_PAS_S, PICK_ICON_PAS_S, card);
+                pickIcon = spriteNode('icon_passive_' + o.id + '_frameless', PICK_ICON_PAS_S, PICK_ICON_PAS_S, card)
+                    ?? spriteNode('icon_passive_' + o.id, PICK_ICON_PAS_S, PICK_ICON_PAS_S, card);
             }
             if (pickIcon) pickIcon.setPosition(0, 5);
 
