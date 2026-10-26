@@ -263,21 +263,22 @@ export class GameUI {
         titleNode.node.setPosition(0, 420);
         popIn(titleNode.node, 0.3);
 
-        // T-FIX / TF1–TF3：三卡齐高；槽 = 标题行 → 固定图标框 → 描述区（不叠）
+        // T-FIX：三卡齐高；槽 = 标题行 → 大图标撑满中区 → 底描述带（不叠）
         const CARD_W = 200;
         const CARD_H = 300; // 2:3 齐高
         const GAP = 18;
         const n = opts.length;
         const totalW = n * CARD_W + Math.max(0, n - 1) * GAP;
-        const TEXT_W = 168;
-        // 卡心坐标（原点中心）：顶≈+150 / 底≈-150；顶孔约 +120↑ — 标题避开
-        const TITLE_Y = 102;
-        const TITLE_H = 34;
-        const ICON_W = 48;
-        const ICON_H = 72;
-        const ICON_Y = 28; // 框中心；顶=64 底=-8，与标题底≈85 留缝
-        const DESC_TOP_Y = -18; // 描述顶锚，严格在图标底之下
-        const DESC_H = 118;
+        const TEXT_W = 180; // CARD_W - 20
+        // 卡心坐标（原点中心）：顶≈+150 / 底≈-150；标题/角标须落在安全区内
+        const TITLE_Y = 131; // 顶≈141 < 150-8，长题全进卡内
+        const TITLE_H = 20;
+        // 竖纸源 256×384 → 显示约 160×228（~2:3），侧边距 ~20px，符面主导卡面
+        const ICON_W = 160;
+        const ICON_H = 228;
+        const ICON_Y = 10; // 略偏上；顶≈124 底≈-104，与标题底≈121 留缝
+        const DESC_TOP_Y = -108; // 描述顶锚，紧贴图标底之下
+        const DESC_H = 36; // 两行带
         const titleColor = '#C45C4A'; // 朱砂标题（非满黄）
 
         opts.forEach((o, i) => {
@@ -299,38 +300,38 @@ export class GameUI {
             const el = tal && ELEMENT_NAME[tal.element] ? `【${ELEMENT_NAME[tal.element]}】` : '';
             const isNew = /[（(]新[）)]/.test(o.title);
             const rawTitle = o.title.replace(/[（(]新[）)]/g, '').trim();
-            const tLab = addLabel(card, el + rawTitle, 22, titleColor);
+            const tLab = addLabel(card, el + rawTitle, 18, titleColor);
             tLab.horizontalAlign = Label.HorizontalAlign.CENTER;
             tLab.verticalAlign = Label.VerticalAlign.CENTER;
             tLab.overflow = Label.Overflow.SHRINK;
             const tUt = tLab.node.getComponent(UITransform)!;
-            tUt.setContentSize(TEXT_W - 28, TITLE_H); // 右侧留角标
+            tUt.setContentSize(isNew ? TEXT_W - 28 : TEXT_W, TITLE_H); // 有「新」时右侧留角标
             tUt.setAnchorPoint(0.5, 0.5);
             tLab.node.setPosition(0, TITLE_Y);
 
             if (isNew) {
-                const badge = addLabel(card, '新', 13, '#E8D5C4');
+                const badge = addLabel(card, '新', 12, '#E8D5C4');
                 badge.horizontalAlign = Label.HorizontalAlign.CENTER;
                 badge.verticalAlign = Label.VerticalAlign.CENTER;
                 badge.overflow = Label.Overflow.NONE;
                 const bUt = badge.node.getComponent(UITransform)!;
-                bUt.setContentSize(22, 18);
+                bUt.setContentSize(20, 16);
                 bUt.setAnchorPoint(0.5, 0.5);
-                // 右上角小标，避开顶孔中心；浅字+细描边感，不铺红晕
+                // 右上角内侧，不越卡边；浅字+细描边，不铺红晕
                 badge.enableOutline = true;
                 badge.outlineColor = hex('#5A2A22');
                 badge.outlineWidth = 2;
-                badge.node.setPosition(78, 118);
+                badge.node.setPosition(84, 134);
             }
 
-            // —— 2) 固定图标框（主动/被动同规格 48×72 槽；被动方图居中）——
-            // 优先无框 *_frameless；缺图回退旧 icon_*；本轮不换图
+            // —— 2) 大图标槽（主动/被动同规格 ~160×220 竖纸；被动方图居中）——
+            // 优先无框 *_frameless；缺图回退旧 icon_*
             let pickIcon: Node | null = null;
             if (o.type === 'talisman') {
                 pickIcon = spriteNode('icon_talisman_' + o.id + '_frameless', ICON_W, ICON_H, card)
                     ?? spriteNode('icon_talisman_' + o.id, ICON_W, ICON_H, card);
             } else if (o.type === 'passive') {
-                // 竖纸 *_frameless 与主动同槽 48×72；旧方图回退居中方槽
+                // 竖纸 *_frameless 与主动同槽；旧方图回退居中方槽
                 pickIcon = spriteNode('icon_passive_' + o.id + '_frameless', ICON_W, ICON_H, card);
                 if (!pickIcon) {
                     const s = Math.min(ICON_W, ICON_H);
@@ -339,12 +340,12 @@ export class GameUI {
             }
             if (pickIcon) pickIcon.setPosition(0, ICON_Y);
 
-            // —— 3) 描述区：定宽换行，顶锚向下生长，包围盒不进图标 ——
-            const dLab = addLabel(card, o.desc, 16, '#DDD6C8');
+            // —— 3) 底描述带：两行 SHRINK，顶锚在图标底之下 ——
+            const dLab = addLabel(card, o.desc, 14, '#DDD6C8');
             dLab.horizontalAlign = Label.HorizontalAlign.CENTER;
             dLab.verticalAlign = Label.VerticalAlign.TOP;
-            dLab.overflow = Label.Overflow.SHRINK; // 固定框内收缩，防长文案上涌压图标
-            dLab.lineHeight = 22;
+            dLab.overflow = Label.Overflow.SHRINK; // 固定两行带内收缩，防上涌压图标
+            dLab.lineHeight = 18;
             const dUt = dLab.node.getComponent(UITransform)!;
             dUt.setAnchorPoint(0.5, 1);
             dUt.setContentSize(TEXT_W, DESC_H);
