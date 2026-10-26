@@ -155,10 +155,10 @@ export class Combat {
             const clip = this.makeClip(`anim/boss_baigu_${el}/idle`, baiguFps, true);
             if (clip) this.baiguPhaseClips.set(el, clip);
         }
-        // 3f @12fps ≈ 0.25s burst；静态 enemy_lantern_split 作首帧/回退（U9 未过：仍旧 3f）
+        // 旧 3f split：仅作 death 资产缺失时的 fallback（U9 主路径已换 6f death）
         this.lanternSplitClip = this.makeClip('anim/enemy_lantern_split/move', 12, false);
-        // U9 骨架：Art 交付 anim/enemy_lantern/death_* 后自动优先；无帧则 null（不拉长 3f 冒充）
-        this.lanternDeathClip = this.makeClip('anim/enemy_lantern/death', 10, false);
+        // U9：anim/enemy_lantern/death_00…05 · 11fps play-once（handoff 10–12）
+        this.lanternDeathClip = this.makeClip('anim/enemy_lantern/death', 11, false);
         // ANIM-005：Boss hit 4f / death 5f oneshot（无帧则静态 fallback，不改数值）
         this.heishanHitClip = this.makeClip('anim/boss_heishan/hit', 10, false);
         this.heishanDeathClip = this.makeClip('anim/boss_heishan/death', 10, false);
@@ -1010,7 +1010,7 @@ export class Combat {
                 this.fb.shake(8, 0.2);
             }
         }
-        // 灯笼鬼：U9 骨架 playLanternDeath（有 death 帧才用；否则仍旧 3f split，不冒充过 U9）
+        // 灯笼鬼：U9 playLanternDeath → 6f death 主路径（无资产才 3f fallback）
         if (e.def.id === 'lantern') {
             const art = ENEMY_ART.lantern;
             const size = e.def.radius * 2 * (art?.scale ?? 2.75);
@@ -1069,19 +1069,20 @@ export class Combat {
     }
 
     /**
-     * U9 骨架：优先 anim/enemy_lantern/death；无资产则回退 3f split（不拉长冒充 Pass）。
-     * 不改 splitInto / splitCount / HP。
+     * U9：主路径 anim/enemy_lantern/death 6f @11fps play-once（灯体↔魂分消）。
+     * 无 death 帧才回退旧 3f split。不改 splitInto / splitCount / HP。
      */
     private playLanternDeath(x: number, y: number, size: number): void {
-        if (this.lanternDeathClip && this.lanternDeathClip.frames.length >= 5) {
+        const clip = this.lanternDeathClip;
+        if (clip && clip.frames.length >= 5) {
+            // 用首帧贴图节点承载序列（静态 lantern 作底；缺失则 split 静态）
             const n = spriteNode('enemy_lantern', size, size, this.fxLayer)
                 ?? spriteNode('enemy_lantern_split', size, size, this.fxLayer);
             if (!n) return;
             n.setPosition(x, y);
             const anim = new FrameAnim(n);
-            const clip = this.lanternDeathClip;
             const life = clip.frames.length / Math.max(1, clip.fps) + 0.05;
-            anim.play(clip);
+            anim.play(clip); // loop=false → once
             this.splitFx.push({ node: n, anim, life });
             return;
         }
