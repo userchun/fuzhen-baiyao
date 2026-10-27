@@ -1,7 +1,7 @@
 import { Node, Graphics, Label, UITransform } from 'cc';
 import {
     ENEMIES, EnemyDef, GAME, BASE_ATTACK, TalismanId, ELEMENT_COLOR, ELEMENT_NAME, Element, elementTier, TIER_MULT,
-    MIN_HIT_DAMAGE, RIVER_INTERVAL, depthY, depthScale, lanePixels,
+    MIN_HIT_DAMAGE, RIVER_INTERVAL, depthY, depthScale, lanePixels, travelPixels, LAYOUT,
 } from '../config/GameConfig';
 import { Pool } from '../core/Pool';
 import { circleNode, rectNode, makeNode, hex, setOpacity, paintCircle, addLabel } from '../core/Draw';
@@ -45,9 +45,8 @@ interface Zone {
 
 interface Fx { key: string; node: Node; life: number; maxLife: number; scale: number; alive: boolean; }
 
-const HALF_W = GAME.width / 2 - 30;
+const HALF_W = LAYOUT.roadHalfW; // 出怪与妖怪横向活动范围：收在路面以内
 const top = (): number => GAME.horizonY; // 纵深最远点（地平线/出怪线）
-const WALL_ART_H = 80;      // 城墙图片显示高度（素材 1440×160 的一半）
 const PLAYER_ART_SIZE = 120; // 小道士图片显示边长（2026-10-27 新背面道士：88 → 120，城墙上更醒目）
 
 // 战斗世界：施法、敌人移动、子弹碰撞、区域伤害、特效
@@ -134,9 +133,9 @@ export class Combat {
         this.pool = new Pool((key) => this.create(key));
         this.zoneLayer = makeNode('zones', layer);
         this.enemyLayer = makeNode('enemies', layer);
-        // 城墙图片含上方垛口：高 80，垛口顶略高于 wallY
-        const wall = spriteNode('env_wall', GAME.width, WALL_ART_H, layer) ?? rectNode('wall', GAME.width, 40, '#4A3B2A', layer);
-        wall.setPosition(0, hasArt('env_wall') ? GAME.wallY - WALL_ART_H / 2 + 10 : GAME.wallY - 20);
+        // 俯视城墙顶：上沿垛口 ≈ wallY，下面是走道和护栏，主角站在走道上
+        const wall = spriteNode('env_wall', GAME.width, LAYOUT.wallArtH, layer) ?? rectNode('wall', GAME.width, 40, '#4A3B2A', layer);
+        wall.setPosition(0, hasArt('env_wall') ? GAME.wallY + LAYOUT.wallArtTopAbove - LAYOUT.wallArtH / 2 : GAME.wallY - 20);
         this.player = spriteNode('player_taoist', PLAYER_ART_SIZE, PLAYER_ART_SIZE, layer) ?? circleNode('player', 32, '#F2E3B3', '师', layer);
         this.player.setPosition(0, GAME.playerY);
         this.bulletLayer = makeNode('bullets', layer);
@@ -665,7 +664,7 @@ export class Combat {
                 e.freezeT -= dt;
             } else {
                 const sp = d.speed * (1 - e.slow);
-                const rate = sp / lanePixels(); // px/s → depth/s
+                const rate = sp / travelPixels(); // px/s → depth/s（按旧路程换算，保持走到城墙的时间不变）
                 if (d.move === 'hop') {
                     // 缓动：正弦包络替代硬切窗口，起步/落地更顺
                     const phase = (e.t % 1.2) / 1.2;

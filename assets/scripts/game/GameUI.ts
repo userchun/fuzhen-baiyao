@@ -9,10 +9,11 @@ import { popIn, breathe } from './Anim';
 
 const top = (): number => GAME.height / 2;
 const SAFE_TOP = 60; // 刘海/状态栏留白
+const BOSS_W = 220;
 const BAR_W = 600;
 // 状态条都放在城墙下方、玩家脚下，屏幕顶部留给妖怪进场
-const WALL_BAR_OFFSET = -94;      // 结界血条中心相对城墙顶部
-const XP_BAR_OFFSET = -120;       // 灵气条中心相对城墙顶部（紧贴血条下方）
+const WALL_BAR_OFFSET = -160;     // 结界血条中心相对垛口线（紧贴城墙图下沿）
+const XP_BAR_OFFSET = -186;       // 灵气条中心相对垛口线（紧贴血条下方）
 const WALL_BAR_H = 20;            // U1：16–24
 const XP_BAR_H = 10;              // U3：8–12
 const WALL_FILL_COLOR = '#9B3D2E'; // 暗朱砂
@@ -61,6 +62,12 @@ export class GameUI {
     private wallBar: HudBar;
     private xpBar: HudBar;
     private info: Label;
+    private moveHint: Label;
+    private moveHintT = -1; // <0 未触发淡出；>0 淡出剩余秒
+    private bossBar: Graphics;
+    private bossText: Label;
+    private bossTime = 0;
+    private bossName = '';
     private skillPanel: Node;
     private skillSig = '';
     private cdMasks = new Map<TalismanId, Graphics>(); // 符咒图标上的冷却遮罩
@@ -87,11 +94,15 @@ export class GameUI {
         // 左侧技能栏
         this.skillPanel = makeNode('skillPanel', root);
         this.skillPanel.setPosition(-GAME.width / 2 + 44, top() - SAFE_TOP - 160);
-        // 底部移动区提示
-        const zoneH = GAME.moveZoneY + top();
-        rectNode('moveZone', GAME.width, zoneH, '#FFFFFF', root, 0, 12).setPosition(0, -top() + zoneH / 2);
-        addLabel(root, '← 拖动移动 →', 20, '#6F6888').node.setPosition(0, GAME.moveZoneY - 20);
-        addLabel(root, '金克木  木克土  土克水  水克火  火克金', 20, '#9A8FB0').node.setPosition(0, -top() + 50);
+        // 底部移动区提示：只留一行淡字，不再铺色块
+        this.moveHint = addLabel(root, '← 拖动移动 →', 18, '#6F6888');
+        this.moveHint.node.setPosition(0, GAME.moveZoneY - 20);
+        // Boss 进度：左上角细条，Boss 出场前显示来袭进度，出场后显示 Boss 血量
+        const bossNode = makeNode('bossBar', root);
+        bossNode.setPosition(-GAME.width / 2 + 24, top() - SAFE_TOP - 14);
+        this.bossBar = bossNode.addComponent(Graphics);
+        this.bossText = addLabel(root, '', 16, '#D8C8A8');
+        this.bossText.node.setPosition(-GAME.width / 2 + 24 + BOSS_W / 2, top() - SAFE_TOP + 6);
         this.toast = addLabel(root, '', 36, '#FFD700');
         this.toast.node.setPosition(0, 250);
     }
@@ -173,6 +184,7 @@ export class GameUI {
         const mm = Math.floor(t / 60);
         const ss = Math.floor(t % 60);
         this.info.string = `击杀 ${c.kills}   ${mm}:${ss < 10 ? '0' + ss : ss}`;
+        this.drawBoss(c, time);
         // 技能有变化才重建左侧技能栏
         const sig: string[] = [];
         s.talismans.forEach((st, id) => sig.push(id + st.level));
@@ -244,7 +256,45 @@ export class GameUI {
         l.outlineWidth = 2;
     }
 
+    /** 开局设置 Boss 出场时间；没有 Boss 时隐藏进度条。同时恢复拖动提示 */
+    setBoss(name: string, time: number): void {
+        this.bossName = name;
+        this.bossTime = time;
+        this.bossBar.clear();
+        this.bossText.string = '';
+        this.moveHintT = -1;
+        setOpacity(this.moveHint.node, 255);
+    }
+
+    /** 首次拖动后淡出拖动提示 */
+    hideMoveHint(): void {
+        if (this.moveHintT < 0) this.moveHintT = 0.6;
+    }
+
+    private drawBoss(c: Combat, time: number): void {
+        const g = this.bossBar;
+        g.clear();
+        const boss = c.enemies.find((e) => e.def.boss);
+        const coming = !boss && time < this.bossTime;
+        if (!this.bossName || (!boss && !coming)) {
+            this.bossText.string = '';
+            return;
+        }
+        const r = boss ? boss.hp / boss.maxHp : time / this.bossTime;
+        g.fillColor = hex('#1A1626');
+        g.rect(0, -4, BOSS_W, 8);
+        g.fill();
+        g.fillColor = hex(boss ? '#C0392B' : '#B8862E');
+        g.rect(0, -4, BOSS_W * Math.max(0, Math.min(1, r)), 8);
+        g.fill();
+        this.bossText.string = boss ? this.bossName : `${this.bossName} 来袭`;
+    }
+
     update(dt: number): void {
+        if (this.moveHintT > 0) {
+            this.moveHintT = Math.max(0, this.moveHintT - dt);
+            setOpacity(this.moveHint.node, Math.round((255 * this.moveHintT) / 0.6));
+        }
         if (this.toastT <= 0) return;
         this.toastT -= dt;
         setOpacity(this.toast.node, Math.round(255 * Math.min(1, Math.max(0, this.toastT))));
@@ -262,6 +312,8 @@ export class GameUI {
         const titleNode = addLabel(ov, title, 40, '#FFD700');
         titleNode.node.setPosition(0, 420);
         popIn(titleNode.node, 0.3);
+        // 五行相克提示放在选卡界面，战斗画面不再常驻
+        addLabel(ov, '金克木  木克土  土克水  水克火  火克金', 18, '#9A8FB0').node.setPosition(0, 370);
 
         // T-FIX：三卡齐高；槽 = 标题行 → 大图标撑满中区 → 底描述带（不叠）
         const CARD_W = 200;

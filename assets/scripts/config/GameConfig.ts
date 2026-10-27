@@ -16,19 +16,32 @@ export const GAME = {
     maxTalismans: 4,  // 最多持有符咒数
 };
 
-/** 按实际可见高度重算布局：宽固定 720，高随机型变化，城墙贴底 */
+/**
+ * 按实际可见高度重算布局：宽固定 720，高随机型变化。
+ * 俯视布局（2026-10-27，参考《向僵尸开炮》）：整屏是地面，妖怪从屏幕顶边外进入；
+ * 底部从下往上：安全区 40 → 血条区 → 城墙顶（垛口线 = wallY）→ 战场。
+ */
+export const LAYOUT = {
+    wallFromBottom: 258,   // 垛口线（撞墙线）距屏幕底边
+    playerFromBottom: 216, // 主角中心距屏幕底边（站在城墙走道上）
+    spawnAboveTop: 60,     // 出怪线在屏幕顶边之上多少像素
+    wallArtH: 152,         // 城墙顶图片显示高度（720 宽）
+    wallArtTopAbove: 12,   // 城墙图片顶边高出垛口线多少
+    roadHalfW: 230,        // 路面半宽：出怪和妖怪横向活动收在这个范围内
+};
+
 export function applyScreen(visibleHeight: number): void {
     GAME.height = Math.max(1280, Math.round(visibleHeight));
-    GAME.wallY = -GAME.height / 2 + 200;
-    GAME.playerY = GAME.wallY - 30;
+    GAME.wallY = -GAME.height / 2 + LAYOUT.wallFromBottom;
+    GAME.playerY = -GAME.height / 2 + LAYOUT.playerFromBottom;
     GAME.moveZoneY = GAME.wallY + 90;
-    GAME.horizonY = GAME.height / 2 - 120; // 顶部留 120px 作天空/地平线
+    GAME.horizonY = GAME.height / 2 + LAYOUT.spawnAboveTop;
 }
 
-// ---- 2.5D 俯视纵深（P1：线性投影）----
-// depth 0 = 远（地平线/出怪），1 = 近（城墙）
+// ---- 俯视纵深（线性投影）----
+// depth 0 = 远（屏幕顶边外出怪），1 = 近（城墙）
 export const DEPTH = {
-    farScale: 0.35,   // 地平线处敌人缩放（近处为 1）
+    farScale: 0.85,   // 出怪处敌人缩放（近处为 1）；俯视只保留一点近大远小
 };
 
 /** 纵深 → 屏幕 y：0 在地平线，1 在城墙 */
@@ -44,6 +57,14 @@ export function depthScale(d: number): number {
 /** 纵深满程（地平线→城墙）的屏幕像素长度，用于把 speed(px/s) 换算成 depth 速率 */
 export function lanePixels(): number {
     return GAME.horizonY - GAME.wallY;
+}
+
+/**
+ * 速度换算用的路程长度：沿用旧 2.5D 布局的路程（屏高 − 320），
+ * 让每只怪走到城墙的时间与改布局前一致，不改关卡节奏和难度。
+ */
+export function travelPixels(): number {
+    return GAME.height - 320;
 }
 
 // 基础攻击（镇妖符）：按住瞄准时射速更快，鼓励手动操作

@@ -1,12 +1,13 @@
-import { _decorator, Component, Node, UITransform, EventTouch, view, ResolutionPolicy, input, Input, sys, Graphics } from 'cc';
-import { GAME, LEVELS, COMBOS, applyScreen, SAVE_KEY_UNLOCKED } from './config/GameConfig';
-import { makeNode, rectNode, hex } from './core/Draw';
+import { _decorator, Component, Node, UITransform, EventTouch, view, ResolutionPolicy, input, Input, sys } from 'cc';
+import { GAME, LEVELS, COMBOS, ENEMIES, applyScreen, SAVE_KEY_UNLOCKED } from './config/GameConfig';
+import { makeNode, rectNode } from './core/Draw';
 import { loadArt, spriteNode } from './core/Art';
 import { loadAudio, AudioManager } from './core/AudioManager';
 
 const BG_ART = ['bg_level1_village', 'bg_level2_temple']; // 与 LEVELS 下标对应
 const BGM_BY_LEVEL = ['village', 'temple'] as const; // 与 LEVELS 下标对应
-const BG_ART_RATIO = 1280 / 720; // W2 pads 720×1280 (9:16); was 2340/1080 for old art
+// 背景图高宽比，与 BG_ART 对应：第一关是俯视地面 1024×1536；第二关仍是旧透视图 720×1280
+const BG_ART_RATIO = [1536 / 1024, 1280 / 720];
 import { SkillSystem } from './game/SkillSystem';
 import { Combat } from './game/Combat';
 import { Spawner } from './game/Spawner';
@@ -69,6 +70,7 @@ export class GameRoot extends Component {
         input.on(Input.EventType.TOUCH_MOVE, (e: EventTouch) => {
             if (this.state !== 'play') return;
             if (mode === 'move') {
+                this.ui.hideMoveHint();
                 const lim = GAME.width / 2 - 40;
                 // 缓动目标；实位由 Combat.update exp-smooth 追赶
                 this.combat.playerTargetX = Math.max(-lim, Math.min(lim, this.combat.playerTargetX + e.getUIDelta().x));
@@ -137,11 +139,15 @@ export class GameRoot extends Component {
         const level = LEVELS[index];
         this.bg.destroyAllChildren();
         rectNode('bg', GAME.width, GAME.height * 2, level.bg, this.bg);
-        // 背景图按宽度铺满（1080×2340 → 720×1560），纯色底兜住更高的屏幕
-        spriteNode(BG_ART[index], GAME.width, GAME.width * BG_ART_RATIO, this.bg);
-        this.addGroundDepth(); // 2.5D：地平线 + 纵深等高线（在背景图之上）
+        // 背景图从屏幕顶边开始、等比盖满整屏（长屏手机裁掉两侧），不再加占位蒙层和等高线
+        const ratio = BG_ART_RATIO[index] ?? 1280 / 720;
+        const bgH = Math.max(GAME.height, GAME.width * ratio);
+        const bgNode = spriteNode(BG_ART[index], bgH / ratio, bgH, this.bg);
+        bgNode?.setPosition(0, GAME.height / 2 - bgH / 2);
         this.world.destroyAllChildren();
         this.ui.clearOverlay();
+        const bossWave = level.waves.find((w) => ENEMIES[w.enemy]?.boss);
+        this.ui.setBoss(bossWave ? ENEMIES[bossWave.enemy].name : '', bossWave?.time ?? 0);
         this.skills = new SkillSystem();
         this.world.setPosition(0, 0);
         const combatLayer = makeNode('combat', this.world);
@@ -155,35 +161,6 @@ export class GameRoot extends Component {
         this.state = 'play';
         this.syncBgm();
         this.ui.showToast(level.name);
-    }
-
-    /** 2.5D 纵深地面：地平线 + 半透明地面 + 纵深等高线（P1 占位，后续换透视地面素材） */
-    private addGroundDepth(): void {
-        const g = makeNode('ground', this.bg).addComponent(Graphics);
-        const w = GAME.width;
-        const topY = GAME.horizonY;
-        const bottomY = GAME.wallY;
-        // 地面：地平线以下到城墙的半透明色块
-        g.fillColor = hex('#1A1830', 120);
-        g.rect(-w / 2, bottomY, w, topY - bottomY);
-        g.fill();
-        // 纵深等高线：近疏远密，暗示透视
-        const lines = 8;
-        g.lineWidth = 2;
-        for (let i = 1; i <= lines; i++) {
-            const d = i / (lines + 1);
-            const y = bottomY + (topY - bottomY) * d;
-            g.strokeColor = hex('#3A3560', Math.round(60 + 60 * d));
-            g.moveTo(-w / 2, y);
-            g.lineTo(w / 2, y);
-        }
-        g.stroke();
-        // 地平线
-        g.lineWidth = 3;
-        g.strokeColor = hex('#6A5FA0', 120);
-        g.moveTo(-w / 2, topY);
-        g.lineTo(w / 2, topY);
-        g.stroke();
     }
 
     private openPick(): void {
