@@ -483,9 +483,12 @@ export class Combat {
             return n;
         }
         if (kind === 'bullet') {
-            if (id === 'metal') return rectNode(key, 10, 40, ELEMENT_COLOR.metal, undefined, 4);
+            // 金光束：白金光矛贴图，缺图回退细方块
+            if (id === 'metal') return spriteNode('fx_metal_bolt', 18, 72) ?? rectNode(key, 10, 40, ELEMENT_COLOR.metal, undefined, 4);
             if (id === 'manual') return circleNode(key, 14, '#FFE9A8', '符');
             if (id === 'river') return rectNode(key, GAME.width, 60, '#5AB4F0', undefined, 0, 170);
+            // 寒冰符：冰锥贴图，缺图回退圆点
+            if (id === 'water') return spriteNode('fx_water_bolt', 20, 72) ?? circleNode(key, 11, ELEMENT_COLOR.water);
             return circleNode(key, id === 'fire' ? 14 : 11, ELEMENT_COLOR[id as Element]);
         }
         if (kind === 'zone') return circleNode(key, 50, id === 'burn' ? '#F06A4A' : '#5FBF6A');
@@ -599,7 +602,7 @@ export class Combat {
         opt: { pierce?: number; bounces?: number; explodeR?: number; radius?: number; life?: number }): void {
         const node = this.pool.get('bullet:' + kind, this.bulletLayer);
         node.setPosition(x, y);
-        if (kind === 'metal') node.angle = -Math.atan2(vx, vy) * 180 / Math.PI;
+        if (kind === 'metal' || kind === 'water') node.angle = -Math.atan2(vx, vy) * 180 / Math.PI;
         if (kind === 'manual') this.audio?.playSfx('shoot', 0.6);
         this.bullets.push({
             kind, node, x, y, vx, vy, damage,
@@ -686,7 +689,14 @@ export class Combat {
             if (d.dive && wasDiving !== e.diving) {
                 this.audio?.playSfx(e.diving ? 'shuigui_dive_in' : 'shuigui_dive_out', 0.55);
             }
-            setOpacity(e.node, e.diving ? 60 : e.freezeT > 0 ? 150 : 255);
+            setOpacity(e.node, e.diving ? 60 : e.freezeT > 0 ? 220 : 255);
+            // 冻结时罩一层冰壳；节点按需创建，随对象池复用
+            let frost = e.node.getChildByName('frost');
+            if (e.freezeT > 0 && !frost) {
+                frost = spriteNode('fx_water_freeze', d.radius * 2.8, d.radius * 2.8, e.node);
+                if (frost) frost.name = 'frost';
+            }
+            if (frost) frost.active = e.freezeT > 0;
             // U11：受击闪包络（平滑峰值→回落，不糊轮廓）
             if (e.flashT > 0) e.flashT -= dt;
             if (e.hitReactT > 0) e.hitReactT -= dt;
@@ -851,6 +861,7 @@ export class Combat {
         b.hit.add(e);
         if (b.kind === 'metal' || b.kind === 'manual') {
             this.hurt(e, b.damage, b.kind === 'metal' ? 'metal' : 'none');
+            if (b.kind === 'metal') flash(this.fxLayer, 'fx_metal_hit', e.x, e.y, 0.22, { size: 64, startScale: 0.6, endScale: 1.2, startAlpha: 230 });
             if (--b.pierce < 0) b.alive = false;
         } else if (b.kind === 'water') {
             this.hurt(e, b.damage, 'water', true, 'ice_hit'); // U10 寒冰挂点
@@ -863,6 +874,7 @@ export class Combat {
             const dist = Math.max(1, Math.hypot(dx, dy));
             b.vx = dx / dist * 700;
             b.vy = dy / dist * 700;
+            b.node.angle = -Math.atan2(b.vx, b.vy) * 180 / Math.PI; // 弹射后冰锥转向
             b.life = 2;
         } else if (b.kind === 'fire') {
             this.explode(b);
