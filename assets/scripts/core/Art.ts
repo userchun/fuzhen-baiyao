@@ -23,7 +23,7 @@ export const ENEMY_ART: Record<string, { tex: string; sealY: number; sealX?: num
     lantern: { tex: 'enemy_lantern', sealY: 0.55, sealR: 0.10, scale: 2.75 }, // 2026-10-27 即梦样板 3 号：字印对齐腹部发光圆
     shuigui: { tex: 'enemy_shuigui', sealY: 0.61, sealR: 0.125, scale: 3.05 },
     tongjia: { tex: 'enemy_tongjia', sealY: 0.69, sealR: 0.12, scale: 3.05 },
-    heishan: { tex: 'boss_heishan', sealY: 0.74, sealR: 0.12, scale: 2.75 },
+    heishan: { tex: 'boss_heishan', sealY: 0.51, sealX: 0.48, sealR: 0.09, scale: 2.75 }, // 2026-10-27 新岩石巨妖：字印对齐胸口封印圆
     baigu: { tex: 'boss_baigu_metal', sealY: 0.65, sealR: 0.10, scale: 3.05 },
 };
 

@@ -115,7 +115,7 @@ export class Combat {
         tongjia: { fps: 11, bobPx: 0 },
         shuigui: { fps: 8, bobPx: 0 }, // 略慢以缓和 f6–f7 观感；无 bob
         lantern: { fps: 10, bobPx: 0 }, // 漂浮精英；12 帧一个摇摆来回约 1.2 秒；无 bob
-        heishan: { fps: 9, bobPx: 0, prefix: 'anim/boss_heishan/idle' }, // 6f idle；无 bob
+        heishan: { fps: 10, bobPx: 0, prefix: 'anim/boss_heishan/idle' }, // 20 帧呼吸 idle，一个循环 2 秒；无 bob
         baigu: { fps: 9, bobPx: 0, prefix: 'anim/boss_baigu_metal/idle' }, // 默认金相；三相见 baiguPhaseClips
     };
     /** U11：常见怪受击 easing 名单（无 hit sheet；不改伤） */
@@ -452,7 +452,7 @@ export class Combat {
                 }
                 // 跳尸、纸人的字印随 art 跳动和摇摆，避免身体动了汉字留在原地。
                 const sealParent = id === 'jiangshi' || id === 'paperman' ? artNode : n;
-                const sealColor = id === 'jiangshi' ? '#E8E2D0' : '#1E1A26';
+                const sealColor = id === 'jiangshi' || id === 'heishan' ? '#E8E2D0' : '#1E1A26'; // 暗色封印区用浅色字
                 const ch = addLabel(sealParent, d.char, Math.max(12, Math.round(size * art.sealR * 1.3)), sealColor);
                 ch.node.name = 'seal';
                 ch.node.setPosition(size * ((art.sealX ?? 0.5) - 0.5), size * (0.5 - art.sealY));
