@@ -15,7 +15,7 @@ export const ENEMY_ART: Record<string, { tex: string; sealY: number; sealR: numb
     paperman: { tex: 'enemy_paperman', sealY: 0.56, sealR: 0.16, scale: 3.05 },
     jiangshi: { tex: 'enemy_jiangshi', sealY: 0.72, sealR: 0.13, scale: 3.05 },
     foxfire: { tex: 'enemy_foxfire', sealY: 0.75, sealR: 0.12, scale: 3.4 },
-    lantern: { tex: 'enemy_lantern', sealY: 0.667, sealR: 0.10, scale: 2.75 },
+    lantern: { tex: 'enemy_lantern', sealY: 0.55, sealR: 0.10, scale: 2.75 }, // 2026-10-27 即梦样板 3 号：字印对齐腹部发光圆
     shuigui: { tex: 'enemy_shuigui', sealY: 0.61, sealR: 0.125, scale: 3.05 },
     tongjia: { tex: 'enemy_tongjia', sealY: 0.69, sealR: 0.12, scale: 3.05 },
     heishan: { tex: 'boss_heishan', sealY: 0.74, sealR: 0.12, scale: 2.75 },
