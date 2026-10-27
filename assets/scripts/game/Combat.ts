@@ -48,7 +48,7 @@ interface Fx { key: string; node: Node; life: number; maxLife: number; scale: nu
 const HALF_W = GAME.width / 2 - 30;
 const top = (): number => GAME.horizonY; // 纵深最远点（地平线/出怪线）
 const WALL_ART_H = 80;      // 城墙图片显示高度（素材 1440×160 的一半）
-const PLAYER_ART_SIZE = 88; // 小道士图片显示边长（原圆章直径 64）
+const PLAYER_ART_SIZE = 120; // 小道士图片显示边长（2026-10-27 新背面道士：88 → 120，城墙上更醒目）
 
 // 战斗世界：施法、敌人移动、子弹碰撞、区域伤害、特效
 export class Combat {
@@ -80,6 +80,7 @@ export class Combat {
     private bulletLayer: Node;
     private fxLayer: Node;
     private playerAnim: FrameAnim | null = null;
+    private castingPlayer = false;
     private playerIdle: FrameClip | null = null;
     private playerCast: FrameClip | null = null;
     private playerHit: FrameClip | null = null;
@@ -306,16 +307,28 @@ export class Combat {
     }
 
     private setupPlayerAnim(): void {
-        this.playerIdle = this.makeClip('anim/player_taoist/idle', 8, true);
-        this.playerCast = this.makeClip('anim/player_taoist/cast', 12, false);
-        this.playerHit = this.makeClip('anim/player_taoist/hit', 10, false); // optional; reserved
+        this.playerIdle = this.makeClip('anim/player_taoist/idle', 8, true); // 12 帧呼吸，1.5 秒一循环
+        this.playerCast = this.makeClip('anim/player_taoist/cast', 16, false); // 8 帧掷符 0.5 秒
+        this.playerHit = this.makeClip('anim/player_taoist/hit', 10, false); // 6 帧受击 0.6 秒；optional; reserved
         // 仅当贴图玩家（spriteNode 成功）且至少有 idle 帧时启用
         if (!hasArt('player_taoist') || !this.playerIdle) return;
         this.playerAnim = new FrameAnim(this.player);
         this.playPlayerIdle();
     }
 
+    private lastPlayerHitMs = 0;
+
+    /** 结界被撞：主角受击 once，结束回 idle；1 秒内最多一次，施法中不打断 */
+    private playPlayerHit(): void {
+        if (!this.playerAnim || !this.playerHit || this.castingPlayer) return;
+        const now = Date.now();
+        if (now - this.lastPlayerHitMs < 1000) return;
+        this.lastPlayerHitMs = now;
+        this.playerAnim.play(this.playerHit, () => this.playPlayerIdle());
+    }
+
     private playPlayerIdle(): void {
+        this.castingPlayer = false;
         if (!this.playerAnim || !this.playerIdle) return;
         this.playerAnim.play(this.playerIdle);
     }
@@ -349,6 +362,7 @@ export class Combat {
             burst(this.fxLayer, px, py, FX.goldDust(px, py));
         }
         if (!this.playerAnim || !this.playerCast) return;
+        this.castingPlayer = true;
         this.playerAnim.play(this.playerCast, () => this.playPlayerIdle());
     }
 
@@ -714,6 +728,7 @@ export class Combat {
                 this.wallHp -= d.damage;
                 this.fb.shake(d.boss ? 30 : 10, 0.25);
                 this.audio?.playSfx('barrier_crack', 0.55); // A7 结界远距龟裂（替 generic hit）
+                this.playPlayerHit();
                 burst(this.fxLayer, e.x, GAME.wallY, FX.barrier(e.x, GAME.wallY));
                 e.alive = false;
                 this.addFx(e.x, GAME.wallY, d.radius * 1.5);
