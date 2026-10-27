@@ -126,6 +126,7 @@ export class Combat {
     private static readonly HIT_REACT_STIFF = new Set(['jiangshi', 'tongjia']);
     /** 灯笼鬼死亡分裂 3f one-shot（非独立敌人类型；splitInto 仍为 foxfire）；U9 骨架优先 death 帧 */
     private lanternSplitClip: FrameClip | null = null;
+    private fireExplodeClip: FrameClip | null = null;
     private lanternDeathClip: FrameClip | null = null;
     private splitFx: { node: Node; anim: FrameAnim; life: number }[] = [];
 
@@ -158,6 +159,7 @@ export class Combat {
         }
         // 旧 3f split：仅作 death 资产缺失时的 fallback（U9 主路径已换 6f death）
         this.lanternSplitClip = this.makeClip('anim/enemy_lantern_split/move', 12, false);
+        this.fireExplodeClip = this.makeClip('anim/fx_fire_explode/explode', 16, false);
         // U9：anim/enemy_lantern/death_00…05 · 11fps play-once（handoff 10–12）
         this.lanternDeathClip = this.makeClip('anim/enemy_lantern/death', 11, false);
         // ANIM-005：Boss hit 4f / death 5f oneshot（无帧则静态 fallback，不改数值）
@@ -488,6 +490,7 @@ export class Combat {
             if (id === 'manual') return circleNode(key, 14, '#FFE9A8', '符');
             if (id === 'river') return rectNode(key, GAME.width, 60, '#5AB4F0', undefined, 0, 170);
             // 寒冰符：冰锥贴图，缺图回退圆点
+            if (id === 'fire') return spriteNode('fx_fire_ball', 30, 40) ?? circleNode(key, 14, ELEMENT_COLOR.fire);
             if (id === 'water') return spriteNode('fx_water_bolt', 20, 72) ?? circleNode(key, 11, ELEMENT_COLOR.water);
             return circleNode(key, id === 'fire' ? 14 : 11, ELEMENT_COLOR[id as Element]);
         }
@@ -602,7 +605,7 @@ export class Combat {
         opt: { pierce?: number; bounces?: number; explodeR?: number; radius?: number; life?: number }): void {
         const node = this.pool.get('bullet:' + kind, this.bulletLayer);
         node.setPosition(x, y);
-        if (kind === 'metal' || kind === 'water') node.angle = -Math.atan2(vx, vy) * 180 / Math.PI;
+        if (kind === 'metal' || kind === 'water' || kind === 'fire') node.angle = -Math.atan2(vx, vy) * 180 / Math.PI;
         if (kind === 'manual') this.audio?.playSfx('shoot', 0.6);
         this.bullets.push({
             kind, node, x, y, vx, vy, damage,
@@ -883,7 +886,17 @@ export class Combat {
     }
 
     private explode(b: Bullet): void {
-        this.addFx(b.x, b.y, b.explodeR);
+        // 烈焰符：播 7 帧爆炸序列；缺帧时回退色块
+        const clip = b.kind === 'fire' ? this.fireExplodeClip : null;
+        const boomNode = clip ? spriteNode('anim/fx_fire_explode/explode_00', b.explodeR * 2.3, b.explodeR * 2.3, this.fxLayer) : null;
+        if (clip && boomNode) {
+            boomNode.setPosition(b.x, b.y);
+            const anim = new FrameAnim(boomNode);
+            anim.play(clip);
+            this.splitFx.push({ node: boomNode, anim, life: clip.frames.length / clip.fps + 0.05 });
+        } else {
+            this.addFx(b.x, b.y, b.explodeR);
+        }
         // 烈焰暖橙红爆（跟色相表；与朱砂纯朱红脉冲区分）
         const boom = b.kind === 'fire' ? ELEMENT_COLOR.fire : (ELEMENT_COLOR[b.kind as Element] ?? ELEMENT_COLOR.fire);
         burst(this.fxLayer, b.x, b.y, FX.explode(b.x, b.y, b.explodeR, boom));
