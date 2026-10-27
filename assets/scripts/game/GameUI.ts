@@ -323,15 +323,15 @@ export class GameUI {
         const totalW = n * CARD_W + Math.max(0, n - 1) * GAP;
         const TEXT_W = 180; // CARD_W - 20
         // 卡心坐标（原点中心）：顶≈+150 / 底≈-150；标题/角标须落在安全区内
-        const TITLE_Y = 128; // 顶≈139 < 150-8，长题全进卡内
+        const TITLE_Y = 112; // 新卡底：顶边金线约在 +134，标题放在两角云纹之间
         const TITLE_H = 22;
         // CD/CoS 槽锁：宽 70–80%、高 55–65% 卡面 → 156×192（78%×64%）
-        const ICON_W = 156;
-        const ICON_H = 192;
-        const ICON_Y = 14; // 顶≈110 底≈-82，与标题底≈117 / 描述顶留缝
-        const DESC_TOP_Y = -86; // 描述顶锚，紧贴图标底之下
+        const ICON_W = 128;
+        const ICON_H = 168;
+        const ICON_Y = 10; // 顶≈94 底≈-74，与标题、描述都留缝
+        const DESC_TOP_Y = -82; // 描述顶锚，紧贴图标底之下
         const DESC_H = 40; // 两行带
-        const titleColor = '#C45C4A'; // 朱砂标题（非满黄）
+        const titleColor = '#F0D9A0'; // 暖金标题：红木卡底上朱砂字看不清
 
         opts.forEach((o, i) => {
             const x = -totalW / 2 + CARD_W / 2 + i * (CARD_W + GAP);
@@ -357,7 +357,7 @@ export class GameUI {
             tLab.verticalAlign = Label.VerticalAlign.CENTER;
             tLab.overflow = Label.Overflow.SHRINK;
             const tUt = tLab.node.getComponent(UITransform)!;
-            tUt.setContentSize(isNew ? TEXT_W - 28 : TEXT_W, TITLE_H); // 有「新」时右侧留角标
+            tUt.setContentSize(isNew ? 120 : 140, TITLE_H); // 避开两角云纹 // 有「新」时右侧留角标
             tUt.setAnchorPoint(0.5, 0.5);
             tLab.node.setPosition(0, TITLE_Y);
 
@@ -373,7 +373,7 @@ export class GameUI {
                 badge.enableOutline = true;
                 badge.outlineColor = hex('#5A2A22');
                 badge.outlineWidth = 2;
-                badge.node.setPosition(84, 132);
+                badge.node.setPosition(66, TITLE_Y);
             }
 
             // —— 2) 大图标槽（主动/被动同规格 ~156×192 竖纸；被动方图居中）——
