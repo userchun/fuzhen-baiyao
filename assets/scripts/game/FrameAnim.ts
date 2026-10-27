@@ -28,6 +28,11 @@ export class FrameAnim {
         return this.playing && this.frames.length > 0;
     }
 
+    /** 当前显示的帧序号 */
+    get frameIndex(): number {
+        return this.idx;
+    }
+
     /** 当前帧进度 0..1（整段 clip） */
     get progress(): number {
         if (this.frames.length === 0 || this.fps <= 0) return 0;
@@ -49,6 +54,17 @@ export class FrameAnim {
         this.playing = true;
         this.onDone = onDone ?? null;
         this.sprite.spriteFrame = this.frames[0];
+    }
+
+    /** 循环 clip 跳到第 t 秒（用于错开相位，让同类怪不齐步） */
+    seek(t: number): void {
+        if (!this.playing || !this.sprite || this.frames.length === 0) return;
+        const dur = this.frames.length / this.fps;
+        const tt = this.loop ? ((t % dur) + dur) % dur : Math.min(Math.max(t, 0), dur);
+        this.elapsed = tt;
+        this.idx = Math.min(this.frames.length - 1, Math.floor(tt * this.fps));
+        this.acc = tt - this.idx / this.fps;
+        this.sprite.spriteFrame = this.frames[this.idx];
     }
 
     stop(): void {

@@ -1,4 +1,4 @@
-import { Node, Graphics, Label } from 'cc';
+import { Node, Graphics, Label, UITransform } from 'cc';
 import {
     ENEMIES, EnemyDef, GAME, BASE_ATTACK, TalismanId, ELEMENT_COLOR, ELEMENT_NAME, Element, elementTier, TIER_MULT,
     MIN_HIT_DAMAGE, RIVER_INTERVAL, depthY, depthScale, lanePixels,
@@ -107,13 +107,14 @@ export class Combat {
      * foxfire/tongjia/shuigui bob=0；paperman 轻 bob；jiangshi 保持 12px hop。
      * heishan/baigu：idle 循环，bob=0。
      */
-    private static readonly ENEMY_MOVE: Record<string, { fps: number; bobPx: number; prefix?: string }> = {
-        jiangshi: { fps: 8, bobPx: 12 },
-        paperman: { fps: 9, bobPx: 4 },
-        foxfire: { fps: 9, bobPx: 0 },
+    // swayDeg：art 子节点随步伐左右摇摆的角度（一个 clip 周期摆一个来回）
+    private static readonly ENEMY_MOVE: Record<string, { fps: number; bobPx: number; swayDeg?: number; prefix?: string }> = {
+        jiangshi: { fps: 12, bobPx: 12, swayDeg: 2 }, // 12 帧一次完整起落 = 1 秒
+        paperman: { fps: 12, bobPx: 0, swayDeg: 3 }, // 12 帧真实走路，起伏已画在帧里，不再叠代码 bob
+        foxfire: { fps: 14, bobPx: 0 }, // 12 帧奔跑，快怪略快
         tongjia: { fps: 11, bobPx: 0 },
         shuigui: { fps: 8, bobPx: 0 }, // 略慢以缓和 f6–f7 观感；无 bob
-        lantern: { fps: 9, bobPx: 0 }, // 漂浮精英；无 bob（CD notes）
+        lantern: { fps: 10, bobPx: 0 }, // 漂浮精英；12 帧一个摇摆来回约 1.2 秒；无 bob
         heishan: { fps: 9, bobPx: 0, prefix: 'anim/boss_heishan/idle' }, // 6f idle；无 bob
         baigu: { fps: 9, bobPx: 0, prefix: 'anim/boss_baigu_metal/idle' }, // 默认金相；三相见 baiguPhaseClips
     };
@@ -445,9 +446,15 @@ export class Combat {
                 if (moveClip) {
                     const anim = new FrameAnim(artNode);
                     anim.play(moveClip);
+                    // 随机起始帧：错开相位，避免成群的怪齐步走
+                    if (moveClip.loop) anim.seek(Math.random() * moveClip.frames.length / moveClip.fps);
                     this.enemyAnims.set(n, anim);
                 }
-                const ch = addLabel(n, d.char, Math.max(12, Math.round(size * art.sealR * 1.3)), '#1E1A26');
+                // 跳尸、纸人的字印随 art 跳动和摇摆，避免身体动了汉字留在原地。
+                const sealParent = id === 'jiangshi' || id === 'paperman' ? artNode : n;
+                const sealColor = id === 'jiangshi' ? '#E8E2D0' : '#1E1A26';
+                const ch = addLabel(sealParent, d.char, Math.max(12, Math.round(size * art.sealR * 1.3)), sealColor);
+                ch.node.name = 'seal';
                 ch.node.setPosition(size * ((art.sealX ?? 0.5) - 0.5), size * (0.5 - art.sealY));
             } else {
                 n = circleNode(key, d.radius, ELEMENT_COLOR[d.element], d.char);
@@ -722,6 +729,7 @@ export class Combat {
                     if (art) {
                         anim = new FrameAnim(art);
                         anim.play(clip);
+                        if (clip.loop) anim.seek(Math.random() * clip.frames.length / clip.fps);
                         this.enemyAnims.set(e.node, anim);
                     }
                 }
@@ -731,10 +739,26 @@ export class Combat {
                 if (moveSpec.bobPx > 0) {
                     const art = e.node.getChildByName('art');
                     if (art) {
-                        const hop = Math.abs(Math.sin(anim ? anim.progress * Math.PI * 2 : e.t * Math.PI * 4))
+                        // 跳尸八帧为一整次起落；其余怪沿用原有浮动节奏。
+                        const hop = (e.def.id === 'jiangshi' && anim
+                            ? Math.sin(anim.progress * Math.PI)
+                            : Math.abs(Math.sin(anim ? anim.progress * Math.PI * 2 : e.t * Math.PI * 4)))
                             * moveSpec.bobPx;
                         art.setPosition(0, hop);
                     }
+                }
+                // 字印逐帧跟随胸口高度（如跳尸下蹲）
+                const artCfg = ENEMY_ART[e.def.id];
+                if (artCfg?.sealYFrames && anim) {
+                    const artNode = e.node.getChildByName('art');
+                    const seal = artNode?.getChildByName('seal') ?? e.node.getChildByName('seal');
+                    const tr = artNode?.getComponent(UITransform);
+                    const fy = artCfg.sealYFrames[anim.frameIndex % artCfg.sealYFrames.length];
+                    if (seal && tr) seal.setPosition(seal.position.x, tr.height * (0.5 - fy));
+                }
+                if (moveSpec.swayDeg && anim) {
+                    const art = e.node.getChildByName('art');
+                    art?.setRotationFromEuler(0, 0, Math.sin(anim.progress * Math.PI * 2) * moveSpec.swayDeg);
                 }
             }
             e.node.setPosition(e.x, e.y);
