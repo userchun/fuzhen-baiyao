@@ -448,7 +448,7 @@ export class Combat {
                     this.enemyAnims.set(n, anim);
                 }
                 const ch = addLabel(n, d.char, Math.max(12, Math.round(size * art.sealR * 1.3)), '#1E1A26');
-                ch.node.setPosition(0, size * (0.5 - art.sealY));
+                ch.node.setPosition(size * ((art.sealX ?? 0.5) - 0.5), size * (0.5 - art.sealY));
             } else {
                 n = circleNode(key, d.radius, ELEMENT_COLOR[d.element], d.char);
             }

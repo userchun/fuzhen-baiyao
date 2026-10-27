@@ -9,12 +9,12 @@ import { makeNode } from './Draw';
 
 const frames = new Map<string, SpriteFrame>();
 
-/** 妖怪图片的腹部字印位置与显示比例。sealY：字印中心距图片顶部的比例；scale：图片边长 / 碰撞直径 */
-export const ENEMY_ART: Record<string, { tex: string; sealY: number; sealR: number; scale: number }> = {
+/** 妖怪图片的腹部字印位置与显示比例。sealY：字印中心距图片顶部的比例；sealX：距左边的比例（默认 0.5 居中）；scale：图片边长 / 碰撞直径 */
+export const ENEMY_ART: Record<string, { tex: string; sealY: number; sealX?: number; sealR: number; scale: number }> = {
     // scale = 显示边长 / 碰撞直径；相对上一轮再 ×1.45（约 +45%）
     paperman: { tex: 'enemy_paperman', sealY: 0.56, sealR: 0.16, scale: 3.05 },
     jiangshi: { tex: 'enemy_jiangshi', sealY: 0.72, sealR: 0.13, scale: 3.05 },
-    foxfire: { tex: 'enemy_foxfire', sealY: 0.75, sealR: 0.12, scale: 3.4 },
+    foxfire: { tex: 'enemy_foxfire', sealY: 0.60, sealX: 0.32, sealR: 0.09, scale: 3.4 }, // 2026-10-27 新狐火：字印对齐胸口圆牌
     lantern: { tex: 'enemy_lantern', sealY: 0.55, sealR: 0.10, scale: 2.75 }, // 2026-10-27 即梦样板 3 号：字印对齐腹部发光圆
     shuigui: { tex: 'enemy_shuigui', sealY: 0.61, sealR: 0.125, scale: 3.05 },
     tongjia: { tex: 'enemy_tongjia', sealY: 0.69, sealR: 0.12, scale: 3.05 },
