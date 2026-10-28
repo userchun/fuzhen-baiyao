@@ -23,7 +23,7 @@ export const GAME = {
  */
 export const LAYOUT = {
     wallFromBottom: 258,   // 垛口线（撞墙线）距屏幕底边
-    playerFromBottom: 216, // 主角中心距屏幕底边（站在城墙走道上）
+    playerFromBottom: 290, // 主角中心距屏幕底边：脚踩垛口后的走道（帧内脚底在 0.94）
     spawnAboveTop: 60,     // 出怪线在屏幕顶边之上多少像素
     wallArtH: 179,         // 城墙顶图片显示高度（720 宽；暗黑国风城墙 1440×358）
     wallArtTopAbove: 6,    // 城墙图片顶边高出垛口线多少

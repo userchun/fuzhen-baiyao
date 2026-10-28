@@ -47,7 +47,7 @@ interface Fx { key: string; node: Node; life: number; maxLife: number; scale: nu
 
 const HALF_W = LAYOUT.roadHalfW; // 出怪与妖怪横向活动范围：收在路面以内
 const top = (): number => GAME.horizonY; // 纵深最远点（地平线/出怪线）
-const PLAYER_ART_SIZE = 120; // 小道士图片显示边长（2026-10-27 新背面道士：88 → 120，城墙上更醒目）
+const PLAYER_ART_SIZE = 160; // 小道士图片显示边长（2026-10-28 暗黑国风道士：帧内留白多，120 → 160）
 
 // 战斗世界：施法、敌人移动、子弹碰撞、区域伤害、特效
 export class Combat {

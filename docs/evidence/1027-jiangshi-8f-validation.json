@@ -1,0 +1,282 @@
+{
+  "frames": 8,
+  "fps": 8,
+  "periodSeconds": 1,
+  "scene": "First level village; controlled spawning at three depths, paused engine stepped by 1/8 second",
+  "samples": [
+    {
+      "frame": 0,
+      "entities": [
+        {
+          "id": "jiangshi",
+          "index": 0,
+          "progress": 0,
+          "hopY": 0,
+          "sealAttached": true,
+          "sealY": 7.1484375,
+          "depth": 0.25
+        },
+        {
+          "id": "jiangshi",
+          "index": 0,
+          "progress": 0,
+          "hopY": 0,
+          "sealAttached": true,
+          "sealY": 7.1484375,
+          "depth": 0.5
+        },
+        {
+          "id": "jiangshi",
+          "index": 0,
+          "progress": 0,
+          "hopY": 0,
+          "sealAttached": true,
+          "sealY": 7.1484375,
+          "depth": 0.75
+        }
+      ]
+    },
+    {
+      "frame": 1,
+      "entities": [
+        {
+          "id": "jiangshi",
+          "index": 1,
+          "progress": 0.125,
+          "hopY": 4.592201188381077,
+          "sealAttached": true,
+          "sealY": 7.1484375,
+          "depth": 0.26371733535688374
+        },
+        {
+          "id": "jiangshi",
+          "index": 1,
+          "progress": 0.125,
+          "hopY": 4.592201188381077,
+          "sealAttached": true,
+          "sealY": 7.1484375,
+          "depth": 0.5137173353568837
+        },
+        {
+          "id": "jiangshi",
+          "index": 1,
+          "progress": 0.125,
+          "hopY": 4.592201188381077,
+          "sealAttached": true,
+          "sealY": 7.1484375,
+          "depth": 0.7637173353568837
+        }
+      ]
+    },
+    {
+      "frame": 2,
+      "entities": [
+        {
+          "id": "jiangshi",
+          "index": 2,
+          "progress": 0.25,
+          "hopY": 8.48528137423857,
+          "sealAttached": true,
+          "sealY": 7.1484375,
+          "depth": 0.28299252110433
+        },
+        {
+          "id": "jiangshi",
+          "index": 2,
+          "progress": 0.25,
+          "hopY": 8.48528137423857,
+          "sealAttached": true,
+          "sealY": 7.1484375,
+          "depth": 0.5329925211043299
+        },
+        {
+          "id": "jiangshi",
+          "index": 2,
+          "progress": 0.25,
+          "hopY": 8.48528137423857,
+          "sealAttached": true,
+          "sealY": 7.1484375,
+          "depth": 0.7829925211043299
+        }
+      ]
+    },
+    {
+      "frame": 3,
+      "entities": [
+        {
+          "id": "jiangshi",
+          "index": 3,
+          "progress": 0.375,
+          "hopY": 11.08655439013544,
+          "sealAttached": true,
+          "sealY": 7.1484375,
+          "depth": 0.29932184659189554
+        },
+        {
+          "id": "jiangshi",
+          "index": 3,
+          "progress": 0.375,
+          "hopY": 11.08655439013544,
+          "sealAttached": true,
+          "sealY": 7.1484375,
+          "depth": 0.5493218465918954
+        },
+        {
+          "id": "jiangshi",
+          "index": 3,
+          "progress": 0.375,
+          "hopY": 11.08655439013544,
+          "sealAttached": true,
+          "sealY": 7.1484375,
+          "depth": 0.7993218465918954
+        }
+      ]
+    },
+    {
+      "frame": 4,
+      "entities": [
+        {
+          "id": "jiangshi",
+          "index": 4,
+          "progress": 0.5,
+          "hopY": 12,
+          "sealAttached": true,
+          "sealY": 7.1484375,
+          "depth": 0.3056920587478917
+        },
+        {
+          "id": "jiangshi",
+          "index": 4,
+          "progress": 0.5,
+          "hopY": 12,
+          "sealAttached": true,
+          "sealY": 7.1484375,
+          "depth": 0.5556920587478916
+        },
+        {
+          "id": "jiangshi",
+          "index": 4,
+          "progress": 0.5,
+          "hopY": 12,
+          "sealAttached": true,
+          "sealY": 7.1484375,
+          "depth": 0.8056920587478916
+        }
+      ]
+    },
+    {
+      "frame": 5,
+      "entities": [
+        {
+          "id": "jiangshi",
+          "index": 5,
+          "progress": 0.625,
+          "hopY": 11.08655439013544,
+          "sealAttached": true,
+          "sealY": 7.1484375,
+          "depth": 0.3081598266769811
+        },
+        {
+          "id": "jiangshi",
+          "index": 5,
+          "progress": 0.625,
+          "hopY": 11.08655439013544,
+          "sealAttached": true,
+          "sealY": 7.1484375,
+          "depth": 0.558159826676981
+        },
+        {
+          "id": "jiangshi",
+          "index": 5,
+          "progress": 0.625,
+          "hopY": 11.08655439013544,
+          "sealAttached": true,
+          "sealY": 7.1484375,
+          "depth": 0.808159826676981
+        }
+      ]
+    },
+    {
+      "frame": 6,
+      "entities": [
+        {
+          "id": "jiangshi",
+          "index": 6,
+          "progress": 0.75,
+          "hopY": 8.485281374238571,
+          "sealAttached": true,
+          "sealY": 7.1484375,
+          "depth": 0.31062759460607053
+        },
+        {
+          "id": "jiangshi",
+          "index": 6,
+          "progress": 0.75,
+          "hopY": 8.485281374238571,
+          "sealAttached": true,
+          "sealY": 7.1484375,
+          "depth": 0.5606275946060705
+        },
+        {
+          "id": "jiangshi",
+          "index": 6,
+          "progress": 0.75,
+          "hopY": 8.485281374238571,
+          "sealAttached": true,
+          "sealY": 7.1484375,
+          "depth": 0.8106275946060705
+        }
+      ]
+    },
+    {
+      "frame": 7,
+      "entities": [
+        {
+          "id": "jiangshi",
+          "index": 7,
+          "progress": 0.875,
+          "hopY": 4.592201188381079,
+          "sealAttached": true,
+          "sealY": 7.1484375,
+          "depth": 0.31309536253515996
+        },
+        {
+          "id": "jiangshi",
+          "index": 7,
+          "progress": 0.875,
+          "hopY": 4.592201188381079,
+          "sealAttached": true,
+          "sealY": 7.1484375,
+          "depth": 0.5630953625351599
+        },
+        {
+          "id": "jiangshi",
+          "index": 7,
+          "progress": 0.875,
+          "hopY": 4.592201188381079,
+          "sealAttached": true,
+          "sealY": 7.1484375,
+          "depth": 0.8130953625351599
+        }
+      ]
+    }
+  ],
+  "loop": [
+    {
+      "index": 0,
+      "elapsed": 1,
+      "progress": 0
+    },
+    {
+      "index": 0,
+      "elapsed": 1,
+      "progress": 0
+    },
+    {
+      "index": 0,
+      "elapsed": 1,
+      "progress": 0
+    }
+  ],
+  "uiError": null
+}
