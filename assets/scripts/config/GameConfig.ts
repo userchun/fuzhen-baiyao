@@ -25,8 +25,8 @@ export const LAYOUT = {
     wallFromBottom: 258,   // 垛口线（撞墙线）距屏幕底边
     playerFromBottom: 216, // 主角中心距屏幕底边（站在城墙走道上）
     spawnAboveTop: 60,     // 出怪线在屏幕顶边之上多少像素
-    wallArtH: 152,         // 城墙顶图片显示高度（720 宽）
-    wallArtTopAbove: 12,   // 城墙图片顶边高出垛口线多少
+    wallArtH: 179,         // 城墙顶图片显示高度（720 宽；暗黑国风城墙 1440×358）
+    wallArtTopAbove: 6,    // 城墙图片顶边高出垛口线多少
     roadHalfW: 150,        // 路面半宽：出怪和妖怪横向活动收在这个范围内（暗黑国风背景的路更窄）
 };
 
