@@ -27,7 +27,7 @@ export const LAYOUT = {
     spawnAboveTop: 60,     // 出怪线在屏幕顶边之上多少像素
     wallArtH: 152,         // 城墙顶图片显示高度（720 宽）
     wallArtTopAbove: 12,   // 城墙图片顶边高出垛口线多少
-    roadHalfW: 230,        // 路面半宽：出怪和妖怪横向活动收在这个范围内
+    roadHalfW: 150,        // 路面半宽：出怪和妖怪横向活动收在这个范围内（暗黑国风背景的路更窄）
 };
 
 export function applyScreen(visibleHeight: number): void {

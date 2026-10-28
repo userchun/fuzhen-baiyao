@@ -6,8 +6,8 @@ import { loadAudio, AudioManager } from './core/AudioManager';
 
 const BG_ART = ['bg_level1_village', 'bg_level2_temple']; // 与 LEVELS 下标对应
 const BGM_BY_LEVEL = ['village', 'temple'] as const; // 与 LEVELS 下标对应
-// 背景图高宽比，与 BG_ART 对应：第一关是俯视地面 1024×1536；第二关仍是旧透视图 720×1280
-const BG_ART_RATIO = [1536 / 1024, 1280 / 720];
+// 背景图高宽比，与 BG_ART 对应：第一关是暗黑国风俯视荒村 1024×1820；第二关仍是旧透视图 720×1280
+const BG_ART_RATIO = [1820 / 1024, 1280 / 720];
 import { SkillSystem } from './game/SkillSystem';
 import { Combat } from './game/Combat';
 import { Spawner } from './game/Spawner';
