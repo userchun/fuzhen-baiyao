@@ -11,11 +11,11 @@
       "type": "sprite",
       "path": "assets/resources/textures/bg_level1_village.png",
       "size": [
-        1024,
-        1819
+        1080,
+        2340
       ],
       "status": "in_game",
-      "source": "2026-10-28 暗黑国风 Q 版重做（magpie /imagegen，附样板图）。旧图备份 generated-images/dark-qban/bg_level1_village.old.png",
+      "source": "2026-10-30 重做（magpie gpt-image-2，结构参考向僵尸开炮战斗地图，9:19.5）。旧图备份 generated-images/level1-redo-20261030/backup/",
       "license": "待核实",
       "style": "dark-qban"
     },

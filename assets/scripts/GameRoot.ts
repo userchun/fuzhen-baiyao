@@ -1,4 +1,4 @@
-import { _decorator, Component, Node, UITransform, EventTouch, view, ResolutionPolicy, input, Input, sys } from 'cc';
+import { _decorator, Component, Node, UITransform, EventTouch, view, ResolutionPolicy, input, Input, sys, screen } from 'cc';
 import { GAME, LEVELS, COMBOS, ENEMIES, applyScreen } from './config/GameConfig';
 import { Difficulty, HARD_HP_MULT } from './config/MetaConfig';
 import { Profile, loadProfile, saveProfile, defaultProfile, defaultLevel, recordClear, PROFILE_KEY, PROFILE_BAK_KEY, LEGACY_UNLOCK_KEY } from './meta/Profile';
@@ -8,8 +8,8 @@ import { loadAudio, AudioManager } from './core/AudioManager';
 
 const BG_ART = ['bg_level1_village', 'bg_level2_temple']; // 与 LEVELS 下标对应
 const BGM_BY_LEVEL = ['village', 'temple'] as const; // 与 LEVELS 下标对应
-// 背景图高宽比，与 BG_ART 对应：第一关是暗黑国风俯视荒村 1024×1820；第二关仍是旧透视图 720×1280
-const BG_ART_RATIO = [1820 / 1024, 1280 / 720];
+// 背景图高宽比，与 BG_ART 对应：第一关是暗黑国风俯视荒村 1080×2340（9:19.5）；第二关仍是旧透视图 720×1280
+const BG_ART_RATIO = [2340 / 1080, 1280 / 720];
 import { SkillSystem } from './game/SkillSystem';
 import { Combat } from './game/Combat';
 import { Spawner } from './game/Spawner';
@@ -31,6 +31,7 @@ export class GameRoot extends Component {
     private fb: Feedback;
     private audio: AudioManager;
     private state: 'menu' | 'play' | 'pick' | 'over' = 'menu';
+    private relayout: (() => void) | null = null;
     private levelIndex = 0;
     private difficulty: Difficulty = 'normal';
     private profile: Profile = loadProfile(sys.localStorage, LEVELS.length);
@@ -52,12 +53,19 @@ export class GameRoot extends Component {
         this.applySettings();
 
         // 窗口尺寸变化（换机型、拉伸预览窗口）：在主界面时按新高度重排，避免上下留黑边
-        view.on('canvas-resize', () => {
+        // 只监听 canvas-resize 时，窗口变矮后可见高度不会重算，主界面底部会被切掉；
+        // 窗口变化时重新套用固定宽度策略，让可见高度跟着窗口走
+        const relayout = () => {
+            view.setDesignResolutionSize(GAME.width, GAME.height, ResolutionPolicy.FIXED_WIDTH);
+            // 战斗中城墙、出怪线已按旧高度摆好，只在主界面重排
             if (this.state !== 'menu') return;
             applyScreen(view.getVisibleSize().height);
             tf.setContentSize(GAME.width, GAME.height);
             this.showMenu(this.home.currentLevel);
-        });
+        };
+        view.on('canvas-resize', relayout);
+        screen.on('window-resize', relayout);
+        this.relayout = relayout;
 
         // 底部区域拖动 = 移动；上方战场按住 = 瞄准并连发
         let mode: 'move' | 'aim' | null = null;
@@ -106,6 +114,12 @@ export class GameRoot extends Component {
     }
 
     update(dt: number): void {
+        // 编辑器 Game View 等环境改画布大小时不一定发事件：主界面每帧按画布实际比例核对高度
+        if (this.state === 'menu' && this.relayout) {
+            const win = screen.windowSize;
+            const want = Math.max(1280, Math.round(GAME.width * win.height / win.width));
+            if (win.width > 0 && Math.abs(want - GAME.height) > 2) this.relayout();
+        }
         this.ui.update(dt);
         this.home.update(dt);
         if (this.state !== 'play') return;
