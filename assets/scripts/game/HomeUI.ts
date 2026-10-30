@@ -60,10 +60,17 @@ export class HomeUI {
     show(p: Profile, levels: LevelDef[], startLevel: number, act: HomeActions): void {
         this.hide();
         this.level = startLevel;
-        this.s = Math.max(GAME.width / IMG.w, GAME.height / IMG.h);
+        // 按宽度铺满：按钮画在底图里，左右不能裁，否则头像和右侧入口会被切掉
+        this.s = GAME.width / IMG.w;
         const root = makeNode('home', this.root, GAME.width, GAME.height);
         this.node = root;
         rectNode('homeBase', GAME.width, GAME.height, '#0B0E16', root);
+        // 屏幕比底图高时，上下空出来的部分用放大的同一张底图压暗垫底，不留纯色空条
+        const cover = Math.max(GAME.width / IMG.w, GAME.height / IMG.h) * 1.08;
+        if (IMG.h * this.s < GAME.height) {
+            spriteNode('ui_home_bg', IMG.w * cover, IMG.h * cover, root);
+            rectNode('homeDim', GAME.width, GAME.height, '#05070C', root, 0, 200);
+        }
         spriteNode('ui_home_bg', IMG.w * this.s, IMG.h * this.s, root);
         this.render(p, levels, act);
     }
