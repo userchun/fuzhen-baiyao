@@ -1,7 +1,7 @@
 import { Node, Graphics, Label, UITransform } from 'cc';
 import {
     ENEMIES, EnemyDef, GAME, BASE_ATTACK, TalismanId, ELEMENT_COLOR, ELEMENT_NAME, Element, elementTier, TIER_MULT,
-    MIN_HIT_DAMAGE, RIVER_INTERVAL, depthY, depthScale, lanePixels, travelPixels, LAYOUT,
+    MIN_HIT_DAMAGE, RIVER_INTERVAL, SIEGE, depthY, depthScale, lanePixels, travelPixels, LAYOUT,
 } from '../config/GameConfig';
 import { Pool } from '../core/Pool';
 import { circleNode, rectNode, makeNode, hex, setOpacity, paintCircle, addLabel } from '../core/Draw';
@@ -29,6 +29,11 @@ export interface Enemy {
     alive: boolean;
     /** Boss death oneshot in progress; blocks hurt/move; settle deferred to anim onDone */
     dying: boolean;
+}
+
+interface SiegeEntry {
+    enemy: Enemy; arrival: number; order: number; slot: number | null;
+    attackT: number; hit: boolean; attacking: boolean;
 }
 
 interface Bullet {
@@ -62,6 +67,11 @@ export class Combat {
     spawnStopped = false;
     hpMult = 1; // 关卡血量倍率
 
+    private siege: SiegeEntry[] = [];
+    private siegeClock = 0;
+    private siegeOrder = 0;
+    private siegeDamage: { time: number; amount: number }[] = [];
+    private siegeAttackClips = new Map<string, FrameClip>();
     private bullets: Bullet[] = [];
     private zones: Zone[] = [];
     private fx: Fx[] = [];
@@ -150,6 +160,11 @@ export class Combat {
             const spec = Combat.ENEMY_MOVE[id];
             const clip = this.makeClip(spec.prefix ?? `anim/enemy_${id}/move`, spec.fps, true);
             if (clip) this.enemyMoveClips.set(id, clip);
+        }
+        for (const id of Object.keys(Combat.ENEMY_MOVE)) {
+            if (ENEMIES[id]?.boss) continue;
+            const frames = getFrames(`anim/enemy_${id}/attack`);
+            if (frames.length) this.siegeAttackClips.set(id, { frames, fps: frames.length / SIEGE.attackPeriod, loop: true });
         }
         // 白骨夫人三相 idle（phase 切换时换 clip；静态 boss_baigu_* 仍作 fallback）
         const baiguFps = Combat.ENEMY_MOVE.baigu?.fps ?? 9;
@@ -436,8 +451,8 @@ export class Combat {
         this.playerAnim?.update(dt);
         this.castAll(dt);
         this.updateZones(dt);
-        this.updateEnemies(dt);
         this.updateBullets(dt);
+        this.updateEnemies(dt);
         this.updateFx(dt);
         this.cleanup();
     }
@@ -578,6 +593,7 @@ export class Combat {
                     if (!e.alive || e.dying || Math.hypot(e.x - cx, e.y - cy) > r + e.def.radius * depthScale(e.depth)) continue;
                     this.hurt(e, dmg, 'earth');
                     if (!e.def.boss) {
+                        this.removeSiege(e);
                         e.depth = Math.max(0, e.depth - 50 / lanePixels()); // 击退（推远）
                         e.freezeT = Math.max(e.freezeT, 0.4);
                     }
@@ -656,6 +672,7 @@ export class Combat {
     }
 
     private updateEnemies(dt: number): void {
+        this.siegeClock += dt;
         for (const e of this.enemies) {
             // death oneshot：只推进帧，不移动/攻城/召唤；播完由 onDone settle
             if (e.dying) {
@@ -666,9 +683,11 @@ export class Combat {
             if (!e.alive) continue;
             e.t += dt;
             const d = e.def;
+            const previousGap = e.y - d.radius * depthScale(e.depth) - GAME.wallY;
+            const siegeEntry = this.siege.find((entry) => entry.enemy === e);
             if (e.freezeT > 0) {
                 e.freezeT -= dt;
-            } else {
+            } else if (!siegeEntry) {
                 const sp = d.speed * (1 - e.slow);
                 const rate = sp / travelPixels(); // px/s → depth/s（按旧路程换算，保持走到城墙的时间不变）
                 if (d.move === 'hop') {
@@ -736,15 +755,14 @@ export class Combat {
                 e.y = GAME.wallY + r;
                 this.wallHp -= d.damage * dt;
                 if (Math.random() < dt * 4) this.fb.shake(6, 0.15);
-            } else if (e.y - r <= GAME.wallY) {
-                this.wallHp -= d.damage;
-                this.fb.shake(d.boss ? 30 : 10, 0.25);
-                this.audio?.playSfx('barrier_crack', 0.55); // A7 结界远距龟裂（替 generic hit）
-                this.playPlayerHit();
-                burst(this.fxLayer, e.x, GAME.wallY, FX.barrier(e.x, GAME.wallY));
-                e.alive = false;
-                this.addFx(e.x, GAME.wallY, d.radius * 1.5);
-                continue;
+            } else if (!d.boss && !siegeEntry && e.y - r <= GAME.wallY) {
+                // 记录本帧内到达时刻；同一时刻按生成顺序排序。
+                const gap = e.y - r - GAME.wallY;
+                const fraction = previousGap <= 0 ? 0 : previousGap / (previousGap - gap);
+                const arrival = this.siegeClock - dt + Math.max(0, Math.min(1, fraction)) * dt;
+                this.siege.push({ enemy: e, arrival, order: this.siegeOrder++, slot: null, attackT: 0, hit: false, attacking: false });
+                e.y = GAME.wallY + r;
+                e.depth = (GAME.horizonY - e.y) / lanePixels();
             }
             // move 序列帧 + 可选 art 子节点 Y-bob（逻辑坐标不变，碰撞仍用 e.x/e.y）
             const moveSpec = Combat.ENEMY_MOVE[e.def.id];
@@ -800,6 +818,8 @@ export class Combat {
                 }
             }
         }
+
+        this.updateSiege(dt);
 
         // 存在感循环：任一存活未冻则 loop，否则停（dive_in/out 仍由切换触发，不改）
         let papermanMoving = false;
@@ -918,7 +938,7 @@ export class Combat {
             e.flashT = e.flashMax;
             e.hitReactT = stiff ? 0.2 : 0.14;
             const art = e.node.getChildByName('art');
-            if (art) hitPulse(art, stiff ? 1.1 : 1.08, stiff);
+            if (art) hitPulse(art, stiff ? 1.1 : 1.08, stiff, 1);
         } else {
             // Boss / 其他：短闪，保持原可读
             e.flashMax = 0.12;
@@ -939,6 +959,84 @@ export class Combat {
         const t = (u - 0.32) / 0.68;
         const s = t * t * (3 - 2 * t); // smoothstep
         return peak + (1 - peak) * s;
+    }
+
+    private removeSiege(e: Enemy): void {
+        const entry = this.siege.find((item) => item.enemy === e);
+        if (!entry) return;
+        this.siege = this.siege.filter((item) => item !== entry);
+        if (entry.attacking) this.ensureEnemyAnim(e.node, e.def.id, e.element);
+    }
+
+    private updateSiege(dt: number): void {
+        this.siege = this.siege.filter(({ enemy }) => enemy.alive && !enemy.dying);
+        this.siege.sort((a, b) => a.arrival - b.arrival || a.order - b.order);
+        const occupied = new Set<number>();
+        for (const entry of this.siege) if (entry.slot !== null) occupied.add(entry.slot);
+        for (const entry of this.siege) {
+            if (entry.slot !== null) continue;
+            const slots = Array.from({ length: SIEGE.slots }, (_, i) => i).filter((i) => !occupied.has(i));
+            if (!slots.length) break;
+            const slotX = (i: number) => -HALF_W + i * (HALF_W * 2 / (SIEGE.slots - 1));
+            slots.sort((a, b) => Math.abs(slotX(a) - entry.enemy.x) - Math.abs(slotX(b) - entry.enemy.x) || a - b);
+            entry.slot = slots[0];
+            occupied.add(entry.slot);
+        }
+        const hits: SiegeEntry[] = [];
+        let waiting = 0;
+        for (const entry of this.siege) {
+            const e = entry.enemy;
+            const controlled = e.freezeT > 0 || e.diving;
+            const r = e.def.radius * depthScale(e.depth);
+            const targetX = entry.slot === null ? e.x : -HALF_W + entry.slot * (HALF_W * 2 / (SIEGE.slots - 1));
+            const targetY = GAME.wallY + r + (entry.slot === null ? 45 + 28 * waiting++ : 0);
+            const dx = targetX - e.x, dy = targetY - e.y;
+            const distance = Math.hypot(dx, dy);
+            if (!controlled && distance > 0.01) {
+                const step = Math.min(distance, e.def.speed * (1 - e.slow) * dt);
+                e.x += dx / distance * step;
+                e.y += dy / distance * step;
+                e.depth = Math.max(0, Math.min(1, (GAME.horizonY - e.y) / lanePixels()));
+            }
+            const inPosition = entry.slot !== null && Math.hypot(targetX - e.x, targetY - e.y) < 1;
+            if (controlled || !inPosition) {
+                entry.attackT = 0;
+                entry.hit = false;
+                if (entry.attacking) {
+                    entry.attacking = false;
+                    this.ensureEnemyAnim(e.node, e.def.id, e.element);
+                }
+            } else {
+                if (!entry.attacking) {
+                    entry.attacking = true;
+                    const clip = this.siegeAttackClips.get(e.def.id);
+                    if (clip) this.getOrCreateEnemyAnim(e.node)?.play(clip);
+                }
+                entry.attackT += dt;
+                if (!entry.hit && entry.attackT >= SIEGE.attackPeriod * SIEGE.hitAt) {
+                    entry.hit = true;
+                    hits.push(entry);
+                }
+                if (entry.attackT >= SIEGE.attackPeriod) {
+                    entry.attackT -= SIEGE.attackPeriod;
+                    entry.hit = false;
+                }
+                if (this.siegeAttackClips.has(e.def.id)) this.enemyAnims.get(e.node)?.seek(entry.attackT);
+            }
+            e.node.setPosition(e.x, e.y);
+        }
+        this.siegeDamage = this.siegeDamage.filter((record) => record.time > this.siegeClock - 1 + 1e-9);
+        const used = this.siegeDamage.reduce((sum, record) => sum + record.amount, 0);
+        const total = hits.reduce((sum, entry) => sum + entry.enemy.def.damage, 0);
+        const applied = Math.min(total, Math.max(0, SIEGE.damagePerSecond - used));
+        if (applied > 0) {
+            this.wallHp -= applied;
+            this.siegeDamage.push({ time: this.siegeClock, amount: applied });
+            this.fb.shake(10, 0.25);
+            this.audio?.playSfx('barrier_crack', 0.55);
+            this.playPlayerHit();
+            for (const entry of hits) burst(this.fxLayer, entry.enemy.x, GAME.wallY, FX.barrier(entry.enemy.x, GAME.wallY));
+        }
     }
 
     private hurt(e: Enemy, amount: number, el: Element, show = true, motionRef?: MotionRefId): void {
@@ -1074,6 +1172,7 @@ export class Combat {
             return;
         }
         e.alive = false;
+        this.removeSiege(e);
         this.kills++;
         burst(this.fxLayer, e.x, e.y, FX.death(e.x, e.y, ELEMENT_COLOR[e.element]));
         if (e.def.boss) {

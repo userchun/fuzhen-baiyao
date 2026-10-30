@@ -5,6 +5,19 @@ export class Graphics extends Comp { clear() {} circle() {} fill() {} stroke() {
 export class Label extends Comp { string = ''; }
 export class UITransform extends Comp { setContentSize() {} }
 export class UIOpacity extends Comp { opacity = 255; }
+// 渲染资源在模拟中不加载，但战斗模块仍会静态导入这些引擎符号。
+export class Sprite extends Comp {}
+export class SpriteFrame {}
+export class Texture2D {}
+export class ParticleSystem2D extends Comp {}
+export class Vec3 { constructor(x = 0, y = 0, z = 0) { Object.assign(this, { x, y, z }); } }
+export const v2 = (x, y) => ({ x, y });
+export const resources = { getDirWithPath: () => [] };
+export class Tween { static stopAllByTarget() {} }
+export function tween() {
+  const t = { to: () => t, call: () => t, repeatForever: () => t, start: () => t };
+  return t;
+}
 export class Color { a = 255; fromHEX() { return this; } }
 export const Layers = { Enum: { UI_2D: 1 } };
 export class Node {

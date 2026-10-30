@@ -101,7 +101,7 @@ export const TIER_MULT: Record<HitTier, number> = { crit: COUNTER_MULT, normal: 
 export interface EnemyDef {
     id: string; name: string; char: string; element: Element;
     hp: number; speed: number; radius: number; xp: number;
-    damage: number;        // 撞墙伤害；Boss 为抵达城墙后的每秒攻城伤害
+    damage: number;        // 小怪每次攻城伤害；Boss 为抵达城墙后的每秒伤害
     move: 'straight' | 'hop' | 'sine';
     elite?: boolean; boss?: boolean;
     splitInto?: string; splitCount?: number;
@@ -111,12 +111,15 @@ export interface EnemyDef {
     phases?: Element[];    // Boss 按血量阶段切换属性
 }
 
+// 小怪攻城使用活动战斗时间；Boss 仍沿用独立规则。
+export const SIEGE = { slots: 8, damagePerSecond: 8, attackPeriod: 1.2, hitAt: 0.5 };
+
 export const ENEMIES: Record<string, EnemyDef> = {
-    paperman: { id: 'paperman', name: '小纸人', char: '纸', element: 'wood', hp: 80, speed: 60, radius: 25, damage: 5, xp: 1, move: 'straight' },
-    jiangshi: { id: 'jiangshi', name: '跳尸', char: '尸', element: 'earth', hp: 120, speed: 70, radius: 30, damage: 10, xp: 2, move: 'hop' },
-    foxfire: { id: 'foxfire', name: '狐火', char: '狐', element: 'fire', hp: 38, speed: 110, radius: 21, damage: 5, xp: 1, move: 'sine' },
+    paperman: { id: 'paperman', name: '小纸人', char: '纸', element: 'wood', hp: 80, speed: 60, radius: 25, damage: 1, xp: 1, move: 'straight' },
+    jiangshi: { id: 'jiangshi', name: '跳尸', char: '尸', element: 'earth', hp: 120, speed: 70, radius: 30, damage: 2, xp: 2, move: 'hop' },
+    foxfire: { id: 'foxfire', name: '狐火', char: '狐', element: 'fire', hp: 38, speed: 110, radius: 21, damage: 1, xp: 1, move: 'sine' },
     lantern: {
-        id: 'lantern', name: '灯笼鬼', char: '灯', element: 'fire', hp: 700, speed: 40, radius: 42, damage: 20, xp: 10,
+        id: 'lantern', name: '灯笼鬼', char: '灯', element: 'fire', hp: 700, speed: 40, radius: 42, damage: 3, xp: 10,
         move: 'straight', elite: true, splitInto: 'foxfire', splitCount: 3,
     },
     heishan: {
@@ -125,8 +128,8 @@ export const ENEMIES: Record<string, EnemyDef> = {
         armor: 10, // T2：常态岩甲；虚弱窗内 Combat 临时取消减免（不砍 Boss HP）
     },
     // ---- 第二章 · 古寺 ----
-    tongjia: { id: 'tongjia', name: '铜甲尸', char: '铜', element: 'metal', hp: 240, speed: 45, radius: 32, damage: 15, xp: 3, move: 'straight', armor: 5 },
-    shuigui: { id: 'shuigui', name: '水鬼', char: '水', element: 'water', hp: 80, speed: 80, radius: 25, damage: 8, xp: 2, move: 'straight', dive: true },
+    tongjia: { id: 'tongjia', name: '铜甲尸', char: '铜', element: 'metal', hp: 240, speed: 45, radius: 32, damage: 2, xp: 3, move: 'straight', armor: 5 },
+    shuigui: { id: 'shuigui', name: '水鬼', char: '水', element: 'water', hp: 80, speed: 80, radius: 25, damage: 1, xp: 2, move: 'straight', dive: true },
     baigu: {
         id: 'baigu', name: '白骨夫人', char: '骨', element: 'metal', hp: 5000, speed: 20, radius: 80, damage: 18, xp: 0,
         move: 'straight', boss: true, summon: 'shuigui', summonCount: 2, summonInterval: 6,

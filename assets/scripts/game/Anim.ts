@@ -19,11 +19,11 @@ export function breathe(node: Node, amplitude = 0.04, period = 1.6): Tween<Node>
  * stiff=true（跳尸/铜甲）略加长回弹，带轻微压扁再回正。
  * 建议打在 art 子节点，避免与根节点 depthScale 互盖。
  */
-export function hitPulse(node: Node, scale = 1.15, stiff = false): void {
+export function hitPulse(node: Node, scale = 1.15, stiff = false, baseScale?: number): void {
     if (!node?.isValid) return;
     Tween.stopAllByTarget(node);
-    const base = node.scale.x;
-    const baseY = node.scale.y;
+    const base = baseScale ?? node.scale.x;
+    const baseY = baseScale ?? node.scale.y;
     if (stiff) {
         tween(node)
             .to(0.06, { scale: new Vec3(base * scale, baseY * scale * 0.94, 1) }, { easing: 'quadOut' })
