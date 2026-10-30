@@ -14,7 +14,11 @@ import {
 import { popIn } from './Anim';
 
 /** 底图原始尺寸，以及图上各元素的中心位置（像素，左上为原点） */
-const IMG = { w: 941, h: 1672 };
+// 底图是 v12 上下外扩到 9:19.5 的版本（852×1846）。POS 仍按 v12 原图（941×1672）的像素写，
+// 换算：先加上外扩的顶部高度 183，再整体缩放 852/941
+const IMG = { w: 852, h: 1846 };
+const SRC_K = 852 / 941;
+const SRC_TOP = 183;
 const POS = {
     progress: [262, 86], coin: [592, 52], paper: [775, 52], gear: [887, 52],
     title: [470, 215],
@@ -48,8 +52,15 @@ export class HomeUI {
     constructor(private root: Node, private audio?: AudioManager) {}
 
     /** 图上坐标 → 节点坐标（底图等比铺满屏幕、居中） */
+    /** v12 原图里的 1 像素对应屏幕上多少（尺寸都按 v12 原图写） */
+    private get u(): number {
+        return this.s * SRC_K;
+    }
+
     private at(p: readonly number[]): [number, number] {
-        return [(p[0] - IMG.w / 2) * this.s, (IMG.h / 2 - p[1]) * this.s];
+        const x = p[0] * SRC_K;
+        const y = (p[1] + SRC_TOP) * SRC_K;
+        return [(x - IMG.w / 2) * this.s, (IMG.h / 2 - y) * this.s];
     }
 
     /** 当前停在第几关（重排时保持不变） */
@@ -60,7 +71,7 @@ export class HomeUI {
     show(p: Profile, levels: LevelDef[], startLevel: number, act: HomeActions): void {
         this.hide();
         this.level = startLevel;
-        // 按宽度铺满：按钮画在底图里，左右不能裁，否则头像和右侧入口会被切掉
+        // 按宽度铺满：按钮画在底图里，左右不能裁；底图已是 9:19.5，矮一些的屏幕只裁掉上下多画的天空和城墙
         this.s = GAME.width / IMG.w;
         const root = makeNode('home', this.root, GAME.width, GAME.height);
         this.node = root;
@@ -128,7 +139,7 @@ export class HomeUI {
             return l;
         };
         const hit = (pos: readonly number[], w: number, h: number, cb: () => void, sound = true): Node => {
-            const n = makeNode('hit', dyn, w * this.s, h * this.s);
+            const n = makeNode('hit', dyn, w * this.u, h * this.u);
             n.setPosition(...this.at(pos));
             n.on(Node.EventType.TOUCH_END, (e: EventTouch) => {
                 e.propagationStopped = true;
@@ -170,7 +181,7 @@ export class HomeUI {
                 g.fillColor = hex('#DC2D23');
                 g.circle(0, 0, 9);
                 g.fill();
-                dot.setPosition(x + 46 * this.s, y + 46 * this.s);
+                dot.setPosition(x + 46 * this.u, y + 46 * this.u);
             }
         });
 
@@ -188,7 +199,7 @@ export class HomeUI {
             const g = ring.addComponent(Graphics);
             g.lineWidth = 3;
             g.strokeColor = hex('#C23A2A');
-            g.roundRect(-310 * this.s, -78 * this.s, 620 * this.s, 156 * this.s, 12);
+            g.roundRect(-310 * this.u, -78 * this.u, 620 * this.u, 156 * this.u, 12);
             g.stroke();
         }
         const arrow = (pos: readonly number[], enabled: boolean, delta: number) => {
@@ -200,7 +211,7 @@ export class HomeUI {
             }, enabled);
             if (!enabled) {
                 // 到头的箭头压暗
-                const mask = rectNode('arrowMask', 60 * this.s, 70 * this.s, '#05070C', n, 0, 170);
+                const mask = rectNode('arrowMask', 60 * this.u, 70 * this.u, '#05070C', n, 0, 170);
                 mask.setPosition(0, 0);
             }
         };
@@ -216,7 +227,7 @@ export class HomeUI {
             else this.showToast('通关上一关后解锁');
         });
         if (!playable) {
-            const mask = rectNode('fightMask', 580 * this.s, 96 * this.s, '#05070C', fight, 10, 150);
+            const mask = rectNode('fightMask', 580 * this.u, 96 * this.u, '#05070C', fight, 10, 150);
             mask.setPosition(0, 0);
             fightLabel.node.setSiblingIndex(dyn.children.length - 1);
         } else {
@@ -230,7 +241,7 @@ export class HomeUI {
             const enabled = d === 'normal' ? open : hardOpen;
             const [px, py] = this.at(pos);
             const bg = on ? (d === 'hard' ? '#7A1F18' : '#8A6A2A') : '#141218';
-            const n = rectNode('pill', 76 * this.s, 34 * this.s, bg, dyn, 6, 245);
+            const n = rectNode('pill', 76 * this.u, 34 * this.u, bg, dyn, 6, 245);
             n.setPosition(px, py);
             addLabel(n, enabled ? text : `${text}·锁`, 17, enabled ? (on ? '#FFF2C8' : CREAM) : DIM);
             n.on(Node.EventType.TOUCH_END, (e: EventTouch) => {
