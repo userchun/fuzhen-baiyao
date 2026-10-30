@@ -13,3 +13,6 @@ assets-raw/
 # 临时占位素材（第三方拆包，不进仓库，发布前替换）
 assets/resources/placeholder/
 assets/resources/placeholder.meta
+
+# 生成过程图（本地保留，不进仓库）
+generated-images/
