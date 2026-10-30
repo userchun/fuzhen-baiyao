@@ -9,3 +9,7 @@ scripts/balance-sim/node_modules/
 scripts/balance-sim/tsconfig.sim.json
 tools/package-private-keys/
 assets-raw/
+
+# 临时占位素材（第三方拆包，不进仓库，发布前替换）
+assets/resources/placeholder/
+assets/resources/placeholder.meta

@@ -67,6 +67,20 @@ export class AudioManager {
     /** 可停止的循环 SFX（如纸人存在感），按 key 复用 AudioSource */
     private loopSources = new Map<string, AudioSource>();
     private sfxNode: Node;
+    /** 设置页开关：关掉后不再播放（已在播的音效自然结束） */
+    musicOn = true;
+    sfxOn = true;
+
+    /** 设置页切换音乐；关闭时立刻停掉 BGM 和环境音 */
+    setMusic(on: boolean): void {
+        this.musicOn = on;
+        if (!on) this.stopBgm();
+    }
+
+    setSfx(on: boolean): void {
+        this.sfxOn = on;
+        if (!on) this.loopSources.forEach((s) => s.playing && s.stop());
+    }
 
     constructor(private root: Node) {
         this.sfxNode = new Node('audio');
@@ -75,6 +89,7 @@ export class AudioManager {
     }
 
     private playClip(path: string, volume: number, loop = false): void {
+        if (!this.sfxOn) return;
         const clip = clips.get(path);
         if (!clip) return;
         const n = new Node('sfx');
@@ -106,6 +121,7 @@ export class AudioManager {
 
     /** 候选循环：素材缺失则静默（不改行为时序）。待 CD spot。 */
     playLoopSfxKey(key: string, volume = 1): void {
+        if (!this.sfxOn) return;
         const path = sfxPath(key);
         const clip = clips.get(path);
         if (!clip) return;
@@ -140,6 +156,7 @@ export class AudioManager {
      * 素材缺失时静默跳过。
      */
     playLoopSfx(key: SfxName, volume = 1): void {
+        if (!this.sfxOn) return;
         const path = sfxPath(key);
         const clip = clips.get(path);
         if (!clip) return;
@@ -171,6 +188,7 @@ export class AudioManager {
 
     /** 播放/切换 BGM；同一首且正在播时不重启；停过后同曲可续播 */
     playBgm(key: BgmName, volume = 0.6): void {
+        if (!this.musicOn) return;
         const path = bgmPath(key);
         const clip = clips.get(path);
         if (!clip) return;

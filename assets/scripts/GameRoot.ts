@@ -1,5 +1,7 @@
 import { _decorator, Component, Node, UITransform, EventTouch, view, ResolutionPolicy, input, Input, sys } from 'cc';
-import { GAME, LEVELS, COMBOS, ENEMIES, applyScreen, SAVE_KEY_UNLOCKED } from './config/GameConfig';
+import { GAME, LEVELS, COMBOS, ENEMIES, applyScreen } from './config/GameConfig';
+import { Difficulty, HARD_HP_MULT } from './config/MetaConfig';
+import { Profile, loadProfile, saveProfile, defaultProfile, defaultLevel, recordClear, PROFILE_KEY, PROFILE_BAK_KEY, LEGACY_UNLOCK_KEY } from './meta/Profile';
 import { makeNode, rectNode } from './core/Draw';
 import { loadArt, spriteNode } from './core/Art';
 import { loadAudio, AudioManager } from './core/AudioManager';
@@ -13,18 +15,10 @@ import { Combat } from './game/Combat';
 import { Spawner } from './game/Spawner';
 import { GameUI } from './game/GameUI';
 import { Feedback } from './game/Feedback';
+import { HomeUI } from './game/HomeUI';
 
 const { ccclass } = _decorator;
 
-/** 读取已解锁关卡数；存档缺失或损坏时只开放第一关 */
-function loadUnlocked(): number {
-    const n = parseInt(sys.localStorage.getItem(SAVE_KEY_UNLOCKED) ?? '', 10);
-    return Number.isFinite(n) ? Math.max(1, Math.min(LEVELS.length, n)) : 1;
-}
-
-function saveUnlocked(n: number): void {
-    sys.localStorage.setItem(SAVE_KEY_UNLOCKED, String(n));
-}
 
 // 入口组件：挂在 Canvas 下的空节点上即可运行
 @ccclass('GameRoot')
@@ -38,7 +32,9 @@ export class GameRoot extends Component {
     private audio: AudioManager;
     private state: 'menu' | 'play' | 'pick' | 'over' = 'menu';
     private levelIndex = 0;
-    private unlocked = loadUnlocked();
+    private difficulty: Difficulty = 'normal';
+    private profile: Profile = loadProfile(sys.localStorage, LEVELS.length);
+    private home: HomeUI;
     private bg: Node;
     private time = 0;
 
@@ -52,6 +48,16 @@ export class GameRoot extends Component {
         this.world = makeNode('world', this.node);
         this.audio = new AudioManager(this.node);
         this.ui = new GameUI(makeNode('ui', this.node), this.audio);
+        this.home = new HomeUI(makeNode('homeLayer', this.node), this.audio);
+        this.applySettings();
+
+        // 窗口尺寸变化（换机型、拉伸预览窗口）：在主界面时按新高度重排，避免上下留黑边
+        view.on('canvas-resize', () => {
+            if (this.state !== 'menu') return;
+            applyScreen(view.getVisibleSize().height);
+            tf.setContentSize(GAME.width, GAME.height);
+            this.showMenu(this.home.currentLevel);
+        });
 
         // 底部区域拖动 = 移动；上方战场按住 = 瞄准并连发
         let mode: 'move' | 'aim' | null = null;
@@ -101,6 +107,7 @@ export class GameRoot extends Component {
 
     update(dt: number): void {
         this.ui.update(dt);
+        this.home.update(dt);
         if (this.state !== 'play') return;
         dt = Math.min(dt, 1 / 20);
         this.fb.update(dt);
@@ -127,15 +134,47 @@ export class GameRoot extends Component {
         else this.audio.playBgm(BGM_BY_LEVEL[this.levelIndex] ?? 'village');
     }
 
-    private showMenu(): void {
-        this.world.destroyAllChildren();
-        this.state = 'menu';
-        this.syncBgm();
-        this.ui.showLevels(LEVELS, this.unlocked, (i) => this.startLevel(i));
+    private save(): void {
+        if (!saveProfile(sys.localStorage, this.profile, LEVELS.length)) this.home.showToast('存档写入失败');
     }
 
-    private startLevel(index: number): void {
+    /** 把设置里的开关应用到音频和震屏 */
+    private applySettings(): void {
+        this.audio.setMusic(this.profile.settings.music);
+        this.audio.setSfx(this.profile.settings.sfx);
+        Feedback.shakeEnabled = this.profile.settings.shake;
+    }
+
+    /** 主界面：选关、切难度、出战；右侧入口和设置 */
+    private showMenu(level = defaultLevel(this.profile, LEVELS.length)): void {
+        this.world.destroyAllChildren();
+        this.ui.clearOverlay();
+        this.state = 'menu';
+        this.syncBgm();
+        this.home.show(this.profile, LEVELS, level, {
+            onFight: (i, diff) => this.startLevel(i, diff),
+            onEntry: (id) => this.home.showToast(`${{ upgrade: '养成', talisman: '符咒', record: '记录' }[id]}页开发中`),
+            onSettings: () => this.home.showSettings(
+                this.profile,
+                () => { this.applySettings(); this.syncBgm(); this.save(); },
+                () => this.clearSave(),
+            ),
+        });
+    }
+
+    /** 清除存档：删掉主档、备份和旧版解锁进度，回到新档 */
+    private clearSave(): void {
+        [PROFILE_KEY, PROFILE_BAK_KEY, LEGACY_UNLOCK_KEY].forEach((k) => sys.localStorage.removeItem(k));
+        this.profile = defaultProfile(LEVELS.length);
+        this.applySettings();
+        this.showMenu();
+        this.home.showToast('存档已清除');
+    }
+
+    private startLevel(index: number, diff: Difficulty = this.difficulty): void {
+        this.home.hide();
         this.levelIndex = index;
+        this.difficulty = diff;
         const level = LEVELS[index];
         this.bg.destroyAllChildren();
         rectNode('bg', GAME.width, GAME.height * 2, level.bg, this.bg);
@@ -154,13 +193,13 @@ export class GameRoot extends Component {
         const textLayer = makeNode('texts', this.world); // 飘字在战斗层之上
         this.fb = new Feedback(textLayer, this.world);
         this.combat = new Combat(combatLayer, this.skills, this.fb, (e) => this.skills.addXp(e.def.xp), this.audio);
-        this.combat.hpMult = level.hpMult;
+        this.combat.hpMult = level.hpMult * (diff === 'hard' ? HARD_HP_MULT : 1);
         this.spawner = new Spawner(level.waves, (id) => this.combat.spawnEnemy(id));
         this.skills.pending = level.startPicks;
         this.time = 0;
         this.state = 'play';
         this.syncBgm();
-        this.ui.showToast(level.name);
+        this.ui.showToast(diff === 'hard' ? `${level.name} · 困难` : level.name);
     }
 
     private openPick(): void {
@@ -194,15 +233,15 @@ export class GameRoot extends Component {
         this.combat.stopHold();
         // D：win 播一次（短金属石）；lose = barrier_crack（CD）；Combat 不再播 win
         this.audio.playSfx(win ? 'win' : 'barrier_crack', 0.9);
-        if (win && this.levelIndex + 2 > this.unlocked) {
-            this.unlocked = Math.min(LEVELS.length, this.levelIndex + 2);
-            saveUnlocked(this.unlocked);
+        if (win) {
+            recordClear(this.profile, this.levelIndex, this.difficulty, LEVELS.length);
+            this.save();
         }
         const buttons = [{ text: '再来一局', cb: () => this.startLevel(this.levelIndex) }];
-        if (win && this.levelIndex + 1 < LEVELS.length) {
-            buttons.unshift({ text: '下一关', cb: () => this.startLevel(this.levelIndex + 1) });
+        if (win && this.difficulty === 'normal' && this.levelIndex + 1 < LEVELS.length) {
+            buttons.unshift({ text: '下一关', cb: () => this.startLevel(this.levelIndex + 1, 'normal') });
         }
-        buttons.push({ text: '返回选关', cb: () => this.showMenu() });
+        buttons.push({ text: '返回主界面', cb: () => this.showMenu(this.levelIndex) });
         this.ui.showResult(win, this.combat.kills, this.time, buttons);
     }
 }

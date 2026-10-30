@@ -32,7 +32,11 @@ export class Feedback {
         this.texts.push({ label, life: TEXT_LIFE });
     }
 
+    /** 设置页的震屏开关 */
+    static shakeEnabled = true;
+
     shake(power: number, time = 0.2): void {
+        if (!Feedback.shakeEnabled) return;
         this.shakePower = Math.max(this.shakePower, power);
         this.shakeT = Math.max(this.shakeT, time);
         this.shakeMax = Math.max(this.shakeMax, this.shakeT);
