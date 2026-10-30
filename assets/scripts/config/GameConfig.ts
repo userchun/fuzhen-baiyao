@@ -144,8 +144,8 @@ export const LEVEL1_WAVES: WaveDef[] = [
     // T1：前 2 波间隔 +18%，缓开场墙压（不改 Boss HP / 全局移速）
     { time: 0, enemy: 'paperman', count: 10, interval: 1.18 },
     { time: 15, enemy: 'foxfire', count: 8, interval: 1.42 },
-    { time: 25, enemy: 'paperman', count: 30, interval: 0.4 },
-    { time: 45, enemy: 'jiangshi', count: 8, interval: 1.5 },
+    { time: 25, enemy: 'paperman', count: 24, interval: 0.6 },
+    { time: 45, enemy: 'jiangshi', count: 6, interval: 2.0 },
     { time: 60, enemy: 'lantern', count: 1, interval: 0 },
     { time: 70, enemy: 'foxfire', count: 15, interval: 0.6 },
     { time: 85, enemy: 'paperman', count: 45, interval: 0.25 },
@@ -178,7 +178,7 @@ export const LEVEL2_WAVES: WaveDef[] = [
 export interface LevelDef { name: string; desc: string; bg: string; waves: WaveDef[]; startPicks: number; hpMult: number; }
 
 export const LEVELS: LevelDef[] = [
-    { name: '第一关 · 荒村', desc: 'Boss：黑山老妖', bg: '#141428', waves: LEVEL1_WAVES, startPicks: 0, hpMult: 1.0 },
+    { name: '第一关 · 荒村', desc: 'Boss：黑山老妖', bg: '#141428', waves: LEVEL1_WAVES, startPicks: 1, hpMult: 1.0 },
     { name: '第二关 · 古寺', desc: 'Boss：白骨夫人（三相）\n新妖：铜甲尸、水鬼', bg: '#1E1A2B', waves: LEVEL2_WAVES, startPicks: 2, hpMult: 1.2 },
 ];
 
