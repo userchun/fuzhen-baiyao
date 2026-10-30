@@ -142,11 +142,12 @@ export class Combat {
 
     constructor(layer: Node, private skills: SkillSystem, private fb: Feedback, private onKill: (e: Enemy) => void, private audio?: AudioManager) {
         this.pool = new Pool((key) => this.create(key));
+        // 正面略俯视的城墙：垛口线 = wallY，正中法坛台面给主角站。
+        // 角楼和法坛伸到垛口线以上，放在妖怪层下面，墙下攻城的妖怪才不会被挡住
+        const wall = spriteNode('env_wall', LAYOUT.wallArtW, LAYOUT.wallArtH, layer) ?? rectNode('wall', GAME.width, 40, '#4A3B2A', layer);
+        wall.setPosition(0, hasArt('env_wall') ? GAME.wallY + LAYOUT.wallArtTopAbove - LAYOUT.wallArtH / 2 : GAME.wallY - 20);
         this.zoneLayer = makeNode('zones', layer);
         this.enemyLayer = makeNode('enemies', layer);
-        // 俯视城墙顶：上沿垛口 ≈ wallY，下面是走道和护栏，主角站在走道上
-        const wall = spriteNode('env_wall', GAME.width, LAYOUT.wallArtH, layer) ?? rectNode('wall', GAME.width, 40, '#4A3B2A', layer);
-        wall.setPosition(0, hasArt('env_wall') ? GAME.wallY + LAYOUT.wallArtTopAbove - LAYOUT.wallArtH / 2 : GAME.wallY - 20);
         this.player = spriteNode('player_taoist', PLAYER_ART_SIZE, PLAYER_ART_SIZE, layer) ?? circleNode('player', 32, '#F2E3B3', '师', layer);
         this.player.setPosition(0, GAME.playerY);
         this.bulletLayer = makeNode('bullets', layer);

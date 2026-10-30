@@ -23,10 +23,11 @@ export const GAME = {
  */
 export const LAYOUT = {
     wallFromBottom: 258,   // 垛口线（撞墙线）距屏幕底边
-    playerFromBottom: 290, // 主角中心距屏幕底边：脚踩垛口后的走道（帧内脚底在 0.94）
+    playerFromBottom: 333, // 主角中心距屏幕底边：脚踩法坛台面、略高于垛口线（帧内脚底在 0.94）
     spawnAboveTop: 60,     // 出怪线在屏幕顶边之上多少像素
-    wallArtH: 179,         // 城墙顶图片显示高度（720 宽；暗黑国风城墙 1440×358）
-    wallArtTopAbove: 6,    // 城墙图片顶边高出垛口线多少
+    wallArtW: 860,         // 城墙图片显示宽度：比屏宽 720 大，两端角楼外侧被屏幕裁掉（城墙 1290×363，2026-10-30 法坛版）
+    wallArtH: 242,         // 城墙图片显示高度
+    wallArtTopAbove: 96,   // 城墙图片顶边高出垛口线多少（角楼和法坛垛口伸到战场里）
     roadHalfW: 150,        // 路面半宽：出怪和妖怪横向活动收在这个范围内（暗黑国风背景的路更窄）
 };
 

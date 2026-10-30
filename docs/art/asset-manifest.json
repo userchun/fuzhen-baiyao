@@ -223,11 +223,11 @@
       "type": "sprite",
       "path": "assets/resources/textures/env_wall.png",
       "size": [
-        1440,
-        358
+        1290,
+        363
       ],
       "status": "in_game",
-      "source": "2026-10-28 暗黑国风 Q 版重做（magpie /imagegen）。旧图备份 generated-images/dark-qban/env_wall.old.png",
+      "source": "2026-10-30 重做（magpie gpt-image-2，结构参考向僵尸开炮城墙：正面略俯视、中间法坛）。旧图备份 generated-images/level1-redo-20261030/backup/",
       "license": "待核实",
       "style": "dark-qban"
     },
