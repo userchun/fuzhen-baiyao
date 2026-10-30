@@ -1,6 +1,6 @@
 # 素材来源与授权
 
-完整的逐项清单见 `design/art/asset-manifest.json`（每项都有 `source` / `license` 字段）。本文件按来源汇总。
+完整的逐项清单见 `docs/art/asset-manifest.json`（每项都有 `source` / `license` 字段）。本文件按来源汇总。
 
 > ⚠️ 上架或收费发布前，必须先把下面「待核实」的条目全部确认。
 

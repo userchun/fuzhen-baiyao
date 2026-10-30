@@ -1,0 +1,2174 @@
+{
+  "project": "符镇百妖",
+  "engine": "Cocos Creator 3.8.8",
+  "art_direction": "docs/art/art-bible.md",
+  "updated": "2026-10-28",
+  "note": "风格：暗黑国风 Q 版（见 art-bible.md）。每条视觉素材带 style 字段：dark-qban = 已按新风格重做；legacy = 旧半写实版，待重做。新增素材先登记再出图。",
+  "assets": [
+    {
+      "id": "bg_level1_village",
+      "category": "background",
+      "type": "sprite",
+      "path": "assets/resources/textures/bg_level1_village.png",
+      "size": [
+        1024,
+        1819
+      ],
+      "status": "in_game",
+      "source": "2026-10-28 暗黑国风 Q 版重做（magpie /imagegen，附样板图）。旧图备份 generated-images/dark-qban/bg_level1_village.old.png",
+      "license": "待核实",
+      "style": "dark-qban"
+    },
+    {
+      "id": "bg_level2_temple",
+      "category": "background",
+      "type": "sprite",
+      "path": "assets/resources/textures/bg_level2_temple.png",
+      "size": [
+        720,
+        1280
+      ],
+      "status": "in_game",
+      "source": "AI 生成（平台待核实）",
+      "license": "待核实",
+      "style": "legacy（待按暗黑国风 Q 版重做）"
+    },
+    {
+      "id": "bg_menu",
+      "category": "background",
+      "type": "sprite",
+      "path": "assets/resources/textures/bg_menu.png",
+      "size": [
+        512,
+        1109
+      ],
+      "status": "in_game",
+      "source": "AI 生成（平台待核实）",
+      "license": "待核实",
+      "style": "legacy（待按暗黑国风 Q 版重做）"
+    },
+    {
+      "id": "boss_baigu_fire",
+      "category": "boss",
+      "type": "sprite",
+      "path": "assets/resources/textures/boss_baigu_fire.png",
+      "size": [
+        256,
+        256
+      ],
+      "status": "in_game",
+      "source": "AI 生成（平台待核实）",
+      "license": "待核实",
+      "style": "legacy（待按暗黑国风 Q 版重做）"
+    },
+    {
+      "id": "boss_baigu_metal",
+      "category": "boss",
+      "type": "sprite",
+      "path": "assets/resources/textures/boss_baigu_metal.png",
+      "size": [
+        256,
+        256
+      ],
+      "status": "in_game",
+      "source": "AI 生成（平台待核实）",
+      "license": "待核实",
+      "style": "legacy（待按暗黑国风 Q 版重做）"
+    },
+    {
+      "id": "boss_baigu_water",
+      "category": "boss",
+      "type": "sprite",
+      "path": "assets/resources/textures/boss_baigu_water.png",
+      "size": [
+        256,
+        256
+      ],
+      "status": "in_game",
+      "source": "AI 生成（平台待核实）",
+      "license": "待核实",
+      "style": "legacy（待按暗黑国风 Q 版重做）"
+    },
+    {
+      "id": "boss_heishan",
+      "category": "boss",
+      "type": "sprite",
+      "path": "assets/resources/textures/boss_heishan.png",
+      "size": [
+        384,
+        384
+      ],
+      "status": "in_game",
+      "source": "2026-10-27 重做：人形岩石巨妖（Magpie / /imagegen 单张出图）；idle 20 帧 / hit 6 帧 / death 12 帧均以定稿图为参考出序列图，tools/asset-pipeline/slice_sheet.py 切成 384×384。记录：generated-images/level1-heishan-candidates-20261027/",
+      "license": "待核实",
+      "style": "legacy（待按暗黑国风 Q 版重做）"
+    },
+    {
+      "id": "enemy_foxfire",
+      "category": "enemy",
+      "type": "sprite",
+      "path": "assets/resources/textures/enemy_foxfire.png",
+      "size": [
+        256,
+        256
+      ],
+      "status": "in_game",
+      "source": "generated-images/fox-fire-green.png（生成工具待核实）；动画帧为程序生成；2026-10-27 用定稿图作参考，Magpie（/imagegen）出 6×2 序列图，tools/asset-pipeline/slice_sheet.py 切成 12 帧。记录：generated-images/level1-foxfire-12f/",
+      "license": "待核实",
+      "style": "legacy（待按暗黑国风 Q 版重做）"
+    },
+    {
+      "id": "enemy_jiangshi",
+      "category": "enemy",
+      "type": "sprite",
+      "path": "assets/resources/textures/enemy_jiangshi.png",
+      "size": [
+        256,
+        256
+      ],
+      "status": "in_game",
+      "source": "2026-10-27 用户选定跳尸 1 号（Magpie / codex/gpt-image-2）；image_gen 生成关键动作；FFmpeg 对齐、切帧并补过渡到 8 帧。记录：generated-images/level1-jiangshi-candidates-20261027/animation-8f/generation.json；2026-10-27 用定稿图作参考，Magpie（/imagegen）出 6×2 序列图，tools/asset-pipeline/slice_sheet.py 切成 12 帧。记录：generated-images/level1-jiangshi-12f/",
+      "license": "待核实",
+      "note": "1 号造型；move 8 帧 / 8 fps / 1 秒循环；256×256 RGBA，与狐火、灯笼统一帧数、尺寸及命名；受击、死亡沿用代码效果",
+      "style": "legacy（待按暗黑国风 Q 版重做）"
+    },
+    {
+      "id": "enemy_lantern",
+      "category": "enemy",
+      "type": "sprite",
+      "path": "assets/resources/textures/enemy_lantern.png",
+      "size": [
+        256,
+        256
+      ],
+      "status": "in_game",
+      "source": "即梦（2026-10-27 样板 3 号）；动画帧为程序生成；2026-10-27 用定稿图作参考，Magpie（/imagegen）出 6×2 序列图，tools/asset-pipeline/slice_sheet.py 切成 12 帧。记录：generated-images/level1-lantern-12f/",
+      "license": "即梦用户协议（商用待核实）",
+      "style": "legacy（待按暗黑国风 Q 版重做）"
+    },
+    {
+      "id": "enemy_lantern_split",
+      "category": "enemy",
+      "type": "sprite",
+      "path": "assets/resources/textures/enemy_lantern_split.png",
+      "size": [
+        128,
+        128
+      ],
+      "status": "unused",
+      "source": "AI 生成（平台待核实）",
+      "license": "待核实",
+      "note": "仅在灯笼死亡帧缺失时作后备特效，当前不会出现",
+      "style": "legacy（待按暗黑国风 Q 版重做）"
+    },
+    {
+      "id": "enemy_paperman",
+      "category": "enemy",
+      "type": "sprite",
+      "path": "assets/resources/textures/enemy_paperman.png",
+      "size": [
+        256,
+        256
+      ],
+      "status": "in_game",
+      "source": "2026-10-27 用户选定纸人 1 号（Magpie / /imagegen）；同一参考图出 6×2 走路序列图，tools/asset-pipeline/slice_sheet.py 切帧、去残边、按脚底和胸口圆印对齐成 12 帧（12 fps）。记录：generated-images/level1-paperman-candidates-20261027/animation-12f/",
+      "license": "待核实",
+      "style": "legacy（待按暗黑国风 Q 版重做）"
+    },
+    {
+      "id": "enemy_shuigui",
+      "category": "enemy",
+      "type": "sprite",
+      "path": "assets/resources/textures/enemy_shuigui.png",
+      "size": [
+        256,
+        256
+      ],
+      "status": "in_game",
+      "source": "AI 生成（平台待核实）",
+      "license": "待核实",
+      "style": "legacy（待按暗黑国风 Q 版重做）"
+    },
+    {
+      "id": "enemy_tongjia",
+      "category": "enemy",
+      "type": "sprite",
+      "path": "assets/resources/textures/enemy_tongjia.png",
+      "size": [
+        256,
+        256
+      ],
+      "status": "in_game",
+      "source": "AI 生成（平台待核实）",
+      "license": "待核实",
+      "style": "legacy（待按暗黑国风 Q 版重做）"
+    },
+    {
+      "id": "enemy_tongjia_broken",
+      "category": "enemy",
+      "type": "sprite",
+      "path": "assets/resources/textures/enemy_tongjia_broken.png",
+      "size": [
+        256,
+        256
+      ],
+      "status": "in_game",
+      "source": "AI 生成（平台待核实）",
+      "license": "待核实",
+      "style": "legacy（待按暗黑国风 Q 版重做）"
+    },
+    {
+      "id": "env_wall",
+      "category": "environment",
+      "type": "sprite",
+      "path": "assets/resources/textures/env_wall.png",
+      "size": [
+        1440,
+        358
+      ],
+      "status": "in_game",
+      "source": "2026-10-28 暗黑国风 Q 版重做（magpie /imagegen）。旧图备份 generated-images/dark-qban/env_wall.old.png",
+      "license": "待核实",
+      "style": "dark-qban"
+    },
+    {
+      "id": "fx_combo_sheng",
+      "category": "vfx",
+      "type": "sprite",
+      "path": "assets/resources/textures/fx_combo_sheng.png",
+      "size": [
+        128,
+        128
+      ],
+      "status": "in_game",
+      "source": "AI 生成（平台待核实）",
+      "license": "待核实",
+      "style": "legacy（待按暗黑国风 Q 版重做）"
+    },
+    {
+      "id": "fx_combo_sheng_burn",
+      "category": "vfx",
+      "type": "sprite",
+      "path": "assets/resources/textures/fx_combo_sheng_burn.png",
+      "size": [
+        128,
+        128
+      ],
+      "status": "in_game",
+      "source": "AI 生成（平台待核实）",
+      "license": "待核实",
+      "style": "legacy（待按暗黑国风 Q 版重做）"
+    },
+    {
+      "id": "fx_combo_sheng_river",
+      "category": "vfx",
+      "type": "sprite",
+      "path": "assets/resources/textures/fx_combo_sheng_river.png",
+      "size": [
+        128,
+        128
+      ],
+      "status": "in_game",
+      "source": "AI 生成（平台待核实）",
+      "license": "待核实",
+      "style": "legacy（待按暗黑国风 Q 版重做）"
+    },
+    {
+      "id": "fx_crit",
+      "category": "vfx",
+      "type": "sprite",
+      "path": "assets/resources/textures/fx_crit.png",
+      "size": [
+        128,
+        128
+      ],
+      "status": "in_game",
+      "source": "AI 生成（平台待核实）",
+      "license": "待核实",
+      "style": "legacy（待按暗黑国风 Q 版重做）"
+    },
+    {
+      "id": "fx_dot",
+      "category": "vfx",
+      "type": "sprite",
+      "path": "assets/resources/textures/fx_dot.png",
+      "size": [
+        64,
+        64
+      ],
+      "status": "in_game",
+      "source": "AI 生成（平台待核实）",
+      "license": "待核实",
+      "style": "legacy（待按暗黑国风 Q 版重做）"
+    },
+    {
+      "id": "fx_el_earth",
+      "category": "vfx",
+      "type": "sprite",
+      "path": "assets/resources/textures/fx_el_earth.png",
+      "size": [
+        128,
+        128
+      ],
+      "status": "in_game",
+      "source": "AI 生成（平台待核实）",
+      "license": "待核实",
+      "style": "legacy（待按暗黑国风 Q 版重做）"
+    },
+    {
+      "id": "fx_el_fire",
+      "category": "vfx",
+      "type": "sprite",
+      "path": "assets/resources/textures/fx_el_fire.png",
+      "size": [
+        128,
+        128
+      ],
+      "status": "in_game",
+      "source": "AI 生成（平台待核实）",
+      "license": "待核实",
+      "style": "legacy（待按暗黑国风 Q 版重做）"
+    },
+    {
+      "id": "fx_el_metal",
+      "category": "vfx",
+      "type": "sprite",
+      "path": "assets/resources/textures/fx_el_metal.png",
+      "size": [
+        128,
+        128
+      ],
+      "status": "in_game",
+      "source": "AI 生成（平台待核实）",
+      "license": "待核实",
+      "style": "legacy（待按暗黑国风 Q 版重做）"
+    },
+    {
+      "id": "fx_el_water",
+      "category": "vfx",
+      "type": "sprite",
+      "path": "assets/resources/textures/fx_el_water.png",
+      "size": [
+        128,
+        128
+      ],
+      "status": "in_game",
+      "source": "AI 生成（平台待核实）",
+      "license": "待核实",
+      "style": "legacy（待按暗黑国风 Q 版重做）"
+    },
+    {
+      "id": "fx_el_wood",
+      "category": "vfx",
+      "type": "sprite",
+      "path": "assets/resources/textures/fx_el_wood.png",
+      "size": [
+        128,
+        128
+      ],
+      "status": "in_game",
+      "source": "AI 生成（平台待核实）",
+      "license": "待核实",
+      "style": "legacy（待按暗黑国风 Q 版重做）"
+    },
+    {
+      "id": "fx_haste_trail_00",
+      "category": "vfx",
+      "type": "sprite",
+      "path": "assets/resources/textures/fx_haste_trail_00.png",
+      "size": [
+        256,
+        576
+      ],
+      "status": "in_game",
+      "source": "AI 生成（平台待核实）",
+      "license": "待核实",
+      "style": "legacy（待按暗黑国风 Q 版重做）"
+    },
+    {
+      "id": "fx_haste_trail_01",
+      "category": "vfx",
+      "type": "sprite",
+      "path": "assets/resources/textures/fx_haste_trail_01.png",
+      "size": [
+        256,
+        576
+      ],
+      "status": "in_game",
+      "source": "AI 生成（平台待核实）",
+      "license": "待核实",
+      "style": "legacy（待按暗黑国风 Q 版重做）"
+    },
+    {
+      "id": "fx_haste_trail_02",
+      "category": "vfx",
+      "type": "sprite",
+      "path": "assets/resources/textures/fx_haste_trail_02.png",
+      "size": [
+        256,
+        576
+      ],
+      "status": "in_game",
+      "source": "AI 生成（平台待核实）",
+      "license": "待核实",
+      "style": "legacy（待按暗黑国风 Q 版重做）"
+    },
+    {
+      "id": "fx_haste_trail_03",
+      "category": "vfx",
+      "type": "sprite",
+      "path": "assets/resources/textures/fx_haste_trail_03.png",
+      "size": [
+        256,
+        576
+      ],
+      "status": "in_game",
+      "source": "AI 生成（平台待核实）",
+      "license": "待核实",
+      "style": "legacy（待按暗黑国风 Q 版重做）"
+    },
+    {
+      "id": "fx_hit_seal",
+      "category": "vfx",
+      "type": "sprite",
+      "path": "assets/resources/textures/fx_hit_seal.png",
+      "size": [
+        128,
+        128
+      ],
+      "status": "in_game",
+      "source": "AI 生成（平台待核实）",
+      "license": "待核实",
+      "style": "legacy（待按暗黑国风 Q 版重做）"
+    },
+    {
+      "id": "fx_player_cast_glow",
+      "category": "vfx",
+      "type": "sprite",
+      "path": "assets/resources/textures/fx_player_cast_glow.png",
+      "size": [
+        128,
+        128
+      ],
+      "status": "in_game",
+      "source": "AI 生成（平台待核实）",
+      "license": "待核实",
+      "style": "legacy（待按暗黑国风 Q 版重做）"
+    },
+    {
+      "id": "fx_resist",
+      "category": "vfx",
+      "type": "sprite",
+      "path": "assets/resources/textures/fx_resist.png",
+      "size": [
+        128,
+        128
+      ],
+      "status": "in_game",
+      "source": "AI 生成（平台待核实）",
+      "license": "待核实",
+      "style": "legacy（待按暗黑国风 Q 版重做）"
+    },
+    {
+      "id": "fx_settle_lose",
+      "category": "vfx",
+      "type": "sprite",
+      "path": "assets/resources/textures/fx_settle_lose.png",
+      "size": [
+        128,
+        128
+      ],
+      "status": "in_game",
+      "source": "AI 生成（平台待核实）",
+      "license": "待核实",
+      "style": "legacy（待按暗黑国风 Q 版重做）"
+    },
+    {
+      "id": "fx_settle_win",
+      "category": "vfx",
+      "type": "sprite",
+      "path": "assets/resources/textures/fx_settle_win.png",
+      "size": [
+        128,
+        128
+      ],
+      "status": "in_game",
+      "source": "AI 生成（平台待核实）",
+      "license": "待核实",
+      "style": "legacy（待按暗黑国风 Q 版重做）"
+    },
+    {
+      "id": "icon_passive_haste",
+      "category": "icon",
+      "type": "sprite",
+      "path": "assets/resources/textures/icon_passive_haste.png",
+      "size": [
+        128,
+        128
+      ],
+      "status": "in_game",
+      "source": "AI 生成（平台待核实）",
+      "license": "待核实",
+      "style": "legacy（待按暗黑国风 Q 版重做）"
+    },
+    {
+      "id": "icon_passive_haste_frameless",
+      "category": "icon",
+      "type": "sprite",
+      "path": "assets/resources/textures/icon_passive_haste_frameless.png",
+      "size": [
+        256,
+        384
+      ],
+      "status": "in_game",
+      "source": "AI 生成（平台待核实）",
+      "license": "待核实",
+      "style": "legacy（待按暗黑国风 Q 版重做）"
+    },
+    {
+      "id": "icon_passive_multi",
+      "category": "icon",
+      "type": "sprite",
+      "path": "assets/resources/textures/icon_passive_multi.png",
+      "size": [
+        128,
+        128
+      ],
+      "status": "in_game",
+      "source": "AI 生成（平台待核实）",
+      "license": "待核实",
+      "style": "legacy（待按暗黑国风 Q 版重做）"
+    },
+    {
+      "id": "icon_passive_multi_frameless",
+      "category": "icon",
+      "type": "sprite",
+      "path": "assets/resources/textures/icon_passive_multi_frameless.png",
+      "size": [
+        256,
+        384
+      ],
+      "status": "in_game",
+      "source": "AI 生成（平台待核实）",
+      "license": "待核实",
+      "style": "legacy（待按暗黑国风 Q 版重做）"
+    },
+    {
+      "id": "icon_passive_power",
+      "category": "icon",
+      "type": "sprite",
+      "path": "assets/resources/textures/icon_passive_power.png",
+      "size": [
+        128,
+        128
+      ],
+      "status": "in_game",
+      "source": "AI 生成（平台待核实）",
+      "license": "待核实",
+      "style": "legacy（待按暗黑国风 Q 版重做）"
+    },
+    {
+      "id": "icon_passive_power_frameless",
+      "category": "icon",
+      "type": "sprite",
+      "path": "assets/resources/textures/icon_passive_power_frameless.png",
+      "size": [
+        256,
+        384
+      ],
+      "status": "in_game",
+      "source": "AI 生成（平台待核实）",
+      "license": "待核实",
+      "style": "legacy（待按暗黑国风 Q 版重做）"
+    },
+    {
+      "id": "icon_passive_ward",
+      "category": "icon",
+      "type": "sprite",
+      "path": "assets/resources/textures/icon_passive_ward.png",
+      "size": [
+        128,
+        128
+      ],
+      "status": "in_game",
+      "source": "AI 生成（平台待核实）",
+      "license": "待核实",
+      "style": "legacy（待按暗黑国风 Q 版重做）"
+    },
+    {
+      "id": "icon_talisman_earth",
+      "category": "icon",
+      "type": "sprite",
+      "path": "assets/resources/textures/icon_talisman_earth.png",
+      "size": [
+        128,
+        192
+      ],
+      "status": "in_game",
+      "source": "AI 生成（平台待核实）",
+      "license": "待核实",
+      "style": "legacy（待按暗黑国风 Q 版重做）"
+    },
+    {
+      "id": "icon_talisman_earth_frameless",
+      "category": "icon",
+      "type": "sprite",
+      "path": "assets/resources/textures/icon_talisman_earth_frameless.png",
+      "size": [
+        256,
+        384
+      ],
+      "status": "in_game",
+      "source": "AI 生成（平台待核实）",
+      "license": "待核实",
+      "style": "legacy（待按暗黑国风 Q 版重做）"
+    },
+    {
+      "id": "icon_talisman_fire",
+      "category": "icon",
+      "type": "sprite",
+      "path": "assets/resources/textures/icon_talisman_fire.png",
+      "size": [
+        128,
+        192
+      ],
+      "status": "in_game",
+      "source": "AI 生成（平台待核实）",
+      "license": "待核实",
+      "style": "legacy（待按暗黑国风 Q 版重做）"
+    },
+    {
+      "id": "icon_talisman_fire_frameless",
+      "category": "icon",
+      "type": "sprite",
+      "path": "assets/resources/textures/icon_talisman_fire_frameless.png",
+      "size": [
+        256,
+        384
+      ],
+      "status": "in_game",
+      "source": "AI 生成（平台待核实）",
+      "license": "待核实",
+      "style": "legacy（待按暗黑国风 Q 版重做）"
+    },
+    {
+      "id": "icon_talisman_metal",
+      "category": "icon",
+      "type": "sprite",
+      "path": "assets/resources/textures/icon_talisman_metal.png",
+      "size": [
+        128,
+        192
+      ],
+      "status": "in_game",
+      "source": "AI 生成（平台待核实）",
+      "license": "待核实",
+      "style": "legacy（待按暗黑国风 Q 版重做）"
+    },
+    {
+      "id": "icon_talisman_thunder",
+      "category": "icon",
+      "type": "sprite",
+      "path": "assets/resources/textures/icon_talisman_thunder.png",
+      "size": [
+        128,
+        192
+      ],
+      "status": "in_game",
+      "source": "AI 生成（平台待核实）",
+      "license": "待核实",
+      "style": "legacy（待按暗黑国风 Q 版重做）"
+    },
+    {
+      "id": "icon_talisman_thunder_frameless",
+      "category": "icon",
+      "type": "sprite",
+      "path": "assets/resources/textures/icon_talisman_thunder_frameless.png",
+      "size": [
+        256,
+        384
+      ],
+      "status": "in_game",
+      "source": "AI 生成（平台待核实）",
+      "license": "待核实",
+      "style": "legacy（待按暗黑国风 Q 版重做）"
+    },
+    {
+      "id": "icon_talisman_water",
+      "category": "icon",
+      "type": "sprite",
+      "path": "assets/resources/textures/icon_talisman_water.png",
+      "size": [
+        128,
+        192
+      ],
+      "status": "in_game",
+      "source": "AI 生成（平台待核实）",
+      "license": "待核实",
+      "style": "legacy（待按暗黑国风 Q 版重做）"
+    },
+    {
+      "id": "icon_talisman_water_frameless",
+      "category": "icon",
+      "type": "sprite",
+      "path": "assets/resources/textures/icon_talisman_water_frameless.png",
+      "size": [
+        256,
+        384
+      ],
+      "status": "in_game",
+      "source": "AI 生成（平台待核实）",
+      "license": "待核实",
+      "style": "legacy（待按暗黑国风 Q 版重做）"
+    },
+    {
+      "id": "icon_talisman_wood",
+      "category": "icon",
+      "type": "sprite",
+      "path": "assets/resources/textures/icon_talisman_wood.png",
+      "size": [
+        128,
+        192
+      ],
+      "status": "in_game",
+      "source": "AI 生成（平台待核实）",
+      "license": "待核实",
+      "style": "legacy（待按暗黑国风 Q 版重做）"
+    },
+    {
+      "id": "player_taoist",
+      "category": "player",
+      "type": "sprite",
+      "path": "assets/resources/textures/player_taoist.png",
+      "size": [
+        256,
+        256
+      ],
+      "status": "in_game（待确认）",
+      "source": "2026-10-28 暗黑国风 Q 版重做：定稿 generated-images/dark-qban/player_design_01.png，序列图切帧并统一身体大小。旧帧备份 generated-images/dark-qban/player_old/",
+      "license": "待核实",
+      "style": "dark-qban"
+    },
+    {
+      "id": "ui_barrier_bar_bg",
+      "category": "ui",
+      "type": "sprite",
+      "path": "assets/resources/textures/ui_barrier_bar_bg.png",
+      "size": [
+        256,
+        20
+      ],
+      "status": "in_game",
+      "source": "AI 生成（平台待核实）",
+      "license": "待核实",
+      "style": "legacy（待按暗黑国风 Q 版重做）"
+    },
+    {
+      "id": "ui_barrier_bar_fill",
+      "category": "ui",
+      "type": "sprite",
+      "path": "assets/resources/textures/ui_barrier_bar_fill.png",
+      "size": [
+        256,
+        20
+      ],
+      "status": "in_game",
+      "source": "AI 生成（平台待核实）",
+      "license": "待核实",
+      "style": "legacy（待按暗黑国风 Q 版重做）"
+    },
+    {
+      "id": "ui_barrier_bar_frame",
+      "category": "ui",
+      "type": "sprite",
+      "path": "assets/resources/textures/ui_barrier_bar_frame.png",
+      "size": [
+        328,
+        24
+      ],
+      "status": "in_game",
+      "source": "AI 生成（平台待核实）",
+      "license": "待核实",
+      "style": "legacy（待按暗黑国风 Q 版重做）"
+    },
+    {
+      "id": "ui_card_pick_base",
+      "category": "ui",
+      "type": "sprite",
+      "path": "assets/resources/textures/ui_card_pick_base.png",
+      "size": [
+        256,
+        384
+      ],
+      "status": "in_game",
+      "source": "AI 生成（平台待核实）",
+      "license": "待核实",
+      "style": "legacy（待按暗黑国风 Q 版重做）"
+    },
+    {
+      "id": "ui_card_rarity_earth",
+      "category": "ui",
+      "type": "sprite",
+      "path": "assets/resources/textures/ui_card_rarity_earth.png",
+      "size": [
+        256,
+        384
+      ],
+      "status": "in_game",
+      "source": "AI 生成（平台待核实）",
+      "license": "待核实",
+      "style": "legacy（待按暗黑国风 Q 版重做）"
+    },
+    {
+      "id": "ui_card_rarity_fire",
+      "category": "ui",
+      "type": "sprite",
+      "path": "assets/resources/textures/ui_card_rarity_fire.png",
+      "size": [
+        256,
+        384
+      ],
+      "status": "in_game",
+      "source": "AI 生成（平台待核实）",
+      "license": "待核实",
+      "style": "legacy（待按暗黑国风 Q 版重做）"
+    },
+    {
+      "id": "ui_card_rarity_metal",
+      "category": "ui",
+      "type": "sprite",
+      "path": "assets/resources/textures/ui_card_rarity_metal.png",
+      "size": [
+        256,
+        384
+      ],
+      "status": "in_game",
+      "source": "AI 生成（平台待核实）",
+      "license": "待核实",
+      "style": "legacy（待按暗黑国风 Q 版重做）"
+    },
+    {
+      "id": "ui_card_rarity_thunder",
+      "category": "ui",
+      "type": "sprite",
+      "path": "assets/resources/textures/ui_card_rarity_thunder.png",
+      "size": [
+        256,
+        384
+      ],
+      "status": "in_game",
+      "source": "AI 生成（平台待核实）",
+      "license": "待核实",
+      "style": "legacy（待按暗黑国风 Q 版重做）"
+    },
+    {
+      "id": "ui_card_rarity_water",
+      "category": "ui",
+      "type": "sprite",
+      "path": "assets/resources/textures/ui_card_rarity_water.png",
+      "size": [
+        256,
+        384
+      ],
+      "status": "in_game",
+      "source": "AI 生成（平台待核实）",
+      "license": "待核实",
+      "style": "legacy（待按暗黑国风 Q 版重做）"
+    },
+    {
+      "id": "ui_card_rarity_wood",
+      "category": "ui",
+      "type": "sprite",
+      "path": "assets/resources/textures/ui_card_rarity_wood.png",
+      "size": [
+        256,
+        384
+      ],
+      "status": "in_game",
+      "source": "AI 生成（平台待核实）",
+      "license": "待核实",
+      "style": "legacy（待按暗黑国风 Q 版重做）"
+    },
+    {
+      "id": "ui_level_card",
+      "category": "ui",
+      "type": "sprite",
+      "path": "assets/resources/textures/ui_level_card.png",
+      "size": [
+        640,
+        220
+      ],
+      "status": "in_game",
+      "source": "AI 生成（平台待核实）",
+      "license": "待核实",
+      "style": "legacy（待按暗黑国风 Q 版重做）"
+    },
+    {
+      "id": "ui_lock_seal",
+      "category": "ui",
+      "type": "sprite",
+      "path": "assets/resources/textures/ui_lock_seal.png",
+      "size": [
+        128,
+        128
+      ],
+      "status": "in_game",
+      "source": "AI 生成（平台待核实）",
+      "license": "待核实",
+      "style": "legacy（待按暗黑国风 Q 版重做）"
+    },
+    {
+      "id": "ui_seal_baigu",
+      "category": "ui",
+      "type": "sprite",
+      "path": "assets/resources/textures/ui_seal_baigu.png",
+      "size": [
+        256,
+        256
+      ],
+      "status": "in_game",
+      "source": "AI 生成（平台待核实）",
+      "license": "待核实",
+      "style": "legacy（待按暗黑国风 Q 版重做）"
+    },
+    {
+      "id": "ui_seal_heishan",
+      "category": "ui",
+      "type": "sprite",
+      "path": "assets/resources/textures/ui_seal_heishan.png",
+      "size": [
+        256,
+        256
+      ],
+      "status": "in_game",
+      "source": "AI 生成（平台待核实）",
+      "license": "待核实",
+      "style": "legacy（待按暗黑国风 Q 版重做）"
+    },
+    {
+      "id": "ui_settle_panel",
+      "category": "ui",
+      "type": "sprite",
+      "path": "assets/resources/textures/ui_settle_panel.png",
+      "size": [
+        384,
+        512
+      ],
+      "status": "in_game",
+      "source": "AI 生成（平台待核实）",
+      "license": "待核实",
+      "style": "legacy（待按暗黑国风 Q 版重做）"
+    },
+    {
+      "id": "ui_title_banner",
+      "category": "ui",
+      "type": "sprite",
+      "path": "assets/resources/textures/ui_title_banner.png",
+      "size": [
+        640,
+        200
+      ],
+      "status": "in_game",
+      "source": "AI 生成（平台待核实）",
+      "license": "待核实",
+      "style": "legacy（待按暗黑国风 Q 版重做）"
+    },
+    {
+      "id": "ui_xp_bar_bg",
+      "category": "ui",
+      "type": "sprite",
+      "path": "assets/resources/textures/ui_xp_bar_bg.png",
+      "size": [
+        256,
+        10
+      ],
+      "status": "in_game",
+      "source": "AI 生成（平台待核实）",
+      "license": "待核实",
+      "style": "legacy（待按暗黑国风 Q 版重做）"
+    },
+    {
+      "id": "ui_xp_bar_fill",
+      "category": "ui",
+      "type": "sprite",
+      "path": "assets/resources/textures/ui_xp_bar_fill.png",
+      "size": [
+        256,
+        10
+      ],
+      "status": "in_game",
+      "source": "AI 生成（平台待核实）",
+      "license": "待核实",
+      "style": "legacy（待按暗黑国风 Q 版重做）"
+    },
+    {
+      "id": "ui_xp_bar_frame",
+      "category": "ui",
+      "type": "sprite",
+      "path": "assets/resources/textures/ui_xp_bar_frame.png",
+      "size": [
+        292,
+        12
+      ],
+      "status": "in_game",
+      "source": "AI 生成（平台待核实）",
+      "license": "待核实",
+      "style": "legacy（待按暗黑国风 Q 版重做）"
+    },
+    {
+      "id": "boss_baigu_fire_death",
+      "category": "boss",
+      "type": "frame_anim",
+      "path": "assets/resources/textures/anim/boss_baigu_fire/death_NN.png",
+      "frames": 5,
+      "size": [
+        256,
+        256
+      ],
+      "status": "in_game",
+      "source": "AI 生成（平台待核实）",
+      "license": "待核实",
+      "style": "legacy（待按暗黑国风 Q 版重做）"
+    },
+    {
+      "id": "boss_baigu_fire_hit",
+      "category": "boss",
+      "type": "frame_anim",
+      "path": "assets/resources/textures/anim/boss_baigu_fire/hit_NN.png",
+      "frames": 4,
+      "size": [
+        256,
+        256
+      ],
+      "status": "in_game",
+      "source": "AI 生成（平台待核实）",
+      "license": "待核实",
+      "style": "legacy（待按暗黑国风 Q 版重做）"
+    },
+    {
+      "id": "boss_baigu_fire_idle",
+      "category": "boss",
+      "type": "frame_anim",
+      "path": "assets/resources/textures/anim/boss_baigu_fire/idle_NN.png",
+      "frames": 4,
+      "size": [
+        256,
+        256
+      ],
+      "status": "in_game",
+      "source": "AI 生成（平台待核实）",
+      "license": "待核实",
+      "style": "legacy（待按暗黑国风 Q 版重做）"
+    },
+    {
+      "id": "boss_baigu_fire_death",
+      "category": "boss",
+      "type": "sprite_sheet",
+      "path": "assets/resources/textures/anim/boss_baigu_fire_death.png",
+      "size": [
+        1280,
+        256
+      ],
+      "status": "in_game",
+      "source": "AI 生成（平台待核实）",
+      "license": "待核实",
+      "style": "legacy（待按暗黑国风 Q 版重做）"
+    },
+    {
+      "id": "boss_baigu_fire_hit",
+      "category": "boss",
+      "type": "sprite_sheet",
+      "path": "assets/resources/textures/anim/boss_baigu_fire_hit.png",
+      "size": [
+        1024,
+        256
+      ],
+      "status": "in_game",
+      "source": "AI 生成（平台待核实）",
+      "license": "待核实",
+      "style": "legacy（待按暗黑国风 Q 版重做）"
+    },
+    {
+      "id": "boss_baigu_fire_idle",
+      "category": "boss",
+      "type": "sprite_sheet",
+      "path": "assets/resources/textures/anim/boss_baigu_fire_idle.png",
+      "size": [
+        1024,
+        256
+      ],
+      "status": "in_game",
+      "source": "AI 生成（平台待核实）",
+      "license": "待核实",
+      "style": "legacy（待按暗黑国风 Q 版重做）"
+    },
+    {
+      "id": "boss_baigu_metal_death",
+      "category": "boss",
+      "type": "frame_anim",
+      "path": "assets/resources/textures/anim/boss_baigu_metal/death_NN.png",
+      "frames": 5,
+      "size": [
+        256,
+        256
+      ],
+      "status": "in_game",
+      "source": "AI 生成（平台待核实）",
+      "license": "待核实",
+      "style": "legacy（待按暗黑国风 Q 版重做）"
+    },
+    {
+      "id": "boss_baigu_metal_hit",
+      "category": "boss",
+      "type": "frame_anim",
+      "path": "assets/resources/textures/anim/boss_baigu_metal/hit_NN.png",
+      "frames": 4,
+      "size": [
+        256,
+        256
+      ],
+      "status": "in_game",
+      "source": "AI 生成（平台待核实）",
+      "license": "待核实",
+      "style": "legacy（待按暗黑国风 Q 版重做）"
+    },
+    {
+      "id": "boss_baigu_metal_idle",
+      "category": "boss",
+      "type": "frame_anim",
+      "path": "assets/resources/textures/anim/boss_baigu_metal/idle_NN.png",
+      "frames": 4,
+      "size": [
+        256,
+        256
+      ],
+      "status": "in_game",
+      "source": "AI 生成（平台待核实）",
+      "license": "待核实",
+      "style": "legacy（待按暗黑国风 Q 版重做）"
+    },
+    {
+      "id": "boss_baigu_metal_death",
+      "category": "boss",
+      "type": "sprite_sheet",
+      "path": "assets/resources/textures/anim/boss_baigu_metal_death.png",
+      "size": [
+        1280,
+        256
+      ],
+      "status": "in_game",
+      "source": "AI 生成（平台待核实）",
+      "license": "待核实",
+      "style": "legacy（待按暗黑国风 Q 版重做）"
+    },
+    {
+      "id": "boss_baigu_metal_hit",
+      "category": "boss",
+      "type": "sprite_sheet",
+      "path": "assets/resources/textures/anim/boss_baigu_metal_hit.png",
+      "size": [
+        1024,
+        256
+      ],
+      "status": "in_game",
+      "source": "AI 生成（平台待核实）",
+      "license": "待核实",
+      "style": "legacy（待按暗黑国风 Q 版重做）"
+    },
+    {
+      "id": "boss_baigu_metal_idle",
+      "category": "boss",
+      "type": "sprite_sheet",
+      "path": "assets/resources/textures/anim/boss_baigu_metal_idle.png",
+      "size": [
+        1024,
+        256
+      ],
+      "status": "in_game",
+      "source": "AI 生成（平台待核实）",
+      "license": "待核实",
+      "style": "legacy（待按暗黑国风 Q 版重做）"
+    },
+    {
+      "id": "boss_baigu_water_death",
+      "category": "boss",
+      "type": "frame_anim",
+      "path": "assets/resources/textures/anim/boss_baigu_water/death_NN.png",
+      "frames": 5,
+      "size": [
+        256,
+        256
+      ],
+      "status": "in_game",
+      "source": "AI 生成（平台待核实）",
+      "license": "待核实",
+      "style": "legacy（待按暗黑国风 Q 版重做）"
+    },
+    {
+      "id": "boss_baigu_water_hit",
+      "category": "boss",
+      "type": "frame_anim",
+      "path": "assets/resources/textures/anim/boss_baigu_water/hit_NN.png",
+      "frames": 4,
+      "size": [
+        256,
+        256
+      ],
+      "status": "in_game",
+      "source": "AI 生成（平台待核实）",
+      "license": "待核实",
+      "style": "legacy（待按暗黑国风 Q 版重做）"
+    },
+    {
+      "id": "boss_baigu_water_idle",
+      "category": "boss",
+      "type": "frame_anim",
+      "path": "assets/resources/textures/anim/boss_baigu_water/idle_NN.png",
+      "frames": 4,
+      "size": [
+        256,
+        256
+      ],
+      "status": "in_game",
+      "source": "AI 生成（平台待核实）",
+      "license": "待核实",
+      "style": "legacy（待按暗黑国风 Q 版重做）"
+    },
+    {
+      "id": "boss_baigu_water_death",
+      "category": "boss",
+      "type": "sprite_sheet",
+      "path": "assets/resources/textures/anim/boss_baigu_water_death.png",
+      "size": [
+        1280,
+        256
+      ],
+      "status": "in_game",
+      "source": "AI 生成（平台待核实）",
+      "license": "待核实",
+      "style": "legacy（待按暗黑国风 Q 版重做）"
+    },
+    {
+      "id": "boss_baigu_water_hit",
+      "category": "boss",
+      "type": "sprite_sheet",
+      "path": "assets/resources/textures/anim/boss_baigu_water_hit.png",
+      "size": [
+        1024,
+        256
+      ],
+      "status": "in_game",
+      "source": "AI 生成（平台待核实）",
+      "license": "待核实",
+      "style": "legacy（待按暗黑国风 Q 版重做）"
+    },
+    {
+      "id": "boss_baigu_water_idle",
+      "category": "boss",
+      "type": "sprite_sheet",
+      "path": "assets/resources/textures/anim/boss_baigu_water_idle.png",
+      "size": [
+        1024,
+        256
+      ],
+      "status": "in_game",
+      "source": "AI 生成（平台待核实）",
+      "license": "待核实",
+      "style": "legacy（待按暗黑国风 Q 版重做）"
+    },
+    {
+      "id": "boss_heishan_death",
+      "category": "boss",
+      "type": "frame_anim",
+      "path": "assets/resources/textures/anim/boss_heishan/death_NN.png",
+      "frames": 5,
+      "size": [
+        256,
+        256
+      ],
+      "status": "in_game",
+      "source": "AI 生成（平台待核实）",
+      "license": "待核实",
+      "style": "legacy（待按暗黑国风 Q 版重做）"
+    },
+    {
+      "id": "boss_heishan_hit",
+      "category": "boss",
+      "type": "frame_anim",
+      "path": "assets/resources/textures/anim/boss_heishan/hit_NN.png",
+      "frames": 4,
+      "size": [
+        256,
+        256
+      ],
+      "status": "in_game",
+      "source": "AI 生成（平台待核实）",
+      "license": "待核实",
+      "style": "legacy（待按暗黑国风 Q 版重做）"
+    },
+    {
+      "id": "boss_heishan_idle",
+      "category": "boss",
+      "type": "frame_anim",
+      "path": "assets/resources/textures/anim/boss_heishan/idle_NN.png",
+      "frames": 6,
+      "size": [
+        256,
+        256
+      ],
+      "status": "in_game",
+      "source": "AI 生成（平台待核实）",
+      "license": "待核实",
+      "style": "legacy（待按暗黑国风 Q 版重做）"
+    },
+    {
+      "id": "boss_heishan_death",
+      "category": "boss",
+      "type": "sprite_sheet",
+      "path": "assets/resources/textures/anim/boss_heishan_death.png",
+      "size": [
+        1280,
+        256
+      ],
+      "status": "in_game",
+      "source": "AI 生成（平台待核实）",
+      "license": "待核实",
+      "style": "legacy（待按暗黑国风 Q 版重做）"
+    },
+    {
+      "id": "boss_heishan_hit",
+      "category": "boss",
+      "type": "sprite_sheet",
+      "path": "assets/resources/textures/anim/boss_heishan_hit.png",
+      "size": [
+        1024,
+        256
+      ],
+      "status": "in_game",
+      "source": "AI 生成（平台待核实）",
+      "license": "待核实",
+      "style": "legacy（待按暗黑国风 Q 版重做）"
+    },
+    {
+      "id": "boss_heishan_idle",
+      "category": "boss",
+      "type": "sprite_sheet",
+      "path": "assets/resources/textures/anim/boss_heishan_idle.png",
+      "size": [
+        1536,
+        256
+      ],
+      "status": "in_game",
+      "source": "AI 生成（平台待核实）",
+      "license": "待核实",
+      "style": "legacy（待按暗黑国风 Q 版重做）"
+    },
+    {
+      "id": "enemy_foxfire_move",
+      "category": "enemy",
+      "type": "frame_anim",
+      "path": "assets/resources/textures/anim/enemy_foxfire/move_NN.png",
+      "frames": 8,
+      "size": [
+        256,
+        256
+      ],
+      "status": "in_game",
+      "source": "generated-images/fox-fire-green.png（生成工具待核实）；动画帧为程序生成",
+      "license": "待核实",
+      "style": "legacy（待按暗黑国风 Q 版重做）"
+    },
+    {
+      "id": "enemy_foxfire_move",
+      "category": "enemy",
+      "type": "sprite_sheet",
+      "path": "assets/resources/textures/anim/enemy_foxfire_move.png",
+      "size": [
+        2048,
+        256
+      ],
+      "status": "in_game",
+      "source": "generated-images/fox-fire-green.png（生成工具待核实）；动画帧为程序生成",
+      "license": "待核实",
+      "style": "legacy（待按暗黑国风 Q 版重做）"
+    },
+    {
+      "id": "enemy_jiangshi_move",
+      "category": "enemy",
+      "type": "frame_anim",
+      "path": "assets/resources/textures/anim/enemy_jiangshi/move_NN.png",
+      "frames": 8,
+      "size": [
+        256,
+        256
+      ],
+      "status": "in_game",
+      "source": "2026-10-27 用户选定跳尸 1 号（Magpie / codex/gpt-image-2）；image_gen 生成关键动作；FFmpeg 对齐、切帧并补过渡到 8 帧。记录：generated-images/level1-jiangshi-candidates-20261027/animation-8f/generation.json",
+      "license": "待核实",
+      "note": "1 号造型；move 8 帧 / 8 fps / 1 秒循环；256×256 RGBA，与狐火、灯笼统一帧数、尺寸及命名；受击、死亡沿用代码效果",
+      "style": "legacy（待按暗黑国风 Q 版重做）"
+    },
+    {
+      "id": "enemy_jiangshi_move",
+      "category": "enemy",
+      "type": "sprite_sheet",
+      "path": "assets/resources/textures/anim/enemy_jiangshi_move.png",
+      "size": [
+        2048,
+        256
+      ],
+      "status": "in_game",
+      "source": "2026-10-27 用户选定跳尸 1 号（Magpie / codex/gpt-image-2）；image_gen 生成关键动作；FFmpeg 对齐、切帧并补过渡到 8 帧。记录：generated-images/level1-jiangshi-candidates-20261027/animation-8f/generation.json",
+      "license": "待核实",
+      "note": "1 号造型；move 8 帧 / 8 fps / 1 秒循环；256×256 RGBA，与狐火、灯笼统一帧数、尺寸及命名；受击、死亡沿用代码效果",
+      "style": "legacy（待按暗黑国风 Q 版重做）"
+    },
+    {
+      "id": "enemy_lantern_death",
+      "category": "enemy",
+      "type": "frame_anim",
+      "path": "assets/resources/textures/anim/enemy_lantern/death_NN.png",
+      "frames": 6,
+      "size": [
+        128,
+        128
+      ],
+      "status": "in_game",
+      "source": "即梦（2026-10-27 样板 3 号）；动画帧为程序生成",
+      "license": "即梦用户协议（商用待核实）",
+      "style": "legacy（待按暗黑国风 Q 版重做）"
+    },
+    {
+      "id": "enemy_lantern_move",
+      "category": "enemy",
+      "type": "frame_anim",
+      "path": "assets/resources/textures/anim/enemy_lantern/move_NN.png",
+      "frames": 8,
+      "size": [
+        256,
+        256
+      ],
+      "status": "in_game",
+      "source": "即梦（2026-10-27 样板 3 号）；动画帧为程序生成",
+      "license": "即梦用户协议（商用待核实）",
+      "style": "legacy（待按暗黑国风 Q 版重做）"
+    },
+    {
+      "id": "enemy_lantern_move",
+      "category": "enemy",
+      "type": "sprite_sheet",
+      "path": "assets/resources/textures/anim/enemy_lantern_move.png",
+      "size": [
+        2048,
+        256
+      ],
+      "status": "in_game",
+      "source": "即梦（2026-10-27 样板 3 号）；动画帧为程序生成",
+      "license": "即梦用户协议（商用待核实）",
+      "style": "legacy（待按暗黑国风 Q 版重做）"
+    },
+    {
+      "id": "enemy_lantern_split_death",
+      "category": "enemy",
+      "type": "frame_anim",
+      "path": "assets/resources/textures/anim/enemy_lantern_split/death_NN.png",
+      "frames": 6,
+      "size": [
+        128,
+        128
+      ],
+      "status": "unused",
+      "source": "AI 生成（平台待核实）",
+      "license": "待核实",
+      "note": "仅在灯笼死亡帧缺失时作后备特效，当前不会出现",
+      "style": "legacy（待按暗黑国风 Q 版重做）"
+    },
+    {
+      "id": "enemy_lantern_split_move",
+      "category": "enemy",
+      "type": "frame_anim",
+      "path": "assets/resources/textures/anim/enemy_lantern_split/move_NN.png",
+      "frames": 3,
+      "size": [
+        128,
+        128
+      ],
+      "status": "unused",
+      "source": "AI 生成（平台待核实）",
+      "license": "待核实",
+      "note": "仅在灯笼死亡帧缺失时作后备特效，当前不会出现",
+      "style": "legacy（待按暗黑国风 Q 版重做）"
+    },
+    {
+      "id": "enemy_lantern_split_death",
+      "category": "enemy",
+      "type": "sprite_sheet",
+      "path": "assets/resources/textures/anim/enemy_lantern_split_death.png",
+      "size": [
+        768,
+        128
+      ],
+      "status": "unused",
+      "source": "AI 生成（平台待核实）",
+      "license": "待核实",
+      "note": "仅在灯笼死亡帧缺失时作后备特效，当前不会出现",
+      "style": "legacy（待按暗黑国风 Q 版重做）"
+    },
+    {
+      "id": "enemy_lantern_split_move",
+      "category": "enemy",
+      "type": "sprite_sheet",
+      "path": "assets/resources/textures/anim/enemy_lantern_split_move.png",
+      "size": [
+        1024,
+        128
+      ],
+      "status": "unused",
+      "source": "AI 生成（平台待核实）",
+      "license": "待核实",
+      "note": "仅在灯笼死亡帧缺失时作后备特效，当前不会出现",
+      "style": "legacy（待按暗黑国风 Q 版重做）"
+    },
+    {
+      "id": "enemy_paperman_move",
+      "category": "enemy",
+      "type": "frame_anim",
+      "path": "assets/resources/textures/anim/enemy_paperman/move_NN.png",
+      "frames": 8,
+      "size": [
+        256,
+        256
+      ],
+      "status": "in_game",
+      "source": "AI 生成（平台待核实）",
+      "license": "待核实",
+      "style": "legacy（待按暗黑国风 Q 版重做）"
+    },
+    {
+      "id": "enemy_paperman_move",
+      "category": "enemy",
+      "type": "sprite_sheet",
+      "path": "assets/resources/textures/anim/enemy_paperman_move.png",
+      "size": [
+        2048,
+        256
+      ],
+      "status": "in_game",
+      "source": "AI 生成（平台待核实）",
+      "license": "待核实",
+      "style": "legacy（待按暗黑国风 Q 版重做）"
+    },
+    {
+      "id": "enemy_shuigui_move",
+      "category": "enemy",
+      "type": "frame_anim",
+      "path": "assets/resources/textures/anim/enemy_shuigui/move_NN.png",
+      "frames": 8,
+      "size": [
+        256,
+        256
+      ],
+      "status": "in_game",
+      "source": "AI 生成（平台待核实）",
+      "license": "待核实",
+      "style": "legacy（待按暗黑国风 Q 版重做）"
+    },
+    {
+      "id": "enemy_shuigui_move",
+      "category": "enemy",
+      "type": "sprite_sheet",
+      "path": "assets/resources/textures/anim/enemy_shuigui_move.png",
+      "size": [
+        2048,
+        256
+      ],
+      "status": "in_game",
+      "source": "AI 生成（平台待核实）",
+      "license": "待核实",
+      "style": "legacy（待按暗黑国风 Q 版重做）"
+    },
+    {
+      "id": "enemy_tongjia_move",
+      "category": "enemy",
+      "type": "frame_anim",
+      "path": "assets/resources/textures/anim/enemy_tongjia/move_NN.png",
+      "frames": 8,
+      "size": [
+        256,
+        256
+      ],
+      "status": "in_game",
+      "source": "AI 生成（平台待核实）",
+      "license": "待核实",
+      "style": "legacy（待按暗黑国风 Q 版重做）"
+    },
+    {
+      "id": "enemy_tongjia_move",
+      "category": "enemy",
+      "type": "sprite_sheet",
+      "path": "assets/resources/textures/anim/enemy_tongjia_move.png",
+      "size": [
+        2048,
+        256
+      ],
+      "status": "in_game",
+      "source": "AI 生成（平台待核实）",
+      "license": "待核实",
+      "style": "legacy（待按暗黑国风 Q 版重做）"
+    },
+    {
+      "id": "player_taoist_cast",
+      "category": "player",
+      "type": "frame_anim",
+      "path": "assets/resources/textures/anim/player_taoist/cast_NN.png",
+      "frames": 5,
+      "size": [
+        256,
+        256
+      ],
+      "status": "in_game（待确认）",
+      "source": "2026-10-28 暗黑国风 Q 版重做：定稿 generated-images/dark-qban/player_design_01.png，序列图切帧并统一身体大小。旧帧备份 generated-images/dark-qban/player_old/",
+      "license": "待核实",
+      "style": "dark-qban"
+    },
+    {
+      "id": "player_taoist_hit",
+      "category": "player",
+      "type": "frame_anim",
+      "path": "assets/resources/textures/anim/player_taoist/hit_NN.png",
+      "frames": 2,
+      "size": [
+        256,
+        256
+      ],
+      "status": "in_game（待确认）",
+      "source": "2026-10-28 暗黑国风 Q 版重做：定稿 generated-images/dark-qban/player_design_01.png，序列图切帧并统一身体大小。旧帧备份 generated-images/dark-qban/player_old/",
+      "license": "待核实",
+      "style": "dark-qban"
+    },
+    {
+      "id": "player_taoist_idle",
+      "category": "player",
+      "type": "frame_anim",
+      "path": "assets/resources/textures/anim/player_taoist/idle_NN.png",
+      "frames": 4,
+      "size": [
+        256,
+        256
+      ],
+      "status": "in_game（待确认）",
+      "source": "2026-10-28 暗黑国风 Q 版重做：定稿 generated-images/dark-qban/player_design_01.png，序列图切帧并统一身体大小。旧帧备份 generated-images/dark-qban/player_old/",
+      "license": "待核实",
+      "style": "dark-qban"
+    },
+    {
+      "id": "player_taoist_cast",
+      "category": "player",
+      "type": "sprite_sheet",
+      "path": "assets/resources/textures/anim/player_taoist_cast.png",
+      "size": [
+        1280,
+        256
+      ],
+      "status": "in_game（待确认）",
+      "source": "2026-10-28 暗黑国风 Q 版重做：定稿 generated-images/dark-qban/player_design_01.png，序列图切帧并统一身体大小。旧帧备份 generated-images/dark-qban/player_old/",
+      "license": "待核实",
+      "style": "dark-qban"
+    },
+    {
+      "id": "player_taoist_hit",
+      "category": "player",
+      "type": "sprite_sheet",
+      "path": "assets/resources/textures/anim/player_taoist_hit.png",
+      "size": [
+        512,
+        256
+      ],
+      "status": "in_game（待确认）",
+      "source": "2026-10-28 暗黑国风 Q 版重做：定稿 generated-images/dark-qban/player_design_01.png，序列图切帧并统一身体大小。旧帧备份 generated-images/dark-qban/player_old/",
+      "license": "待核实",
+      "style": "dark-qban"
+    },
+    {
+      "id": "player_taoist_idle",
+      "category": "player",
+      "type": "sprite_sheet",
+      "path": "assets/resources/textures/anim/player_taoist_idle.png",
+      "size": [
+        1024,
+        256
+      ],
+      "status": "in_game（待确认）",
+      "source": "2026-10-28 暗黑国风 Q 版重做：定稿 generated-images/dark-qban/player_design_01.png，序列图切帧并统一身体大小。旧帧备份 generated-images/dark-qban/player_old/",
+      "license": "待核实",
+      "style": "dark-qban"
+    },
+    {
+      "id": "temple",
+      "category": "music",
+      "type": "audio",
+      "path": "assets/resources/audio/bgm/temple.mp3",
+      "status": "in_game",
+      "source": "程序生成 tools/asset-pipeline/gen_audio.py",
+      "license": "自有"
+    },
+    {
+      "id": "village",
+      "category": "music",
+      "type": "audio",
+      "path": "assets/resources/audio/bgm/village.mp3",
+      "status": "in_game",
+      "source": "程序生成 tools/asset-pipeline/gen_audio.py",
+      "license": "自有"
+    },
+    {
+      "id": "amb_temple",
+      "category": "sfx",
+      "type": "audio",
+      "path": "assets/resources/audio/sfx/amb_temple.mp3",
+      "status": "in_game",
+      "source": "程序生成 tools/asset-pipeline/gen_audio.py",
+      "license": "自有"
+    },
+    {
+      "id": "amb_village",
+      "category": "sfx",
+      "type": "audio",
+      "path": "assets/resources/audio/sfx/amb_village.mp3",
+      "status": "in_game",
+      "source": "程序生成 tools/asset-pipeline/gen_audio.py",
+      "license": "自有"
+    },
+    {
+      "id": "baigu_death",
+      "category": "sfx",
+      "type": "audio",
+      "path": "assets/resources/audio/sfx/baigu_death.mp3",
+      "status": "in_game",
+      "source": "待核实",
+      "license": "待核实"
+    },
+    {
+      "id": "baigu_hit_fire",
+      "category": "sfx",
+      "type": "audio",
+      "path": "assets/resources/audio/sfx/baigu_hit_fire.mp3",
+      "status": "in_game",
+      "source": "待核实",
+      "license": "待核实"
+    },
+    {
+      "id": "baigu_hit_metal",
+      "category": "sfx",
+      "type": "audio",
+      "path": "assets/resources/audio/sfx/baigu_hit_metal.mp3",
+      "status": "in_game",
+      "source": "待核实",
+      "license": "待核实"
+    },
+    {
+      "id": "baigu_hit_water",
+      "category": "sfx",
+      "type": "audio",
+      "path": "assets/resources/audio/sfx/baigu_hit_water.mp3",
+      "status": "in_game",
+      "source": "待核实",
+      "license": "待核实"
+    },
+    {
+      "id": "baigu_phase_fire",
+      "category": "sfx",
+      "type": "audio",
+      "path": "assets/resources/audio/sfx/baigu_phase_fire.mp3",
+      "status": "in_game",
+      "source": "待核实",
+      "license": "待核实"
+    },
+    {
+      "id": "baigu_phase_metal",
+      "category": "sfx",
+      "type": "audio",
+      "path": "assets/resources/audio/sfx/baigu_phase_metal.mp3",
+      "status": "in_game",
+      "source": "待核实",
+      "license": "待核实"
+    },
+    {
+      "id": "baigu_phase_water",
+      "category": "sfx",
+      "type": "audio",
+      "path": "assets/resources/audio/sfx/baigu_phase_water.mp3",
+      "status": "in_game",
+      "source": "待核实",
+      "license": "待核实"
+    },
+    {
+      "id": "barrier_crack",
+      "category": "sfx",
+      "type": "audio",
+      "path": "assets/resources/audio/sfx/barrier_crack.mp3",
+      "status": "in_game",
+      "source": "待核实",
+      "license": "待核实"
+    },
+    {
+      "id": "boss",
+      "category": "sfx",
+      "type": "audio",
+      "path": "assets/resources/audio/sfx/boss.mp3",
+      "status": "in_game",
+      "source": "程序生成 tools/asset-pipeline/gen_audio.py",
+      "license": "自有"
+    },
+    {
+      "id": "click",
+      "category": "sfx",
+      "type": "audio",
+      "path": "assets/resources/audio/sfx/click.mp3",
+      "status": "in_game",
+      "source": "程序生成 tools/asset-pipeline/gen_audio.py",
+      "license": "自有"
+    },
+    {
+      "id": "combo",
+      "category": "sfx",
+      "type": "audio",
+      "path": "assets/resources/audio/sfx/combo.mp3",
+      "status": "in_game",
+      "source": "程序生成 tools/asset-pipeline/gen_audio.py",
+      "license": "自有"
+    },
+    {
+      "id": "combo_sheng",
+      "category": "sfx",
+      "type": "audio",
+      "path": "assets/resources/audio/sfx/combo_sheng.mp3",
+      "status": "in_game",
+      "source": "待核实",
+      "license": "待核实"
+    },
+    {
+      "id": "crit",
+      "category": "sfx",
+      "type": "audio",
+      "path": "assets/resources/audio/sfx/crit.mp3",
+      "status": "in_game",
+      "source": "程序生成 tools/asset-pipeline/gen_audio.py",
+      "license": "自有"
+    },
+    {
+      "id": "enemy_hurt",
+      "category": "sfx",
+      "type": "audio",
+      "path": "assets/resources/audio/sfx/enemy_hurt.mp3",
+      "status": "in_game",
+      "source": "程序生成 tools/asset-pipeline/gen_audio.py",
+      "license": "自有"
+    },
+    {
+      "id": "explode",
+      "category": "sfx",
+      "type": "audio",
+      "path": "assets/resources/audio/sfx/explode.mp3",
+      "status": "in_game",
+      "source": "程序生成 tools/asset-pipeline/gen_audio.py",
+      "license": "自有"
+    },
+    {
+      "id": "foxfire_snuff",
+      "category": "sfx",
+      "type": "audio",
+      "path": "assets/resources/audio/sfx/foxfire_snuff.mp3",
+      "status": "in_game",
+      "source": "程序生成 tools/asset-pipeline/gen_audio.py",
+      "license": "自有"
+    },
+    {
+      "id": "foxfire_whoosh",
+      "category": "sfx",
+      "type": "audio",
+      "path": "assets/resources/audio/sfx/foxfire_whoosh.mp3",
+      "status": "in_game",
+      "source": "程序生成 tools/asset-pipeline/gen_audio.py",
+      "license": "自有"
+    },
+    {
+      "id": "freeze",
+      "category": "sfx",
+      "type": "audio",
+      "path": "assets/resources/audio/sfx/freeze.mp3",
+      "status": "in_game",
+      "source": "程序生成 tools/asset-pipeline/gen_audio.py",
+      "license": "自有"
+    },
+    {
+      "id": "heishan_death",
+      "category": "sfx",
+      "type": "audio",
+      "path": "assets/resources/audio/sfx/heishan_death.mp3",
+      "status": "in_game",
+      "source": "待核实",
+      "license": "待核实"
+    },
+    {
+      "id": "heishan_hit",
+      "category": "sfx",
+      "type": "audio",
+      "path": "assets/resources/audio/sfx/heishan_hit.mp3",
+      "status": "in_game",
+      "source": "待核实",
+      "license": "待核实"
+    },
+    {
+      "id": "hit",
+      "category": "sfx",
+      "type": "audio",
+      "path": "assets/resources/audio/sfx/hit.mp3",
+      "status": "in_game",
+      "source": "程序生成 tools/asset-pipeline/gen_audio.py",
+      "license": "自有"
+    },
+    {
+      "id": "jiangshi_presence",
+      "category": "sfx",
+      "type": "audio",
+      "path": "assets/resources/audio/sfx/jiangshi_presence.mp3",
+      "status": "in_game",
+      "source": "待核实",
+      "license": "待核实"
+    },
+    {
+      "id": "lantern_split",
+      "category": "sfx",
+      "type": "audio",
+      "path": "assets/resources/audio/sfx/lantern_split.mp3",
+      "status": "in_game",
+      "source": "待核实",
+      "license": "待核实"
+    },
+    {
+      "id": "levelup",
+      "category": "sfx",
+      "type": "audio",
+      "path": "assets/resources/audio/sfx/levelup.mp3",
+      "status": "in_game",
+      "source": "程序生成 tools/asset-pipeline/gen_audio.py",
+      "license": "自有"
+    },
+    {
+      "id": "lose",
+      "category": "sfx",
+      "type": "audio",
+      "path": "assets/resources/audio/sfx/lose.mp3",
+      "status": "in_game",
+      "source": "程序生成 tools/asset-pipeline/gen_audio.py",
+      "license": "自有"
+    },
+    {
+      "id": "paperman_death",
+      "category": "sfx",
+      "type": "audio",
+      "path": "assets/resources/audio/sfx/paperman_death.mp3",
+      "status": "in_game",
+      "source": "程序生成 tools/asset-pipeline/gen_audio.py",
+      "license": "自有"
+    },
+    {
+      "id": "paperman_rustle",
+      "category": "sfx",
+      "type": "audio",
+      "path": "assets/resources/audio/sfx/paperman_rustle.mp3",
+      "status": "in_game",
+      "source": "程序生成 tools/asset-pipeline/gen_audio.py",
+      "license": "自有"
+    },
+    {
+      "id": "resist",
+      "category": "sfx",
+      "type": "audio",
+      "path": "assets/resources/audio/sfx/resist.mp3",
+      "status": "in_game",
+      "source": "程序生成 tools/asset-pipeline/gen_audio.py",
+      "license": "自有"
+    },
+    {
+      "id": "shoot",
+      "category": "sfx",
+      "type": "audio",
+      "path": "assets/resources/audio/sfx/shoot.mp3",
+      "status": "in_game",
+      "source": "程序生成 tools/asset-pipeline/gen_audio.py",
+      "license": "自有"
+    },
+    {
+      "id": "shuigui_death",
+      "category": "sfx",
+      "type": "audio",
+      "path": "assets/resources/audio/sfx/shuigui_death.mp3",
+      "status": "in_game",
+      "source": "程序生成 tools/asset-pipeline/gen_audio.py",
+      "license": "自有"
+    },
+    {
+      "id": "shuigui_dive_in",
+      "category": "sfx",
+      "type": "audio",
+      "path": "assets/resources/audio/sfx/shuigui_dive_in.mp3",
+      "status": "in_game",
+      "source": "程序生成 tools/asset-pipeline/gen_audio.py",
+      "license": "自有"
+    },
+    {
+      "id": "shuigui_dive_out",
+      "category": "sfx",
+      "type": "audio",
+      "path": "assets/resources/audio/sfx/shuigui_dive_out.mp3",
+      "status": "in_game",
+      "source": "程序生成 tools/asset-pipeline/gen_audio.py",
+      "license": "自有"
+    },
+    {
+      "id": "shuigui_presence",
+      "category": "sfx",
+      "type": "audio",
+      "path": "assets/resources/audio/sfx/shuigui_presence.mp3",
+      "status": "in_game",
+      "source": "程序生成 tools/asset-pipeline/gen_audio.py",
+      "license": "自有"
+    },
+    {
+      "id": "thunder",
+      "category": "sfx",
+      "type": "audio",
+      "path": "assets/resources/audio/sfx/thunder.mp3",
+      "status": "in_game",
+      "source": "程序生成 tools/asset-pipeline/gen_audio.py",
+      "license": "自有"
+    },
+    {
+      "id": "tongjia_break",
+      "category": "sfx",
+      "type": "audio",
+      "path": "assets/resources/audio/sfx/tongjia_break.mp3",
+      "status": "in_game",
+      "source": "程序生成 tools/asset-pipeline/gen_audio.py",
+      "license": "自有"
+    },
+    {
+      "id": "tongjia_clank",
+      "category": "sfx",
+      "type": "audio",
+      "path": "assets/resources/audio/sfx/tongjia_clank.mp3",
+      "status": "in_game",
+      "source": "程序生成 tools/asset-pipeline/gen_audio.py",
+      "license": "自有"
+    },
+    {
+      "id": "win",
+      "category": "sfx",
+      "type": "audio",
+      "path": "assets/resources/audio/sfx/win.mp3",
+      "status": "in_game",
+      "source": "程序生成 tools/asset-pipeline/gen_audio.py",
+      "license": "自有"
+    },
+    {
+      "id": "fx_metal_bolt",
+      "category": "vfx",
+      "type": "sprite",
+      "path": "assets/resources/textures/fx_metal_bolt.png",
+      "size": [
+        64,
+        256
+      ],
+      "status": "in_game",
+      "source": "2026-10-27 magpie /imagegen（半写实光效版，符咒特效阶段产出）",
+      "license": "待核实",
+      "style": "legacy（待按暗黑国风 Q 版重做）"
+    },
+    {
+      "id": "fx_metal_hit",
+      "category": "vfx",
+      "type": "sprite",
+      "path": "assets/resources/textures/fx_metal_hit.png",
+      "size": [
+        256,
+        256
+      ],
+      "status": "in_game",
+      "source": "2026-10-27 magpie /imagegen（半写实光效版，符咒特效阶段产出）",
+      "license": "待核实",
+      "style": "legacy（待按暗黑国风 Q 版重做）"
+    },
+    {
+      "id": "fx_water_bolt",
+      "category": "vfx",
+      "type": "sprite",
+      "path": "assets/resources/textures/fx_water_bolt.png",
+      "size": [
+        64,
+        256
+      ],
+      "status": "in_game",
+      "source": "2026-10-27 magpie /imagegen（半写实光效版，符咒特效阶段产出）",
+      "license": "待核实",
+      "style": "legacy（待按暗黑国风 Q 版重做）"
+    },
+    {
+      "id": "fx_water_freeze",
+      "category": "vfx",
+      "type": "sprite",
+      "path": "assets/resources/textures/fx_water_freeze.png",
+      "size": [
+        256,
+        256
+      ],
+      "status": "in_game",
+      "source": "2026-10-27 magpie /imagegen（半写实光效版，符咒特效阶段产出）",
+      "license": "待核实",
+      "style": "legacy（待按暗黑国风 Q 版重做）"
+    },
+    {
+      "id": "fx_fire_ball",
+      "category": "vfx",
+      "type": "sprite",
+      "path": "assets/resources/textures/fx_fire_ball.png",
+      "size": [
+        96,
+        128
+      ],
+      "status": "in_game",
+      "source": "2026-10-27 magpie /imagegen（半写实光效版，符咒特效阶段产出）",
+      "license": "待核实",
+      "style": "legacy（待按暗黑国风 Q 版重做）"
+    },
+    {
+      "id": "fx_fire_explode",
+      "category": "vfx",
+      "type": "frames",
+      "path": "assets/resources/textures/anim/fx_fire_explode/explode_NN.png",
+      "size": [
+        256,
+        256
+      ],
+      "status": "in_game",
+      "source": "2026-10-27 magpie /imagegen（半写实光效版，符咒特效阶段产出）",
+      "license": "待核实",
+      "style": "legacy（待按暗黑国风 Q 版重做）"
+    },
+    {
+      "id": "icon_talisman_metal_frameless",
+      "category": "icon",
+      "type": "sprite",
+      "path": "assets/resources/textures/icon_talisman_metal_frameless.png",
+      "size": [
+        256,
+        384
+      ],
+      "status": "in_game",
+      "source": "2026-10-27 magpie /imagegen（半写实光效版，符咒特效阶段产出）",
+      "license": "待核实",
+      "style": "legacy（待按暗黑国风 Q 版重做）"
+    }
+  ]
+}

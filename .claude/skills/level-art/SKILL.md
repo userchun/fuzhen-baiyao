@@ -9,7 +9,7 @@ description: 符阵白妖（fuzhen-baiyao）按关卡做美术素材的流程：
 
 ## 0. 先定范围
 
-- 读 `design/art/art-bible.md`（美术总纲）、`design/art/asset-manifest.json`（顶层是 `{"assets":[...]}`）、`design/level1-polish.md`（第一关的完整记录，可当范本）。
+- 读 `docs/art/art-bible.md`（美术总纲）、`docs/art/asset-manifest.json`（顶层是 `{"assets":[...]}`）、`docs/art/level1-polish.md`（第一关的完整记录，可当范本）。
 - 从 `assets/scripts/config/GameConfig.ts` 的 `ENEMIES` 和这一关的 `LEVELn_WAVES` 列出要做的素材：小怪、Boss、背景、城墙，主角一般沿用。
 - 先把清单和顺序发给用户确认，然后**一个素材一个素材做**。每做完一个都要等用户在游戏里看过、确认，再做下一个。
 
@@ -22,7 +22,7 @@ description: 符阵白妖（fuzhen-baiyao）按关卡做美术素材的流程：
 | 主角 | idle / cast / hit | 12 / 8 / 6 | 256 |
 
 - 动作结构参照同类割草游戏（见 art-bible「Boss 与小怪的动作和机制」），只照搬结构，造型自己设计。Boss 受击由代码闪白和顿帧表现，不出图；skill1/skill2 要和 Boss 的机制绑定。
-- 风格是 **暗黑国风 Q 版**（见 `design/art/art-bible.md`，样板图 `design/art/ref/style_target.png`）：厚涂、轮廓光、青蓝妖气对朱红金黑、造型狰狞、大头比例。提示词一律从 `design/prompts-dark-qban.md` 拼（风格锁 + 主体 + 构图 + 约束 + 负面词），出图时附上样板图。每张新图都要检查四项：画风一致、轮廓清楚、没有文字、俯视朝向正确。
+- 风格是 **暗黑国风 Q 版**（见 `docs/art/art-bible.md`，样板图 `docs/art/ref/style_target.png`）：厚涂、轮廓光、青蓝妖气对朱红金黑、造型狰狞、大头比例。提示词一律从 `docs/art/prompts-dark-qban.md` 拼（风格锁 + 主体 + 构图 + 约束 + 负面词），出图时附上样板图。每张新图都要检查四项：画风一致、轮廓清楚、没有文字、俯视朝向正确。
 - 视角统一是**俯视**（可读性参考休闲俯视射击，不照搬任何游戏画面）。背景是 1024×1536 的俯视地面，屏幕顶部到底部都是路。城墙是 1440×304 的俯视城墙顶。
 - 配色：妖怪和背景不能撞色。背景里的暖红灯光要压暗或改冷，把暖色留给怪物和主角的符光。
 - 怪物胸口要留封印（字印）的位置。
@@ -72,8 +72,8 @@ python3 tools/asset-pipeline/slice_sheet.py sheet.png outdir --cols 6 --rows 2 -
 ## 5. 记录与提交
 
 - 同步更新两个文件：
-  - `design/art/asset-manifest.json`：写尺寸、帧数、状态（JSON 用 indent 2）；
-  - `design/level<N>-polish.md`：写做了什么、为什么这样做。
+  - `docs/art/asset-manifest.json`：写尺寸、帧数、状态（JSON 用 indent 2）；
+  - `docs/art/level<N>-polish.md`：写做了什么、为什么这样做。
 - **用户在游戏里看过、确认之后才提交**。提交方式是 hold push：只 commit，不 push。
 - commit message 用中文，格式是 `feat(art): …（hold push）`，末尾加 Co-Authored-By 行。
 - `generated-images/` 不纳入版本管理。
