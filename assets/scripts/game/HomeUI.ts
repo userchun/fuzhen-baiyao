@@ -14,21 +14,19 @@ import {
 import { popIn } from './Anim';
 
 /** 底图原始尺寸，以及图上各元素的中心位置（像素，左上为原点） */
-// 底图是 v12 上下外扩到 9:19.5 的版本（852×1846）。POS 仍按 v12 原图（941×1672）的像素写，
-// 换算：先加上外扩的顶部高度 183，再整体缩放 852/941
+// 底图 v14（852×1846，9:19.5）：顶栏贴顶、关卡牌和出战贴底。POS 是这张图上的像素坐标
 const IMG = { w: 852, h: 1846 };
+/** 控件尺寸沿用 v12 原图（941 宽）的像素写法，换算到 v14 */
 const SRC_K = 852 / 941;
-const SRC_TOP = 183;
 const POS = {
-    progress: [262, 86], coin: [592, 52], paper: [775, 52], gear: [887, 52],
-    title: [470, 215],
-    entries: [[852, 725], [852, 905], [852, 1085]],
-    entryLabels: [[852, 805], [852, 985], [852, 1170]],
-    // v12：关卡牌一行（Boss 头像在图里），右上角难度小切换，底边奖励图标；下面是出战
-    plaque: [560, 1345], ring: [470, 1382], arrowL: [107, 1382], arrowR: [835, 1382],
-    fight: [470, 1545],
-    diffNormal: [650, 1312], diffHard: [728, 1312],
-    rewardCoin: [452, 1420], rewardPaper: [570, 1420], rewardChest: [722, 1420],
+    progress: [240, 85], coin: [536, 70], paper: [700, 70], gear: [806, 70],
+    title: [425, 215],
+    entries: [[770, 955], [770, 1130], [770, 1300]],
+    entryLabels: [[770, 1025], [770, 1190], [770, 1355]],
+    plaque: [500, 1572], ring: [425, 1600], arrowL: [100, 1600], arrowR: [752, 1600],
+    fight: [425, 1752],
+    diffNormal: [588, 1537], diffHard: [658, 1537],
+    rewardCoin: [408, 1636], rewardPaper: [515, 1636], rewardChest: [652, 1636],
 } as const;
 
 const GOLD = '#FFD66E';
@@ -58,9 +56,7 @@ export class HomeUI {
     }
 
     private at(p: readonly number[]): [number, number] {
-        const x = p[0] * SRC_K;
-        const y = (p[1] + SRC_TOP) * SRC_K;
-        return [(x - IMG.w / 2) * this.s, (IMG.h / 2 - y) * this.s];
+        return [(p[0] - IMG.w / 2) * this.s, (IMG.h / 2 - p[1]) * this.s];
     }
 
     /** 当前停在第几关（重排时保持不变） */
@@ -71,8 +67,8 @@ export class HomeUI {
     show(p: Profile, levels: LevelDef[], startLevel: number, act: HomeActions): void {
         this.hide();
         this.level = startLevel;
-        // 按宽度铺满：按钮画在底图里，左右不能裁；底图已是 9:19.5，矮一些的屏幕只裁掉上下多画的天空和城墙
-        this.s = GAME.width / IMG.w;
+        // 整张图完整放进屏幕：顶栏和出战都贴着图的上下边，不能裁；比例不同时空出的边用边缘色补
+        this.s = Math.min(GAME.width / IMG.w, GAME.height / IMG.h);
         const root = makeNode('home', this.root, GAME.width, GAME.height);
         this.node = root;
         rectNode('homeBase', GAME.width, GAME.height, '#0B0E16', root);
