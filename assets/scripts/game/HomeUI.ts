@@ -65,13 +65,26 @@ export class HomeUI {
         const root = makeNode('home', this.root, GAME.width, GAME.height);
         this.node = root;
         rectNode('homeBase', GAME.width, GAME.height, '#0B0E16', root);
-        // 屏幕比底图高时，上下空出来的部分用放大的同一张底图压暗垫底，不留纯色空条
-        const cover = Math.max(GAME.width / IMG.w, GAME.height / IMG.h) * 1.08;
-        if (IMG.h * this.s < GAME.height) {
-            spriteNode('ui_home_bg', IMG.w * cover, IMG.h * cover, root);
-            rectNode('homeDim', GAME.width, GAME.height, '#05070C', root, 0, 200);
+        // 屏幕比底图高时，上下空出的部分用底图边缘的颜色补齐（按钮画在底图里，不能再放大底图去填）
+        const gap = (GAME.height - IMG.h * this.s) / 2;
+        if (gap > 0) {
+            const top = rectNode('homeTop', GAME.width, gap + 2, '#071523', root);
+            top.setPosition(0, GAME.height / 2 - gap / 2);
+            const bottom = rectNode('homeBottom', GAME.width, gap + 2, '#121720', root);
+            bottom.setPosition(0, -GAME.height / 2 + gap / 2);
         }
         spriteNode('ui_home_bg', IMG.w * this.s, IMG.h * this.s, root);
+        if (gap > 0) {
+            // 接缝处 4 层半透明细条做渐变（只压图边 16px，不碰顶栏）
+            const edge = (IMG.h * this.s) / 2;
+            for (let i = 0; i < 4; i++) {
+                const a = Math.round(180 * (1 - i / 4));
+                const t = rectNode('fadeT', GAME.width, 4, '#071523', root, 0, a);
+                t.setPosition(0, edge - 2 - i * 4);
+                const b = rectNode('fadeB', GAME.width, 4, '#121720', root, 0, a);
+                b.setPosition(0, -edge + 2 + i * 4);
+            }
+        }
         this.render(p, levels, act);
     }
 
