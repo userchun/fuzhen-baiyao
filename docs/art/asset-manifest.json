@@ -2,8 +2,8 @@
   "project": "符镇百妖",
   "engine": "Cocos Creator 3.8.8",
   "art_direction": "docs/art/art-bible.md",
-  "updated": "2026-10-30",
-  "note": "风格：2026-10-30 起为国风剪纸 Q 版（见 art-bible.md）。每条视觉素材带 style 字段：dark-qban = 已按上一版暗黑国风重做、现需按剪纸重出；legacy = 旧半写实版，待重做（字段里的“待按暗黑国风 Q 版重做”现指按剪纸风格重做）。新增素材先登记再出图。",
+  "updated": "2026-10-28",
+  "note": "风格：暗黑国风 Q 版（见 art-bible.md）。每条视觉素材带 style 字段：dark-qban = 已按新风格重做；legacy = 旧半写实版，待重做。新增素材先登记再出图。",
   "assets": [
     {
       "id": "bg_level1_village",
