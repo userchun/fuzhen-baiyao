@@ -12,13 +12,13 @@ const frames = new Map<string, SpriteFrame>();
 /** 妖怪图片的腹部字印位置与显示比例。sealY：字印中心距图片顶部的比例；sealX：距左边的比例（默认 0.5 居中）；scale：图片边长 / 碰撞直径 */
 /** sealYFrames：可选，move 每帧的字印 Y（同 sealY 比例），用于下蹲等胸口高度变化大的动作 */
 export const ENEMY_ART: Record<string, { tex: string; sealY: number; sealX?: number; sealR: number; scale: number; sealYFrames?: number[] }> = {
-    // scale = 显示边长 / 碰撞直径；相对上一轮再 ×1.45（约 +45%）
-    paperman: { tex: 'enemy_paperman', sealY: 0.46, sealR: 0.07, scale: 3.05 }, // 2026-10-27 纸扎人 1 号：字印对齐胸口发光圆，12 帧已按圆印横向对齐
-    jiangshi: { tex: 'enemy_jiangshi', sealY: 0.56, sealX: 0.43, sealR: 0.07, scale: 3.05 }, // 2026-10-31 单图：字印落在左胸金色补子上（舌头挡住正中）
-    foxfire: { tex: 'enemy_foxfire', sealY: 0.74, sealX: 0.58, sealR: 0.07, scale: 3.4 }, // 2026-10-31 v14 侧身火狐 12 帧奔跑：字印落在胸口
-    lantern: { tex: 'enemy_lantern', sealY: 0.55, sealR: 0.10, scale: 2.75 }, // 2026-10-27 即梦样板 3 号：字印对齐腹部发光圆
-    shuigui: { tex: 'enemy_shuigui', sealY: 0.61, sealR: 0.125, scale: 3.05 },
-    tongjia: { tex: 'enemy_tongjia', sealY: 0.69, sealR: 0.12, scale: 3.05 },
+    // scale = 显示边长 / 碰撞直径。2026-10-31 按图里角色实际可见高度统一：普通小怪 150（纸人身形瘦，放到 165 看起来才一样大）、精英（铜甲尸、灯笼鬼）190（取 12 帧中位高度）
+    paperman: { tex: 'enemy_paperman', sealY: 0.46, sealR: 0.07, scale: 3.69 }, // 2026-10-27 纸扎人 1 号：字印对齐胸口发光圆，12 帧已按圆印横向对齐
+    jiangshi: { tex: 'enemy_jiangshi', sealY: 0.56, sealX: 0.43, sealR: 0.07, scale: 2.78 }, // 2026-10-31 单图：字印落在左胸金色补子上（舌头挡住正中）
+    foxfire: { tex: 'enemy_foxfire', sealY: 0.74, sealX: 0.58, sealR: 0.07, scale: 3.98 }, // 2026-10-31 v14 侧身火狐 12 帧奔跑：字印落在胸口
+    lantern: { tex: 'enemy_lantern', sealY: 0.40, sealR: 0.08, scale: 2.52 }, // 2026-10-31 v14 獠牙红灯笼 12 帧漂浮：字印落在独眼
+    shuigui: { tex: 'enemy_shuigui', sealY: 0.61, sealR: 0.125, scale: 3.51 },
+    tongjia: { tex: 'enemy_tongjia', sealY: 0.69, sealR: 0.12, scale: 3.52 },
     heishan: { tex: 'boss_heishan', sealY: 0.51, sealX: 0.48, sealR: 0.09, scale: 2.75 }, // 2026-10-27 新岩石巨妖：字印对齐胸口封印圆
     baigu: { tex: 'boss_baigu_metal', sealY: 0.65, sealR: 0.10, scale: 3.05 },
 };

@@ -132,7 +132,7 @@ export class Combat {
         foxfire: { fps: 14, bobPx: 0 }, // 2026-10-31 v14 侧身火狐 12 帧奔跑，快怪略快
         tongjia: { fps: 11, bobPx: 0 },
         shuigui: { fps: 8, bobPx: 0 }, // 略慢以缓和 f6–f7 观感；无 bob
-        lantern: { fps: 10, bobPx: 0 }, // 漂浮精英；12 帧一个摇摆来回约 1.2 秒；无 bob
+        lantern: { fps: 10, bobPx: 0 }, // 2026-10-31 v14 獠牙红灯笼 12 帧：左右摇摆、甩舌、火焰随摆；无 bob
         heishan: { fps: 10, bobPx: 0, prefix: 'anim/boss_heishan/idle' }, // 20 帧呼吸 idle，一个循环 2 秒；无 bob
         baigu: { fps: 9, bobPx: 0, prefix: 'anim/boss_baigu_metal/idle' }, // 默认金相；三相见 baiguPhaseClips
     };
