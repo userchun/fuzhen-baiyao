@@ -126,9 +126,9 @@ export class Combat {
      */
     // swayDeg：art 子节点随步伐左右摇摆的角度（一个 clip 周期摆一个来回）
     // still：单张定稿图，不用走路帧，起伏 / 摇摆按时间由代码驱动（stepHz = 每秒迈几步）
-    private static readonly ENEMY_MOVE: Record<string, { fps: number; bobPx: number; swayDeg?: number; prefix?: string; still?: boolean; stepHz?: number }> = {
-        jiangshi: { fps: 12, bobPx: 12, swayDeg: 2 }, // 12 帧一次完整起落 = 1 秒
-        paperman: { fps: 12, bobPx: 6, swayDeg: 5, still: true, stepHz: 1.6 }, // 2026-10-31 单图 + 代码走路：一步一颠、左右摇，飘忽阴森
+    private static readonly ENEMY_MOVE: Record<string, { fps: number; bobPx: number; swayDeg?: number; prefix?: string; still?: boolean; stepHz?: number; squash?: number; driftPx?: number }> = {
+        jiangshi: { fps: 12, bobPx: 0, swayDeg: 2 }, // 2026-10-31 v14 造型 12 帧跳跃：蹲、起跳、腾空、落地缓冲
+        paperman: { fps: 12, bobPx: 0, swayDeg: 3 }, // 2026-10-31 新造型 12 帧走路（逐帧以定稿图生图），起伏已画在帧里，只叠轻微摇摆
         foxfire: { fps: 14, bobPx: 0 }, // 12 帧奔跑，快怪略快
         tongjia: { fps: 11, bobPx: 0 },
         shuigui: { fps: 8, bobPx: 0 }, // 略慢以缓和 f6–f7 观感；无 bob
@@ -851,8 +851,17 @@ export class Combat {
                     const phase = (((e.baseX % 97) + 97) % 97) * 0.07; // 按出生位置错开步伐，避免齐步
                 const w = (e.t * (moveSpec.stepHz ?? 1.5) + phase) * Math.PI;
                     const slow = e.hitReactT > 0 || e.freezeT > 0 ? 0 : 1; // 受击 / 冻结时不迈步
-                    art.setPosition(0, Math.abs(Math.sin(w)) * moveSpec.bobPx * slow);
+                    const hop = Math.abs(Math.sin(w)); // 0 = 着地，1 = 最高点
+                    art.setPosition(Math.sin(w) * (moveSpec.driftPx ?? 0) * slow, hop * moveSpec.bobPx * slow);
                     art.setRotationFromEuler(0, 0, Math.sin(w) * (moveSpec.swayDeg ?? 0) * slow);
+                    // 压扁拉伸：着地时变矮变宽，腾空时变高变窄；受击回弹（缩放 tween）期间不覆盖
+                    if (moveSpec.squash && e.hitReactT <= 0 && e.flashT <= 0) {
+                        const sy = 1 + moveSpec.squash * (hop - Math.pow(1 - hop, 4) * 1.5) * slow;
+                        art.setScale(1 / Math.sqrt(sy), sy, 1);
+                        // 以脚底为轴：脚底在图内 0.94 高度（中心下方 0.44 图高），缩放后把中心往下补，脚不离地
+                        const h = art.getComponent(UITransform)?.height ?? 0;
+                        art.setPosition(art.position.x, art.position.y - 0.44 * h * (1 - sy));
+                    }
                 }
             }
             e.node.setPosition(e.x, e.y);

@@ -23,7 +23,7 @@ const ANIM = {
 };
 const PLAYER_ANIM = { idle: [12, 8], cast: [8, 12] };
 // 单图怪：只有一张定稿图，代码做走路（和 Combat.ENEMY_MOVE 的 still 一致）
-const STILL = { paperman: { bob: 6, sway: 5, stepHz: 1.6 } };
+const STILL = {};
 
 // ---------- 素材 ----------
 const $ = (id) => document.getElementById(id);
@@ -213,8 +213,12 @@ function drawEnemy(id, x, y, depth, t, extra = {}) {
   let drawn = false;
   const st = STILL[id];
   if (st) {
-    const w = (t * st.stepHz + (extra.ph ?? 0)) * Math.PI, move = extra.dying || extra.still ? 0 : 1;
-    drawn = drawImg(img(`enemy_${id}.png`), cx(x), cy(y) - Math.abs(Math.sin(w)) * st.bob * move, size, size,
+    const w = (t * st.stepHz + (extra.ph ?? 0)) * Math.PI, move = extra.dying || extra.still ? 0 : 1, hop = Math.abs(Math.sin(w));
+    const sy = 1 + (st.squash ?? 0) * (hop - Math.pow(1 - hop, 4) * 1.5) * move, sx = 1 / Math.sqrt(sy);
+    // 图以脚底为轴压扁：脚底在帧内 0.94 高度，缩放后把中心往下补
+    const footY = cy(y) + size * 0.44;
+    drawn = drawImg(img(`enemy_${id}.png`), cx(x) + Math.sin(w) * (st.drift ?? 0) * move,
+      footY - size * 0.44 * sy - hop * st.bob * move, size * sx, size * sy,
       { ...extra, rot: Math.sin(w) * st.sway * move * Math.PI / 180 });
   } else if (a) {
     const fr = frames(a[0], a[1]);

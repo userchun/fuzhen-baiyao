@@ -11,7 +11,7 @@
 | 2 | 城墙 `env_wall` | 1290×363，显示 860×242（两端被屏幕裁掉） | ✅ 2026-10-31 用户在素材预览页确认 | 参考向僵尸开炮城墙：正面略俯视、左右对称；正中石砌法坛给主角站，只有八卦镇妖牌是暖色；两侧矮角楼。垛口线 `wallFromBottom` 不变（258），`wallArtTopAbove` 96、`playerFromBottom` 333；城墙层移到妖怪层下面。破损两档（hurt1/hurt2）待做 |
 | 3 | 主角 `player_taoist` | idle 12 / cast 8 / hit 6，显示 160 | 🔄 2026-10-31 按 v14 红袍造型重做，已换进游戏待确认 | 画风以主界面 v14 为准；agnes 2.5 不带参考图（agnes 参考图功能故障），定稿 `generated-images/style-v14-20261031/player_design_v4.png`；背景改用品红（偏紫），用「红蓝高、绿低」规则抠图保住红袍；hit 取 4×2 出图的前 6 格。旧帧备份在同目录 backup_*。新主角在法坛上略小，待试玩确认是否调 `PLAYER_ART_SIZE` |
 | 4 | 纸人 `enemy_paperman` | 单张定稿 512×512（脚底 0.94），走路由代码驱动（`Combat.ENEMY_MOVE.paperman.still`：每步一颠 6px、左右摇 5°、每秒 1.6 步） | 🔄 2026-10-31 按样板图造型重做，已换进游戏待确认 | 做法：从 `docs/art/ref/style_target.png` 裁出 agnes 画得好的纸人做图生图底图，保持造型画风重画成单只全身（深墨蓝底、2K），再用 rembg（isnet-anime）抠图。逐帧序列 agnes 不稳定（只画一只 / 少帧 / 侧身 / 变 3D），改用单图 + 代码动画。旧 12 帧移到 `generated-images/monsters-v14-20261031/backup_old_paperman/`。字印沿用 sealY 0.46，落在胸前白符幡上 |
-| 4 | 跳尸 `enemy_jiangshi` | idle 6 / move 12 / attack 10 / death 6 / hurt 1，字印逐帧跟随 | ⏳ 待做 | 换图后要重新标 `sealYFrames` |
+| 4 | 跳尸 `enemy_jiangshi` | 单张定稿 512×512（脚底 0.94），代码起跳（`still`：每秒一跳、起伏 16px、摇 2°） | 🔄 2026-10-31 按样板图造型重做，已换进游戏待确认 | 同纸人做法：style_target 裁跳尸做图生图底图 → 深墨蓝底 2K 重画 → rembg 抠图。舌头挡住胸口正中，字印改到左胸金色补子（sealY 0.56、sealX 0.43），去掉旧的逐帧 `sealYFrames`。旧 12 帧移到 `generated-images/monsters-v14-20261031/backup_old_jiangshi/` |
 | 4 | 狐火 `enemy_foxfire` | idle 6 / move 12 / attack 10 / death 6 / hurt 1 | ⏳ 待做 | |
 | 4 | 灯笼鬼 `enemy_lantern` | idle 6 / move 12 / attack 10 / death 6 / hurt 1 | ⏳ 待做 | |
 | 5 | 黑山老妖 `boss_heishan` | appear 12 / idle 12 / move 12 / skill1 12 / skill2 16 / death 12，384 | ⏳ 待做 | 样板图里的岩山造型可直接作为方向；skill1 砸地召唤跳尸，skill2 半血后掷巨石砸城墙 |

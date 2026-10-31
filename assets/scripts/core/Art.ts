@@ -14,11 +14,7 @@ const frames = new Map<string, SpriteFrame>();
 export const ENEMY_ART: Record<string, { tex: string; sealY: number; sealX?: number; sealR: number; scale: number; sealYFrames?: number[] }> = {
     // scale = 显示边长 / 碰撞直径；相对上一轮再 ×1.45（约 +45%）
     paperman: { tex: 'enemy_paperman', sealY: 0.46, sealR: 0.07, scale: 3.05 }, // 2026-10-27 纸扎人 1 号：字印对齐胸口发光圆，12 帧已按圆印横向对齐
-    jiangshi: {
-        tex: 'enemy_jiangshi', sealY: 0.462, sealR: 0.08, scale: 3.05,
-        // 2026-10-27 12 帧起跳落地：按额头符纸位置推算每帧胸口高度
-        sealYFrames: [0.462, 0.602, 0.649, 0.485, 0.444, 0.509, 0.502, 0.532, 0.517, 0.590, 0.617, 0.469],
-    },
+    jiangshi: { tex: 'enemy_jiangshi', sealY: 0.56, sealX: 0.43, sealR: 0.07, scale: 3.05 }, // 2026-10-31 单图：字印落在左胸金色补子上（舌头挡住正中）
     foxfire: { tex: 'enemy_foxfire', sealY: 0.70, sealX: 0.42, sealR: 0.07, scale: 3.4 }, // 2026-10-27 12 帧狐火：字印对齐胸口圆牌
     lantern: { tex: 'enemy_lantern', sealY: 0.55, sealR: 0.10, scale: 2.75 }, // 2026-10-27 即梦样板 3 号：字印对齐腹部发光圆
     shuigui: { tex: 'enemy_shuigui', sealY: 0.61, sealR: 0.125, scale: 3.05 },
