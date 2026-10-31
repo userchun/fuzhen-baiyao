@@ -70,4 +70,27 @@ for (let k = 0; k < 200; k++) {
     assert.equal(m.extraPicks, 1);
     assert.ok(Math.abs(m.starMult.fire - 1.05) < 1e-9);
 }
+
+// bestTimes：仅胜利写入；同难度取更短；失败/退出不写；不跨难度
+{
+    const p = defaultProfile(2);
+    const base = { runId: 'bt1', level: 0, diff: 'normal', result: 'win', coin: 10, paper: 0, time: 120 };
+    assert.equal(commitSettlement(p, base, 2), true);
+    assert.equal(p.bestTimes[0].normal, 120);
+    assert.equal(p.bestTimes[0].hard, null);
+    // 更长不覆盖
+    assert.equal(commitSettlement(p, { ...base, runId: 'bt2', time: 150 }, 2), true);
+    assert.equal(p.bestTimes[0].normal, 120);
+    // 更短覆盖
+    assert.equal(commitSettlement(p, { ...base, runId: 'bt3', time: 90 }, 2), true);
+    assert.equal(p.bestTimes[0].normal, 90);
+    // 失败不写
+    assert.equal(commitSettlement(p, { runId: 'bt4', level: 1, diff: 'normal', result: 'lose', coin: 0, paper: 0, time: 30 }, 2), true);
+    assert.equal(p.bestTimes[1].normal, null);
+    // 困难独立
+    assert.equal(commitSettlement(p, { runId: 'bt5', level: 0, diff: 'hard', result: 'win', coin: 1, paper: 0, time: 200 }, 2), true);
+    assert.equal(p.bestTimes[0].hard, 200);
+    assert.equal(p.bestTimes[0].normal, 90);
+}
+
 console.log('结算与养成测试通过');

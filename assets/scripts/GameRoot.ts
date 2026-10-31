@@ -174,7 +174,7 @@ export class GameRoot extends Component {
         this.home.show(this.profile, LEVELS, level, {
             onFight: (i, diff) => this.startLevel(i, diff),
             onEntry: (id) => {
-                if (id === 'record') this.home.showToast('记录页开发中');
+                if (id === 'record') this.openRecords();
                 else this.openUpgrade(id === 'upgrade' ? 'stat' : 'star');
             },
             onSettings: () => this.home.showSettings(
@@ -183,15 +183,42 @@ export class GameRoot extends Component {
                 () => this.clearSave(),
             ),
         });
+        // §4.7：第一局结束后回主界面，高亮养成（仅首次）
+        this.maybeMetaTutorial();
+    }
+
+    /** 记录页：每关最短时间 + 困难金印 */
+    private openRecords(): void {
+        this.home.showRecords(this.profile, LEVELS, () => this.showMenu(this.home.currentLevel));
+    }
+
+    /**
+     * 首局养成引导：已结算过至少一局、尚未 Seen/Done 时亮暖光圈并写 metaTutorialSeen。
+     * 不挡出战；Seen 后不再反复弹。
+     */
+    private maybeMetaTutorial(): void {
+        const f = this.profile.flags;
+        if (f.metaTutorialDone || f.metaTutorialSeen) return;
+        if (!this.profile.lastRunId) return;
+        this.home.enableMetaGuide();
+        f.metaTutorialSeen = true;
+        this.save();
     }
 
     /** 养成页：买完立即存档；关闭后重画主界面刷新余额和红点 */
     private openUpgrade(tab: 'stat' | 'star'): void {
+        const guideWall = !this.profile.flags.metaTutorialDone;
         this.home.showUpgrade(this.profile, tab, (kind, id) => {
             const ok = kind === 'stat' ? buyStat(this.profile, id as StatId) : buyStar(this.profile, id as TalismanId);
-            if (ok) this.save();
+            if (ok) {
+                // 首次成功购买任一属性 → metaTutorialDone
+                if (kind === 'stat' && !this.profile.flags.metaTutorialDone) {
+                    this.profile.flags.metaTutorialDone = true;
+                }
+                this.save();
+            }
             return ok;
-        }, () => this.showMenu(this.home.currentLevel));
+        }, () => this.showMenu(this.home.currentLevel), guideWall);
     }
 
     /** 清除存档：删掉主档、备份和旧版解锁进度，回到新档 */

@@ -2,16 +2,17 @@
 // 背景暂用 v8 效果图的无字底图 ui_home_bg（框、图标、按钮都画在图里），
 // 这里按图上位置叠文字、红点、锁定状态和点击区域。拆图后换成独立素材时只改 IMG 坐标表。
 
-import { Node, Label, EventTouch, Graphics } from 'cc';
-import { GAME, LevelDef, TALISMANS, TalismanId } from '../config/GameConfig';
+import { Node, Label, EventTouch, Graphics, tween, UIOpacity } from 'cc';
+import { GAME, LevelDef, TALISMANS, TalismanId, ENEMIES } from '../config/GameConfig';
 import { Difficulty, FIRST_CLEAR_NORMAL, FIRST_CLEAR_HARD_PAPER, StatId, STAT_UPGRADES, STAT_EFFECT, STAR_COSTS, TALISMAN_IDS } from '../config/MetaConfig';
 import { makeNode, addLabel, rectNode, hex, setOpacity } from '../core/Draw';
 import { spriteNode } from '../core/Art';
 import { AudioManager } from '../core/AudioManager';
 import {
     Profile, canPlay, maxBrowsableLevel, canAffordUpgrade, canAffordStar, formatAmount, statCost, starCost,
+    formatBestTime,
 } from '../meta/Profile';
-import { popIn } from './Anim';
+import { popIn, breathe } from './Anim';
 
 /** 底图原始尺寸，以及图上各元素的中心位置（像素，左上为原点） */
 // 底图 v14（852×1846，9:19.5）：顶栏贴顶、关卡牌和出战贴底。POS 是这张图上的像素坐标
@@ -24,10 +25,17 @@ const POS = {
     entries: [[770, 955], [770, 1130], [770, 1300]],
     entryLabels: [[770, 1025], [770, 1190], [770, 1355]],
     plaque: [500, 1572], ring: [425, 1600], arrowL: [100, 1600], arrowR: [752, 1600],
+    /** 关卡牌左侧 Boss 圆框中心（v14 底图像素） */
+    boss: [230, 1592],
+    /** 关卡牌最佳时间（铭牌下方） */
+    bestTime: [500, 1608],
     fight: [425, 1752],
     diffNormal: [588, 1537], diffHard: [658, 1537],
     rewardCoin: [408, 1636], rewardPaper: [515, 1636], rewardChest: [652, 1636],
 } as const;
+
+/** 与 LEVELS 下标对应的 Boss 名章（半写实夜景圆印） */
+const BOSS_SEALS = ['ui_seal_heishan', 'ui_seal_baigu'] as const;
 
 const GOLD = '#FFD66E';
 const CREAM = '#E8DEC6';
@@ -46,6 +54,8 @@ export class HomeUI {
     private diff: Difficulty = 'normal';
     private toast: Label | null = null;
     private toastT = 0;
+    /** 本帧主界面是否画首局养成暖光引导（仅当次 show 生命周期） */
+    private metaGuide = false;
 
     constructor(private root: Node, private audio?: AudioManager) {}
 
@@ -99,6 +109,16 @@ export class HomeUI {
         this.node?.destroy();
         this.node = null;
         this.toast = null;
+        this.metaGuide = false;
+    }
+
+    /**
+     * 第一局结束后：养成入口符咒暖光圈 + 旁白「用铜钱加固城墙」。
+     * 调用方负责写入 metaTutorialSeen；本实例只画一次会话内的高亮。
+     */
+    enableMetaGuide(): void {
+        this.metaGuide = true;
+        this.paintMetaGuide();
     }
 
     update(dt: number): void {
@@ -268,6 +288,152 @@ export class HomeUI {
             put(paper !== undefined ? `+${paper}` : '-', POS.rewardPaper, 20, col);
             put(done ? '已领' : '×2', POS.rewardChest, 20, done ? '#C23A2A' : col);
         }
+
+        // Should S1：Boss 圆框挂本关名章；已通关显示当前难度最佳时间
+        const bossKey = BOSS_SEALS[lv];
+        const [bx, by] = this.at(POS.boss);
+        const sealR = 72 * this.u;
+        if (bossKey) {
+            const seal = spriteNode(bossKey, sealR * 2, sealR * 2, dyn);
+            if (seal) {
+                seal.setPosition(bx, by);
+            } else {
+                // 缺资源时圆框占位（半写实夜景色，不空着）
+                const ph = makeNode('bossPh', dyn);
+                ph.setPosition(bx, by);
+                const pg = ph.addComponent(Graphics);
+                pg.fillColor = hex('#1A1520');
+                pg.circle(0, 0, sealR);
+                pg.fill();
+                const bossWave = levels[lv].waves.find((w) => ENEMIES[w.enemy]?.boss);
+                const nm = bossWave ? ENEMIES[bossWave.enemy].name : 'Boss';
+                addLabel(ph, nm.slice(0, 2), 22, CREAM);
+            }
+        }
+        const best = p.bestTimes[lv]?.[this.diff] ?? null;
+        if (open && best !== null) {
+            put(`最短 ${formatBestTime(best)}`, POS.bestTime, 18, GOLD);
+        }
+
+        if (this.metaGuide) this.paintMetaGuide();
+    }
+
+    /** 养成入口暖金光圈 + 旁白（禁霓虹箭头） */
+    private paintMetaGuide(): void {
+        const root = this.node;
+        if (!root) return;
+        const dyn = root.getChildByName('dyn');
+        if (!dyn) return;
+        dyn.getChildByName('metaGuide')?.destroy();
+        const layer = makeNode('metaGuide', dyn);
+        const [x, y] = this.at(POS.entries[0]);
+        const glow = makeNode('glow', layer);
+        glow.setPosition(x, y);
+        const g = glow.addComponent(Graphics);
+        // 外圈暖金薄环
+        g.lineWidth = 4;
+        g.strokeColor = hex('#E8B45A', 200);
+        g.circle(0, 0, 58 * this.u);
+        g.stroke();
+        g.lineWidth = 2;
+        g.strokeColor = hex('#FFD66E', 160);
+        g.circle(0, 0, 48 * this.u);
+        g.stroke();
+        // 柔光盘（低透明）
+        g.fillColor = hex('#C48A2A', 55);
+        g.circle(0, 0, 42 * this.u);
+        g.fill();
+        breathe(glow, 0.06, 1.4);
+        const tip = addLabel(layer, '用铜钱加固城墙', 24, GOLD);
+        tip.enableOutline = true;
+        tip.outlineColor = hex('#0C0A08');
+        tip.outlineWidth = 2;
+        tip.node.setPosition(x - 160 * this.u, y);
+        // 旁白轻呼吸透明度
+        let op = tip.node.getComponent(UIOpacity);
+        if (!op) op = tip.node.addComponent(UIOpacity);
+        op.opacity = 230;
+        tween(op).repeatForever(
+            tween(op).to(0.9, { opacity: 140 }).to(0.9, { opacity: 230 }),
+        ).start();
+    }
+
+    /**
+     * 记录页（§4.4 / §4.6）：每关普通最短时间 + 困难最短时间；困难首通暖金竖符朱砂印。
+     */
+    showRecords(p: Profile, levels: LevelDef[], onClose: () => void): void {
+        if (!this.node) return;
+        this.node.getChildByName('records')?.destroy();
+        const mask = rectNode('records', GAME.width, GAME.height, '#000000', this.node, 0, 200);
+        mask.on(Node.EventType.TOUCH_END, (e: EventTouch) => (e.propagationStopped = true));
+        const W = 660;
+        const H = Math.min(1040, 180 + levels.length * 200 + 100);
+        const panel = rectNode('panel', W, H, '#12141C', mask, 16, 250);
+        const border = makeNode('border', panel).addComponent(Graphics);
+        border.lineWidth = 2;
+        border.strokeColor = hex('#B8924A');
+        border.roundRect(-W / 2, -H / 2, W, H, 16);
+        border.stroke();
+        const tap = (n: Node, cb: () => void) => n.on(Node.EventType.TOUCH_END, (e: EventTouch) => {
+            e.propagationStopped = true;
+            cb();
+        });
+        addLabel(panel, '通关记录', 40, GOLD).node.setPosition(0, H / 2 - 50);
+        addLabel(panel, '本地最短时间 · 困难首通金印', 20, DIM).node.setPosition(0, H / 2 - 95);
+
+        levels.forEach((lv, i) => {
+            const y = H / 2 - 180 - i * 200;
+            const card = rectNode('row', W - 48, 180, '#1E1A26', panel, 12);
+            card.setPosition(0, y);
+            addLabel(card, lv.name, 28, GOLD).node.setPosition(-140, 50);
+            const nt = formatBestTime(p.bestTimes[i]?.normal ?? null);
+            const ht = formatBestTime(p.bestTimes[i]?.hard ?? null);
+            addLabel(card, `普通  ${nt}`, 24, CREAM).node.setPosition(-140, 8);
+            addLabel(card, `困难  ${ht}`, 24, CREAM).node.setPosition(-140, -32);
+            // 困难首通：暖金竖符 + 朱砂印面（禁奖杯风）
+            const hardDone = p.cleared[i]?.hard === true;
+            const seal = makeNode('hardSeal', card);
+            seal.setPosition(220, 0);
+            const sg = seal.addComponent(Graphics);
+            if (hardDone) {
+                // 竖符纸
+                sg.fillColor = hex('#C9A24A');
+                sg.roundRect(-22, -56, 44, 112, 4);
+                sg.fill();
+                sg.fillColor = hex('#E8C878');
+                sg.roundRect(-18, -52, 36, 104, 3);
+                sg.fill();
+                // 朱砂印面
+                sg.fillColor = hex('#8B1E1E');
+                sg.roundRect(-14, -8, 28, 28, 3);
+                sg.fill();
+                sg.strokeColor = hex('#5A1010');
+                sg.lineWidth = 2;
+                sg.roundRect(-14, -8, 28, 28, 3);
+                sg.stroke();
+                const mark = addLabel(seal, '印', 18, '#F2D6A0');
+                mark.isBold = true;
+                mark.node.setPosition(0, 6);
+                addLabel(seal, '困难', 16, '#5A3A10').node.setPosition(0, -40);
+            } else {
+                sg.strokeColor = hex('#3A342C', 180);
+                sg.lineWidth = 2;
+                sg.roundRect(-22, -56, 44, 112, 4);
+                sg.stroke();
+                addLabel(seal, '未印', 18, DIM).node.setPosition(0, 0);
+            }
+        });
+
+        const close = rectNode('close', 220, 60, '#3A3226', panel, 12);
+        close.setPosition(0, -H / 2 + 55);
+        addLabel(close, '返　回', 28, CREAM);
+        tap(close, () => {
+            this.audio?.playSfx('click', 0.6);
+            mask.destroy();
+            onClose();
+        });
+        setOpacity(panel, 255);
+        popIn(panel, 0.2);
     }
 
     /** 设置面板：音乐、音效开关，清除存档（二次确认）；震屏 2026-10-31 已去掉 */
@@ -335,7 +501,16 @@ export class HomeUI {
      * 养成页（第 4.4 节）：上方余额，"道士"页签四项属性，"符咒"页签六符升星。
      * onBuy 返回是否买成功；买完由调用方存档，这里只负责重画。
      */
-    showUpgrade(p: Profile, tab: 'stat' | 'star', onBuy: (kind: 'stat' | 'star', id: string) => boolean, onClose: () => void): void {
+    /**
+     * 养成页。guideWall=true 时按 §4.7：够钱暖光高亮城墙购买，不够显示真实「还差 X 铜钱」。
+     */
+    showUpgrade(
+        p: Profile,
+        tab: 'stat' | 'star',
+        onBuy: (kind: 'stat' | 'star', id: string) => boolean,
+        onClose: () => void,
+        guideWall = false,
+    ): void {
         if (!this.node) return;
         this.node.getChildByName('upgrade')?.destroy();
         const mask = rectNode('upgrade', GAME.width, GAME.height, '#000000', this.node, 0, 200);
@@ -348,7 +523,7 @@ export class HomeUI {
         g.strokeColor = hex('#B8924A');
         g.roundRect(-W / 2, -H / 2, W, H, 16);
         g.stroke();
-        const redraw = (t = tab) => this.showUpgrade(p, t, onBuy, onClose);
+        const redraw = (t = tab) => this.showUpgrade(p, t, onBuy, onClose, guideWall);
         const tap = (n: Node, cb: () => void) => n.on(Node.EventType.TOUCH_END, (e: EventTouch) => {
             e.propagationStopped = true;
             cb();
@@ -403,7 +578,23 @@ export class HomeUI {
                 name.node.setPosition(-110, 30);
                 const next = lv < max ? `${effect(id, lv)} → ${effect(id, lv + 1)}` : effect(id, lv);
                 addLabel(card, next, 22, CREAM).node.setPosition(-110, -25);
-                buyBtn(card, statCost(p, id), p.coin, '铜钱', 205, 0, 170, () => buy('stat', id));
+                const cost = statCost(p, id);
+                buyBtn(card, cost, p.coin, '铜钱', 205, 0, 170, () => buy('stat', id));
+                // §4.7 首局引导：城墙卡
+                if (guideWall && id === 'wall' && cost !== null) {
+                    if (p.coin >= cost) {
+                        const glow = makeNode('wallGlow', card);
+                        const gg = glow.addComponent(Graphics);
+                        gg.lineWidth = 3;
+                        gg.strokeColor = hex('#E8B45A', 220);
+                        gg.roundRect(-(W - 60) / 2 + 4, -75 + 4, W - 68, 142, 10);
+                        gg.stroke();
+                        breathe(glow, 0.04, 1.2);
+                    } else {
+                        const need = cost - p.coin;
+                        addLabel(card, `还差 ${need} 铜钱`, 20, '#E07A6A').node.setPosition(-110, -55);
+                    }
+                }
             });
         } else {
             TALISMAN_IDS.forEach((id: TalismanId, i) => {

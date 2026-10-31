@@ -13,6 +13,8 @@ export const PROFILE_KEY = 'fuzhen.profile';
 export const PROFILE_BAK_KEY = 'fuzhen.profile.bak';
 export const LEGACY_UNLOCK_KEY = 'fuzhen.unlockedLevels';
 
+export type DiffTimes = { normal: number | null; hard: number | null };
+
 export interface Profile {
     v: 1;
     runSeq: number;          // 每开一局加 1，用来生成 runId
@@ -23,7 +25,9 @@ export interface Profile {
     stats: Record<StatId, number>;
     stars: Record<TalismanId, number>;
     cleared: { normal: boolean; hard: boolean }[];
-    flags: { metaTutorialDone: boolean };
+    /** 每关每难度最短胜利活动秒数；未胜为 null（docs 4.3） */
+    bestTimes: DiffTimes[];
+    flags: { metaTutorialSeen: boolean; metaTutorialDone: boolean };
     settings: { music: boolean; sfx: boolean; shake: boolean };
 }
 
@@ -40,7 +44,8 @@ export function defaultProfile(levelCount: number): Profile {
         stats: { wall: 0, brush: 0, spirit: 0, altar: 0 },
         stars,
         cleared: Array.from({ length: levelCount }, () => ({ normal: false, hard: false })),
-        flags: { metaTutorialDone: false },
+        bestTimes: Array.from({ length: levelCount }, () => ({ normal: null, hard: null })),
+        flags: { metaTutorialSeen: false, metaTutorialDone: false },
         settings: { music: true, sfx: true, shake: true },
     };
 }
@@ -65,7 +70,17 @@ export function sanitize(raw: unknown, levelCount: number): Profile | null {
         c.normal = bool(r.cleared?.[i]?.normal, false);
         c.hard = bool(r.cleared?.[i]?.hard, false);
     });
-    p.flags.metaTutorialDone = bool(r.flags?.metaTutorialDone, false);
+    const rawTimes = (r as { bestTimes?: DiffTimes[] }).bestTimes;
+    p.bestTimes.forEach((slot, i) => {
+        const src = rawTimes?.[i];
+        const read = (v: unknown): number | null =>
+            typeof v === 'number' && Number.isFinite(v) && v >= 0 ? v : null;
+        slot.normal = read(src?.normal);
+        slot.hard = read(src?.hard);
+    });
+    const flags = r.flags as { metaTutorialSeen?: unknown; metaTutorialDone?: unknown } | undefined;
+    p.flags.metaTutorialSeen = bool(flags?.metaTutorialSeen, false);
+    p.flags.metaTutorialDone = bool(flags?.metaTutorialDone, false);
     p.settings.music = bool(r.settings?.music, true);
     p.settings.sfx = bool(r.settings?.sfx, true);
     p.settings.shake = bool(r.settings?.shake, true);
@@ -207,14 +222,37 @@ export function nextRunId(p: Profile): string {
     return `run:${p.runSeq}`;
 }
 
-/** 把一局结算记进存档（加钱、首通、解锁）。同一个 runId 只记一次，重复调用返回 false */
+/** 活动秒数 → mm:ss；无记录为 — */
+export function formatBestTime(sec: number | null | undefined): string {
+    if (sec === null || sec === undefined || !Number.isFinite(sec) || sec < 0) return '—';
+    const s = Math.floor(sec);
+    const m = Math.floor(s / 60);
+    const r = s % 60;
+    return `${m}:${r.toString().padStart(2, '0')}`;
+}
+
+/** 胜利且更短时写入 bestTimes；失败/退出不写 */
+export function recordBestTime(p: Profile, level: number, diff: Difficulty, time: number): void {
+    if (!Number.isFinite(time) || time < 0) return;
+    const slot = p.bestTimes[level];
+    if (!slot) return;
+    const cur = slot[diff];
+    if (cur === null || time < cur) slot[diff] = time;
+}
+
+/** 把一局结算记进存档（加钱、首通、解锁、最短时间）。同一个 runId 只记一次，重复调用返回 false */
 export function commitSettlement(
-    p: Profile, s: { runId: string; level: number; diff: Difficulty; result: string; coin: number; paper: number }, levelCount: number,
+    p: Profile,
+    s: { runId: string; level: number; diff: Difficulty; result: string; coin: number; paper: number; time?: number },
+    levelCount: number,
 ): boolean {
     if (p.lastRunId === s.runId) return false;
     p.coin += s.coin;
     p.paper += s.paper;
-    if (s.result === 'win') recordClear(p, s.level, s.diff, levelCount);
+    if (s.result === 'win') {
+        recordClear(p, s.level, s.diff, levelCount);
+        if (typeof s.time === 'number') recordBestTime(p, s.level, s.diff, s.time);
+    }
     p.lastRunId = s.runId;
     return true;
 }
