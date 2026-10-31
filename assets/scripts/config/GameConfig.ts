@@ -69,7 +69,8 @@ export function travelPixels(): number {
 }
 
 // 基础攻击（镇妖符）：按住瞄准时射速更快，鼓励手动操作
-export const BASE_ATTACK = { damage: 12, holdCd: 0.25, autoCd: 0.7, speed: 1100 };
+// 2026-10-31 改为全自动攻击（🧪）：自动打最近妖怪的间隔从 0.7 提到和按住连发一样的 0.25，操作只剩拖动走位
+export const BASE_ATTACK = { damage: 12, holdCd: 0.25, autoCd: 0.25, speed: 1100 };
 
 export const ELEMENT_COLOR: Record<Element, string> = {
     metal: '#F5D76E', wood: '#5FBF6A', water: '#5AB4F0',
@@ -179,8 +180,8 @@ export const LEVEL2_WAVES: WaveDef[] = [
 export interface LevelDef { name: string; desc: string; bg: string; waves: WaveDef[]; startPicks: number; hpMult: number; }
 
 export const LEVELS: LevelDef[] = [
-    { name: '第一关 · 荒村', desc: 'Boss：黑山老妖', bg: '#141428', waves: LEVEL1_WAVES, startPicks: 1, hpMult: 1.0 },
-    { name: '第二关 · 古寺', desc: 'Boss：白骨夫人（三相）\n新妖：铜甲尸、水鬼', bg: '#1E1A2B', waves: LEVEL2_WAVES, startPicks: 2, hpMult: 1.2 },
+    { name: '第一关 · 荒村', desc: 'Boss：黑山老妖', bg: '#141428', waves: LEVEL1_WAVES, startPicks: 1, hpMult: 1.65 }, // 🧪 2026-10-31 全自动攻击后 1.0→1.65
+    { name: '第二关 · 古寺', desc: 'Boss：白骨夫人（三相）\n新妖：铜甲尸、水鬼', bg: '#1E1A2B', waves: LEVEL2_WAVES, startPicks: 2, hpMult: 1.8 }, // 🧪 2026-10-31 1.2→1.8，保持比第一关难
 ];
 
 /** 本地存档：已解锁关卡数（默认 1，即只开放第一关） */
@@ -220,3 +221,14 @@ export const COMBOS: ComboDef[] = [
     { id: 'river', name: '天河倒悬', desc: '每 6 秒水龙横扫全屏', need: ['metal', 'water'], level: 3 },
 ];
 export const RIVER_INTERVAL = 6; // 天河倒悬触发间隔（秒），改动时同步 desc
+
+// 五行合体大招（🧪 2026-10-31 试玩稿）：击杀攒槽，满了玩家手动释放；威力看持有符咒能连成几环相生链
+export const SHENG_ORDER: TalismanId[] = ['metal', 'water', 'wood', 'fire', 'earth']; // 金生水生木生火生土生金（环）
+export const ULT = {
+    firstNeed: 30,      // 第一次满槽需要的击杀数
+    needGrow: 1.25,     // 每放一次，下次所需 ×1.25
+    baseDamage: 60,     // 全屏伤害基数，再乘链长倍率和朱砂
+    chainMult: [1, 1, 1.5, 2, 2.5, 3], // 下标 = 链长（0/1 都按 1）
+    bossCap: 0.15,      // Boss 单次最多掉最大血量的 15%
+};
+export const ULT_NAMES = ['符火燎原', '符火燎原', '二气合流', '三才合一', '四象归元', '五行大阵·镇百妖'];

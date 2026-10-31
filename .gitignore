@@ -16,3 +16,6 @@ assets/resources/placeholder.meta
 
 # 生成过程图（本地保留，不进仓库）
 generated-images/
+
+# 网页试玩编译产物（bash tools/art-preview/build.sh 生成）
+tools/art-preview/game/

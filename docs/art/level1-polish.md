@@ -9,7 +9,7 @@
 |---|---|---|---|---|
 | 1 | 荒村背景 `bg_level1_village` | 全屏俯视地面，1080×2340（9:19.5） | ✅ 2026-10-31 用户在素材预览页确认 | 参考向僵尸开炮战斗地图：路面约 85%、两侧窄边约 7%、低对比无红光；`BG_ART_RATIO` 改为 2340/1080，长屏不再裁两侧。出怪范围 `roadHalfW` 暂保持 ±150，待看效果再放宽 |
 | 2 | 城墙 `env_wall` | 1290×363，显示 860×242（两端被屏幕裁掉） | ✅ 2026-10-31 用户在素材预览页确认 | 参考向僵尸开炮城墙：正面略俯视、左右对称；正中石砌法坛给主角站，只有八卦镇妖牌是暖色；两侧矮角楼。垛口线 `wallFromBottom` 不变（258），`wallArtTopAbove` 96、`playerFromBottom` 333；城墙层移到妖怪层下面。破损两档（hurt1/hurt2）待做 |
-| 3 | 主角 `player_taoist` | idle 12 / cast 8 / hit 6，显示 160 | 🔄 已换进游戏，待确认和提交 | 三套动画按身体面积统一大小；站位 `playerFromBottom` 上移到 290，脚踩走道，不挡符幡 |
+| 3 | 主角 `player_taoist` | idle 12 / cast 8 / hit 6，显示 160 | 🔄 2026-10-31 按 v14 红袍造型重做，已换进游戏待确认 | 画风以主界面 v14 为准；agnes 2.5 不带参考图（agnes 参考图功能故障），定稿 `generated-images/style-v14-20261031/player_design_v4.png`；背景改用品红（偏紫），用「红蓝高、绿低」规则抠图保住红袍；hit 取 4×2 出图的前 6 格。旧帧备份在同目录 backup_*。新主角在法坛上略小，待试玩确认是否调 `PLAYER_ART_SIZE` |
 | 4 | 纸人 `enemy_paperman` | idle 6 / move 12 / attack 10 / death 6 / hurt 1 | ⏳ 待做 | 旧半写实版仍在游戏里 |
 | 4 | 跳尸 `enemy_jiangshi` | idle 6 / move 12 / attack 10 / death 6 / hurt 1，字印逐帧跟随 | ⏳ 待做 | 换图后要重新标 `sealYFrames` |
 | 4 | 狐火 `enemy_foxfire` | idle 6 / move 12 / attack 10 / death 6 / hurt 1 | ⏳ 待做 | |

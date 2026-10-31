@@ -96,7 +96,7 @@ export class GameUI {
         this.skillPanel.setPosition(-GAME.width / 2 + 44, top() - SAFE_TOP - 160);
         // 底部移动区提示：只留一行淡字，不再铺色块
         this.moveHint = addLabel(root, '← 拖动移动 →', 18, '#6F6888');
-        this.moveHint.node.setPosition(0, GAME.moveZoneY - 20);
+        this.moveHint.node.setPosition(0, GAME.wallY + 120);
         // Boss 进度：左上角细条，Boss 出场前显示来袭进度，出场后显示 Boss 血量
         const bossNode = makeNode('bossBar', root);
         bossNode.setPosition(-GAME.width / 2 + 24, top() - SAFE_TOP - 14);

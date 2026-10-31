@@ -2,181 +2,73 @@
 <html lang="zh">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>素材预览</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+<title>符镇百妖 试玩</title>
+<script type="importmap">{ "imports": { "cc": "./game/cc.js" } }</script>
 <style>
-  :root { --bg: #15171c; --panel: #23262e; --text: #e8e2d4; --muted: #9a958a; --line: #3a3e48; }
+  :root { --bg: #15171c; --panel: #23262e; --text: #e8e2d4; --muted: #9a958a; --line: #3a3e48; --gold: #ffd66e; }
   * { box-sizing: border-box; }
   body { margin: 0; background: var(--bg); color: var(--text); font: 14px/1.5 -apple-system, "PingFang SC", sans-serif;
-         display: flex; gap: 16px; padding: 16px; height: 100vh; }
-  #stage { flex: 0 0 auto; height: 100%; display: flex; align-items: center; }
-  canvas { height: 100%; max-width: calc(100vw - 300px); object-fit: contain; background: #000; border-radius: 8px; }
+         display: flex; gap: 16px; padding: 16px; height: 100vh; overflow: hidden; }
+  #stage { position: relative; flex: 0 0 auto; height: 100%; aspect-ratio: 720 / 1560; max-width: calc(100vw - 300px); }
+  canvas { width: 100%; height: 100%; display: block; background: #000; border-radius: 8px; touch-action: none; user-select: none; }
+  #overlay { position: absolute; inset: 0; display: none; flex-direction: column; align-items: center; justify-content: center;
+             gap: 12px; background: rgba(8, 10, 16, .72); border-radius: 8px; padding: 16px; text-align: center; }
+  #overlay h2 { margin: 0 0 4px; color: var(--gold); font-size: 20px; }
+  .card { width: 86%; padding: 12px 14px; border: 1px solid #b8913d; border-radius: 8px; background: #2a2016; color: var(--text);
+          font: inherit; text-align: left; cursor: pointer; }
+  .card:hover { background: #3a2c1c; }
+  .card b { display: block; color: var(--gold); font-size: 16px; }
   aside { flex: 1; min-width: 220px; max-width: 280px; background: var(--panel); border-radius: 8px; padding: 14px; overflow: auto; }
-  h1 { font-size: 16px; margin: 0 0 10px; }
+  h1 { font-size: 16px; margin: 0 0 6px; }
   label { display: flex; align-items: center; gap: 8px; margin: 6px 0; cursor: pointer; }
-  select, button { background: var(--bg); color: var(--text); border: 1px solid var(--line); border-radius: 6px; padding: 4px 8px; font: inherit; }
+  select, button { background: var(--bg); color: var(--text); border: 1px solid var(--line); border-radius: 6px; padding: 4px 10px; font: inherit; cursor: pointer; }
+  .row { display: flex; gap: 8px; flex-wrap: wrap; margin: 8px 0; }
   .muted { color: var(--muted); font-size: 12px; }
   hr { border: 0; border-top: 1px solid var(--line); margin: 12px 0; }
+  #stats { font-size: 12px; white-space: pre-wrap; color: var(--muted); }
   #missing { color: #e8826a; font-size: 12px; white-space: pre-wrap; }
-  @media (max-width: 700px) { body { flex-direction: column; height: auto; } canvas { height: auto; width: 100%; max-width: 100%; } aside { max-width: none; } }
+  @media (max-width: 700px) {
+    body { flex-direction: column; height: auto; overflow: auto; padding: 0; }
+    #stage { width: 100vw; height: auto; max-width: none; }
+    aside { max-width: none; margin: 0 16px 16px; }
+  }
 </style>
 </head>
 <body>
-<div id="stage"><canvas id="c"></canvas></div>
+<div id="stage"><canvas id="c"></canvas><div id="overlay"></div></div>
 <aside>
-  <h1>第一关素材预览</h1>
-  <div class="muted">按 GameConfig 的 LAYOUT 和 Combat 里的尺寸摆放，坐标与游戏一致（设计宽 720）。</div>
+  <h1>符镇百妖 · 网页试玩</h1>
+  <div class="muted">战斗、刷怪、选卡用的是游戏里的真实代码（build.sh 编译），画面按游戏坐标绘制。</div>
   <hr>
-  <label>屏幕比例
-    <select id="ratio">
-      <option value="1560">9:19.5（iPhone 14 等）</option>
-      <option value="1280">9:16（旧机型）</option>
-      <option value="1600">9:20</option>
+  <label>画面
+    <select id="view">
+      <option value="home">首页</option>
+      <option value="play">试玩第一关</option>
+      <option value="layout">素材摆放（自动走怪）</option>
     </select>
   </label>
+  <div class="row">
+    <button id="start">开始 / 重开</button>
+    <button id="pause">暂停</button>
+    <select id="speed"><option value="1">1×</option><option value="2">2×</option><option value="0.5">0.5×</option></select>
+  </div>
+  <div class="row"><button id="reloadArt">刷新素材</button></div>
+  <div class="muted">换了 assets/resources/textures 里的图，点「刷新素材」立刻生效，不用重开。</div>
+  <hr>
   <label><input type="checkbox" id="showBg" checked>背景</label>
   <label><input type="checkbox" id="showWall" checked>城墙</label>
   <label><input type="checkbox" id="showPlayer" checked>主角</label>
-  <label><input type="checkbox" id="showEnemies" checked>小怪</label>
-  <label><input type="checkbox" id="showBoss">黑山老妖</label>
-  <label><input type="checkbox" id="showGuides">辅助线（路面范围、垛口线）</label>
-  <label>主角动作
-    <select id="playerAnim"><option>idle</option><option>cast</option><option>hit</option></select>
-  </label>
-  <label><button id="pause">暂停</button></label>
+  <label><input type="checkbox" id="showEnemies" checked>妖怪</label>
+  <label><input type="checkbox" id="showFx" checked>符咒、特效、飘字</label>
+  <label><input type="checkbox" id="showSeal" checked>胸口字印</label>
+  <label><input type="checkbox" id="showGuides">辅助线（出怪范围、垛口线）</label>
   <hr>
-  <div class="muted">素材读自 assets/resources/textures/，替换图片后刷新页面即可看到新图。</div>
+  <div class="muted">操作：符咒全自动攻击；整屏左右拖动 = 移动；键盘 A / D 或 ← / → 也能移动，空格暂停。合体槽满后点右下角圆钮（或按 Q）放五行合体大招。</div>
+  <hr>
+  <div id="stats"></div>
   <div id="missing"></div>
 </aside>
-<script>
-// 与 assets/scripts/config/GameConfig.ts、Combat.ts、Art.ts 保持一致
-const TEX = '../../assets/resources/textures/';
-const W = 720;
-const LAYOUT = { wallFromBottom: 258, playerFromBottom: 333, wallArtW: 860, wallArtH: 242, wallArtTopAbove: 96, roadHalfW: 150 };
-const BG_RATIO = 2340 / 1080;
-const PLAYER_SIZE = 160;
-const FAR_SCALE = 0.85;
-// size = radius * 2 * scale；fps 取 Combat.ENEMY_MOVE
-const ENEMIES = {
-  paperman: { radius: 25, scale: 3.05, fps: 12, sway: 3, speed: 60, frames: 12 },
-  jiangshi: { radius: 30, scale: 3.05, fps: 12, sway: 2, speed: 70, frames: 12, bob: 12 },
-  foxfire:  { radius: 21, scale: 3.4,  fps: 14, sway: 0, speed: 110, frames: 12, sine: true },
-  lantern:  { radius: 42, scale: 2.75, fps: 10, sway: 0, speed: 40, frames: 12 },
-};
-const BOSS = { radius: 80, scale: 2.75, fps: 10, frames: 20 };
-const PLAYER_ANIMS = { idle: [12, 8], cast: [8, 12], hit: [6, 10] };
-
-const missing = new Set();
-function img(path) {
-  const i = new Image();
-  i.onerror = () => { missing.add(path); document.getElementById('missing').textContent = '缺图：\n' + [...missing].join('\n'); };
-  i.src = TEX + path;
-  return i;
-}
-const pad = (n) => String(n).padStart(2, '0');
-const seq = (dir, name, n) => Array.from({ length: n }, (_, k) => img(`anim/${dir}/${name}_${pad(k)}.png`));
-
-const art = {
-  bg: img('bg_level1_village.png'),
-  wall: img('env_wall.png'),
-  player: Object.fromEntries(Object.entries(PLAYER_ANIMS).map(([k, [n]]) => [k, seq('player_taoist', k, n)])),
-  enemies: Object.fromEntries(Object.entries(ENEMIES).map(([id, d]) => [id, seq('enemy_' + id, 'move', d.frames)])),
-  boss: seq('boss_heishan', 'idle', BOSS.frames),
-};
-
-const cv = document.getElementById('c');
-const ctx = cv.getContext('2d');
-let H = 1560;
-const $ = (id) => document.getElementById(id);
-function resize() { H = +$('ratio').value; cv.width = W; cv.height = H; }
-$('ratio').onchange = resize;
-resize();
-
-// 游戏坐标（原点在屏幕中心、y 向上）→ 画布坐标
-const sx = (x) => W / 2 + x;
-const fromBottom = (d) => H - d;
-
-// 小怪：从屏幕顶边外走到垛口线，循环
-const mobs = [];
-const order = ['paperman', 'paperman', 'paperman', 'jiangshi', 'paperman', 'foxfire', 'jiangshi', 'paperman', 'lantern', 'foxfire', 'paperman', 'jiangshi'];
-order.forEach((id, k) => mobs.push({ id, x: (Math.random() * 2 - 1) * LAYOUT.roadHalfW, t: k / order.length, phase: Math.random() * 10, x0: 0 }));
-mobs.forEach((m) => (m.x0 = m.x));
-
-function drawImg(im, cx, cy, w, h, rot = 0) {
-  if (!im || !im.complete || !im.naturalWidth) return;
-  ctx.save(); ctx.translate(cx, cy); if (rot) ctx.rotate(rot);
-  ctx.drawImage(im, -w / 2, -h / 2, w, h); ctx.restore();
-}
-
-let paused = false, time = 0, last = performance.now();
-$('pause').onclick = () => { paused = !paused; $('pause').textContent = paused ? '继续' : '暂停'; };
-
-function frame(now) {
-  const dt = Math.min(0.05, (now - last) / 1000); last = now;
-  if (!paused) time += dt;
-  ctx.clearRect(0, 0, W, H);
-  ctx.fillStyle = '#1b1d22'; ctx.fillRect(0, 0, W, H);
-
-  // 背景：顶边对齐屏幕顶、等比盖满（同 GameRoot.startLevel）
-  if ($('showBg').checked) {
-    const bgH = Math.max(H, W * BG_RATIO), bgW = bgH / BG_RATIO;
-    drawImg(art.bg, W / 2, bgH / 2, bgW, bgH);
-  }
-
-  const wallLine = fromBottom(LAYOUT.wallFromBottom);
-  const topY = -60; // 出怪线在屏幕顶边之上 60
-
-  // 城墙在妖怪下面（同 Combat 的图层顺序）
-  if ($('showWall').checked) {
-    const top = fromBottom(LAYOUT.wallFromBottom + LAYOUT.wallArtTopAbove);
-    drawImg(art.wall, W / 2, top + LAYOUT.wallArtH / 2, LAYOUT.wallArtW, LAYOUT.wallArtH);
-  }
-
-  if ($('showBoss').checked) {
-    const size = BOSS.radius * 2 * BOSS.scale;
-    const f = art.boss[Math.floor(time * BOSS.fps) % BOSS.frames];
-    drawImg(f, W / 2, H * 0.3, size, size);
-  }
-
-  if ($('showEnemies').checked) {
-    const span = wallLine - topY;
-    const list = mobs.map((m) => {
-      const d = ENEMIES[m.id];
-      const travel = span / d.speed; // 秒
-      const p = ((m.t * travel + time) % (travel + 1.5)) / travel; // 到墙后停 1.5 秒再循环
-      const depth = Math.min(1, p);
-      return { m, d, depth, y: topY + span * depth };
-    }).sort((a, b) => a.y - b.y);
-    for (const { m, d, depth, y } of list) {
-      const size = d.radius * 2 * d.scale * (FAR_SCALE + (1 - FAR_SCALE) * depth);
-      const fi = Math.floor((time + m.phase) * d.fps) % d.frames;
-      const x = d.sine ? m.x0 + Math.sin((time + m.phase) * 2.5) * 40 : m.x0;
-      const bob = d.bob ? -Math.abs(Math.sin((time + m.phase) * Math.PI)) * d.bob : 0;
-      const rot = d.sway ? Math.sin((time + m.phase) * 2) * d.sway * Math.PI / 180 : 0;
-      // 脚底在帧内约 0.94 高度，让脚踩在 y 上
-      drawImg(art.enemies[m.id][fi], sx(x), y - size * 0.44 + bob, size, size, rot);
-    }
-  }
-
-  if ($('showPlayer').checked) {
-    const key = $('playerAnim').value, [n, fps] = PLAYER_ANIMS[key];
-    const f = art.player[key][Math.floor(time * fps) % n];
-    drawImg(f, W / 2, fromBottom(LAYOUT.playerFromBottom), PLAYER_SIZE, PLAYER_SIZE);
-  }
-
-  if ($('showGuides').checked) {
-    ctx.save(); ctx.setLineDash([10, 8]); ctx.lineWidth = 2;
-    ctx.strokeStyle = '#5ad1ff';
-    for (const x of [-LAYOUT.roadHalfW, LAYOUT.roadHalfW]) { ctx.beginPath(); ctx.moveTo(sx(x), 0); ctx.lineTo(sx(x), wallLine); ctx.stroke(); }
-    ctx.strokeStyle = '#ff7a5a';
-    ctx.beginPath(); ctx.moveTo(0, wallLine); ctx.lineTo(W, wallLine); ctx.stroke();
-    ctx.fillStyle = '#ff7a5a'; ctx.font = '20px sans-serif'; ctx.fillText('垛口线', 10, wallLine - 8);
-    ctx.fillStyle = '#5ad1ff'; ctx.fillText('出怪范围 ±' + LAYOUT.roadHalfW, sx(LAYOUT.roadHalfW) + 8, 40);
-    ctx.restore();
-  }
-  requestAnimationFrame(frame);
-}
-requestAnimationFrame(frame);
-</script>
+<script type="module" src="./app.js"></script>
 </body>
 </html>

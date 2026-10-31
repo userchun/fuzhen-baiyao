@@ -2,6 +2,7 @@ import { Node, Graphics, Label, UITransform } from 'cc';
 import {
     ENEMIES, EnemyDef, GAME, BASE_ATTACK, TalismanId, ELEMENT_COLOR, ELEMENT_NAME, Element, elementTier, TIER_MULT,
     MIN_HIT_DAMAGE, RIVER_INTERVAL, SIEGE, depthY, depthScale, lanePixels, travelPixels, LAYOUT,
+    ULT, ULT_NAMES, GROWTH,
 } from '../config/GameConfig';
 import { Pool } from '../core/Pool';
 import { circleNode, rectNode, makeNode, hex, setOpacity, paintCircle, addLabel } from '../core/Draw';
@@ -66,6 +67,10 @@ export class Combat {
     /** D：Boss 进入 death/settle 后停刷杂鱼（GameRoot → Spawner.stop） */
     spawnStopped = false;
     hpMult = 1; // 关卡血量倍率
+    /** 五行合体大招：击杀攒槽，满了由玩家释放（ULT 见 GameConfig，🧪） */
+    ultCharge = 0;
+    ultNeed = ULT.firstNeed;
+    get ultReady(): boolean { return this.ultCharge >= this.ultNeed; }
 
     private siege: SiegeEntry[] = [];
     private siegeClock = 0;
@@ -535,6 +540,29 @@ export class Combat {
                 this.fb.shake(6, 0.3);
             }
         }
+    }
+
+    /**
+     * 释放五行合体大招：全屏所有妖怪受伤，威力按相生链长倍增，Boss 单次封顶。
+     * 返回招名、链长和参与的五行（给界面做演出）；槽没满返回 null。
+     */
+    castUltimate(): { name: string; len: number; chain: TalismanId[] } | null {
+        if (!this.ultReady) return null;
+        const { len, chain } = this.skills.shengChain();
+        const mult = ULT.chainMult[Math.min(len, ULT.chainMult.length - 1)];
+        const dmg = ULT.baseDamage * mult * (1 + GROWTH.dmgPerPower * this.skills.passive('power'));
+        // 链尾 = 被生出来的那一行；链里只有金木水火土，没有天雷
+        const el = (chain[chain.length - 1] ?? 'none') as Element;
+        for (const e of [...this.enemies]) {
+            if (!e.alive || e.dying) continue;
+            const amount = e.def.boss ? Math.min(dmg, e.maxHp * ULT.bossCap) : dmg;
+            this.hurt(e, amount, el, true);
+        }
+        this.ultCharge = 0;
+        this.ultNeed = Math.round(this.ultNeed * ULT.needGrow);
+        this.fb.hitStop(0.15);
+        this.fb.shake(18, 0.5);
+        return { name: ULT_NAMES[Math.min(len, ULT_NAMES.length - 1)], len, chain };
     }
 
     private cast(id: TalismanId, lv: number): void {
@@ -1164,6 +1192,7 @@ export class Combat {
             e.dying = true;
             this.spawnStopped = true; // D：death 起手即停刷，等 anim→bossDead→面板
             this.kills++;
+            this.ultCharge = Math.min(this.ultNeed, this.ultCharge + 1);
             this.playBossDeathSfx(e); // A2/A4 oneshot；win 仅 end(true)
             burst(this.fxLayer, e.x, e.y, FX.death(e.x, e.y, ELEMENT_COLOR[e.element]));
             this.fb.hitStop(0.3);
@@ -1175,6 +1204,7 @@ export class Combat {
         e.alive = false;
         this.removeSiege(e);
         this.kills++;
+        this.ultCharge = Math.min(this.ultNeed, this.ultCharge + 1);
         burst(this.fxLayer, e.x, e.y, FX.death(e.x, e.y, ELEMENT_COLOR[e.element]));
         if (e.def.boss) {
             // 无 death 帧：即时 settle（静态 fallback）；win 仅 GameRoot.end(true)

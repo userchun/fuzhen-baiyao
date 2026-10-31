@@ -67,7 +67,7 @@ export class GameRoot extends Component {
         screen.on('window-resize', relayout);
         this.relayout = relayout;
 
-        // 底部区域拖动 = 移动；上方战场按住 = 瞄准并连发
+        // 2026-10-31 全自动攻击：整屏拖动 = 左右移动（瞄准分支保留但不再进入）
         let mode: 'move' | 'aim' | null = null;
         // 全局监听整屏触摸；UI 坐标原点在左下角，换算成以屏幕中心为原点
         const toLocal = (e: EventTouch) => {
@@ -75,11 +75,9 @@ export class GameRoot extends Component {
             const vis = view.getVisibleSize();
             return { x: loc.x - vis.width / 2, y: loc.y - vis.height / 2 };
         };
-        input.on(Input.EventType.TOUCH_START, (e: EventTouch) => {
+        input.on(Input.EventType.TOUCH_START, () => {
             if (this.state !== 'play') return;
-            const p = toLocal(e);
-            mode = p.y < GAME.moveZoneY ? 'move' : 'aim';
-            if (mode === 'aim') this.combat.setAim(p.x, p.y, true);
+            mode = 'move';
         });
         input.on(Input.EventType.TOUCH_MOVE, (e: EventTouch) => {
             if (this.state !== 'play') return;

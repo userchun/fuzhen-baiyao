@@ -1,4 +1,4 @@
-import { TALISMANS, PASSIVES, COMBOS, GAME, GROWTH, TalismanId } from '../config/GameConfig';
+import { TALISMANS, PASSIVES, COMBOS, GAME, GROWTH, TalismanId, SHENG_ORDER } from '../config/GameConfig';
 
 export interface TalismanState { level: number; cdT: number; }
 
@@ -49,6 +49,20 @@ export class SkillSystem {
 
     get extra(): number { return this.passive('multi'); }
     get regen(): number { return this.passive('ward'); }
+
+    /** 持有符咒在相生环（金→水→木→火→土→金）上最长连续几环；返回链长和按顺序排好的五行 */
+    shengChain(): { len: number; chain: TalismanId[] } {
+        const has = SHENG_ORDER.map((id) => this.talismans.has(id));
+        if (has.every(Boolean)) return { len: 5, chain: [...SHENG_ORDER] };
+        let best: TalismanId[] = [];
+        for (let start = 0; start < 5; start++) {
+            if (!has[start] || has[(start + 4) % 5]) continue; // 从一段的开头算
+            const run: TalismanId[] = [];
+            for (let k = 0; k < 5 && has[(start + k) % 5]; k++) run.push(SHENG_ORDER[(start + k) % 5]);
+            if (run.length > best.length) best = run;
+        }
+        return { len: best.length, chain: best };
+    }
 
     talismanLevel(id: TalismanId): number {
         return this.talismans.get(id)?.level ?? 0;
