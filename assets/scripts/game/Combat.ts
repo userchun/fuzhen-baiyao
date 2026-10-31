@@ -125,9 +125,10 @@ export class Combat {
      * heishan/baigu：idle 循环，bob=0。
      */
     // swayDeg：art 子节点随步伐左右摇摆的角度（一个 clip 周期摆一个来回）
-    private static readonly ENEMY_MOVE: Record<string, { fps: number; bobPx: number; swayDeg?: number; prefix?: string }> = {
+    // still：单张定稿图，不用走路帧，起伏 / 摇摆按时间由代码驱动（stepHz = 每秒迈几步）
+    private static readonly ENEMY_MOVE: Record<string, { fps: number; bobPx: number; swayDeg?: number; prefix?: string; still?: boolean; stepHz?: number }> = {
         jiangshi: { fps: 12, bobPx: 12, swayDeg: 2 }, // 12 帧一次完整起落 = 1 秒
-        paperman: { fps: 12, bobPx: 0, swayDeg: 3 }, // 12 帧真实走路，起伏已画在帧里，不再叠代码 bob
+        paperman: { fps: 12, bobPx: 6, swayDeg: 5, still: true, stepHz: 1.6 }, // 2026-10-31 单图 + 代码走路：一步一颠、左右摇，飘忽阴森
         foxfire: { fps: 14, bobPx: 0 }, // 12 帧奔跑，快怪略快
         tongjia: { fps: 11, bobPx: 0 },
         shuigui: { fps: 8, bobPx: 0 }, // 略慢以缓和 f6–f7 观感；无 bob
@@ -842,6 +843,16 @@ export class Combat {
                 if (moveSpec.swayDeg && anim) {
                     const art = e.node.getChildByName('art');
                     art?.setRotationFromEuler(0, 0, Math.sin(anim.progress * Math.PI * 2) * moveSpec.swayDeg);
+                }
+            } else if (moveSpec?.still) {
+                // 单图怪的代码走路：每步一颠（|sin|）、左右摇一个来回
+                const art = e.node.getChildByName('art');
+                if (art) {
+                    const phase = (((e.baseX % 97) + 97) % 97) * 0.07; // 按出生位置错开步伐，避免齐步
+                const w = (e.t * (moveSpec.stepHz ?? 1.5) + phase) * Math.PI;
+                    const slow = e.hitReactT > 0 || e.freezeT > 0 ? 0 : 1; // 受击 / 冻结时不迈步
+                    art.setPosition(0, Math.abs(Math.sin(w)) * moveSpec.bobPx * slow);
+                    art.setRotationFromEuler(0, 0, Math.sin(w) * (moveSpec.swayDeg ?? 0) * slow);
                 }
             }
             e.node.setPosition(e.x, e.y);

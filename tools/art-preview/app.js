@@ -22,6 +22,8 @@ const ANIM = {
   heishan: ['boss_heishan/idle', 20, 10], baigu: ['boss_baigu_metal/idle', 12, 9],
 };
 const PLAYER_ANIM = { idle: [12, 8], cast: [8, 12] };
+// 单图怪：只有一张定稿图，代码做走路（和 Combat.ENEMY_MOVE 的 still 一致）
+const STILL = { paperman: { bob: 6, sway: 5, stepHz: 1.6 } };
 
 // ---------- 素材 ----------
 const $ = (id) => document.getElementById(id);
@@ -209,7 +211,12 @@ function drawEnemy(id, x, y, depth, t, extra = {}) {
   const def = ENEMIES[id], art = ENEMY_ART[id], a = ANIM[id];
   const size = def.radius * 2 * (art?.scale ?? 2.75) * depthScale(depth);
   let drawn = false;
-  if (a) {
+  const st = STILL[id];
+  if (st) {
+    const w = (t * st.stepHz + (extra.ph ?? 0)) * Math.PI, move = extra.dying || extra.still ? 0 : 1;
+    drawn = drawImg(img(`enemy_${id}.png`), cx(x), cy(y) - Math.abs(Math.sin(w)) * st.bob * move, size, size,
+      { ...extra, rot: Math.sin(w) * st.sway * move * Math.PI / 180 });
+  } else if (a) {
     const fr = frames(a[0], a[1]);
     drawn = drawImg(fr[Math.floor(t * a[2]) % a[1]], cx(x), cy(y), size, size, extra);
   }
@@ -256,6 +263,7 @@ function drawPlay(dt) {
       const size = drawEnemy(e.def.id, e.x, e.y + knockOf(e), e.depth, e.t, {
         flash, alpha: e.dying ? 0.5 : 1, dying: e.dying,
         rot: Math.sin(e.t * 2) * sway(e.def.id) * Math.PI / 180,
+        ph: (((e.baseX % 97) + 97) % 97) * 0.07, still: e.hitReactT > 0 || e.freezeT > 0,
       });
       if (!e.dying && e.hp < e.maxHp && e.flashT > 0) bar(cx(e.x) - 30, cy(e.y) - size / 2 - 10, 60, 6, e.hp / e.maxHp, '#E25A4A');
     }
