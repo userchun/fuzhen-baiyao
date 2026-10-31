@@ -1,4 +1,4 @@
-// 主界面（docs/gameplay-design.md 4.4 节，效果图 docs/art/ref/ui_mainmenu_v8.png）。
+// 主界面（docs/gameplay-design.md 4.4 节）。
 // 背景暂用 v8 效果图的无字底图 ui_home_bg（框、图标、按钮都画在图里），
 // 这里按图上位置叠文字、红点、锁定状态和点击区域。拆图后换成独立素材时只改 IMG 坐标表。
 

@@ -1,8 +1,0 @@
-{
-  "project": "符镇百妖",
-  "engine": "Cocos Creator 3.8.8",
-  "art_direction": "docs/art/art-bible.md",
-  "updated": "2026-10-31",
-  "note": "风格：暗黑国风 Q 版（见 art-bible.md）。每条视觉素材带 style 字段：dark-qban = 已按新风格重做；legacy = 旧半写实版，待重做。新增素材先登记再出图。 2026-10-31：试玩认为全部美术不达标，assets/resources/textures 下所有图片已删除（可从 git 历史 c2157d5 及之前找回），游戏退回代码色块画法，美术待重新定方向后再入库。 同日音频（assets/resources/audio 下 41 个 BGM、音效）也已全部删除，游戏暂时无声；生成脚本 gen_audio.py 也已删除（可从 git 历史找回）。",
-  "assets": []
-}
