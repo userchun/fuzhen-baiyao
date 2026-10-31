@@ -21,8 +21,8 @@ export const TALISMAN_IDS: TalismanId[] = ['metal', 'water', 'fire', 'earth', 't
 
 /** 普通难度首通奖励，下标对应 LEVELS */
 export const FIRST_CLEAR_NORMAL = [
-    { coin: 100, paper: 5, chest: '银箱' },
-    { coin: 150, paper: 8, chest: '金箱' },
+    { coin: 100, paper: 5, chest: '银箱' as ChestTier },
+    { coin: 150, paper: 8, chest: '金箱' as ChestTier },
 ];
 
 /** 困难难度首通额外符纸（常规收益另按 ×2 结算） */
@@ -30,3 +30,24 @@ export const FIRST_CLEAR_HARD_PAPER = [10, 15];
 
 /** 困难难度：妖怪血量倍率。其余三条规则（精英 +1、Boss 召唤加快、城墙伤害上限 10）待战斗侧实现 */
 export const HARD_HP_MULT = 1.5;
+
+/** 结算奖励（第 3.2 节），下标对应 LEVELS */
+export const REWARD = {
+    repeatCoin: [50, 75],     // 重复通关基础铜钱
+    repeatPaper: [2, 3],      // 重复通关符纸
+    failCap: [60, 90],        // 失败铜钱上限：每 10 秒 5
+    failStep: 5,
+    eliteCoin: 10,            // 每杀 1 只精英
+    hardMult: 2,              // 困难常规收益倍率
+};
+
+export type ChestTier = '铜箱' | '银箱' | '金箱';
+/** 宝箱（第 3.3 节）：铜钱、符纸都是闭区间整数等概率 */
+export const CHESTS: Record<ChestTier, { coin: [number, number]; paper: [number, number] }> = {
+    铜箱: { coin: [30, 50], paper: [0, 1] },
+    银箱: { coin: [60, 100], paper: [1, 2] },
+    金箱: { coin: [120, 200], paper: [3, 5] },
+};
+
+/** 属性每级效果（第 4.1 节） */
+export const STAT_EFFECT = { wallPerLv: 6, brushPerLv: 0.04, spiritPerLv: 0.04, altarPerLv: 1, starPerLv: 0.05 };

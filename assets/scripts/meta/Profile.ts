@@ -15,6 +15,8 @@ export const LEGACY_UNLOCK_KEY = 'fuzhen.unlockedLevels';
 
 export interface Profile {
     v: 1;
+    runSeq: number;          // 每开一局加 1，用来生成 runId
+    lastRunId: string | null; // 最近一次已记账的局，同一局不重复发奖
     unlockedLevels: number;
     coin: number;
     paper: number;
@@ -30,6 +32,8 @@ export function defaultProfile(levelCount: number): Profile {
     TALISMAN_IDS.forEach((id) => (stars[id] = 0));
     return {
         v: 1,
+        runSeq: 0,
+        lastRunId: null,
         unlockedLevels: 1,
         coin: 0,
         paper: 0,
@@ -50,6 +54,8 @@ export function sanitize(raw: unknown, levelCount: number): Profile | null {
     if (!raw || typeof raw !== 'object' || (raw as { v?: unknown }).v !== 1) return null;
     const r = raw as Partial<Profile>;
     const p = defaultProfile(levelCount);
+    p.runSeq = int(r.runSeq, 0, 1e12, 0);
+    p.lastRunId = typeof r.lastRunId === 'string' ? r.lastRunId : null;
     p.unlockedLevels = int(r.unlockedLevels, 1, levelCount, 1);
     p.coin = int(r.coin, 0, 1e9, 0);
     p.paper = int(r.paper, 0, 1e9, 0);
@@ -164,4 +170,51 @@ export function recordClear(p: Profile, level: number, diff: Difficulty, levelCo
 export function formatAmount(n: number): string {
     if (n > 99999) return `${Math.floor(n / 1000) / 10}万`;
     return n.toLocaleString('en-US');
+}
+
+// ---- 养成与记账 ----
+
+/** 下一级价格；已满级返回 null */
+export function statCost(p: Profile, id: StatId): number | null {
+    const costs = STAT_UPGRADES[id].costs;
+    return p.stats[id] < costs.length ? costs[p.stats[id]] : null;
+}
+
+export function starCost(p: Profile, id: TalismanId): number | null {
+    return p.stars[id] < STAR_COSTS.length ? STAR_COSTS[p.stars[id]] : null;
+}
+
+/** 买一级属性：钱够且没满级才成功 */
+export function buyStat(p: Profile, id: StatId): boolean {
+    const cost = statCost(p, id);
+    if (cost === null || p.coin < cost) return false;
+    p.coin -= cost;
+    p.stats[id]++;
+    return true;
+}
+
+export function buyStar(p: Profile, id: TalismanId): boolean {
+    const cost = starCost(p, id);
+    if (cost === null || p.paper < cost) return false;
+    p.paper -= cost;
+    p.stars[id]++;
+    return true;
+}
+
+/** 开新一局：序号加 1，返回本局 runId */
+export function nextRunId(p: Profile): string {
+    p.runSeq++;
+    return `run:${p.runSeq}`;
+}
+
+/** 把一局结算记进存档（加钱、首通、解锁）。同一个 runId 只记一次，重复调用返回 false */
+export function commitSettlement(
+    p: Profile, s: { runId: string; level: number; diff: Difficulty; result: string; coin: number; paper: number }, levelCount: number,
+): boolean {
+    if (p.lastRunId === s.runId) return false;
+    p.coin += s.coin;
+    p.paper += s.paper;
+    if (s.result === 'win') recordClear(p, s.level, s.diff, levelCount);
+    p.lastRunId = s.runId;
+    return true;
 }

@@ -23,6 +23,8 @@ export class SkillSystem {
     xp = 0;
     xpNeed = GAME.xpBase;
     pending = 0; // 待选择的升级次数
+    /** 局外符咒星级倍率（每星 +5%），开局由 GameRoot 设置 */
+    starMult: Partial<Record<TalismanId, number>> = {};
     /** 本局第几次打开三选（含 L2 startPicks），从 0；T6 前两次保底用 */
     pickIndex = 0;
 
@@ -70,7 +72,7 @@ export class SkillSystem {
 
     damage(id: TalismanId): number {
         const lv = Math.max(1, this.talismanLevel(id));
-        return TALISMANS[id].damage * (1 + GROWTH.dmgPerLevel * (lv - 1)) * (1 + GROWTH.dmgPerPower * this.passive('power'));
+        return TALISMANS[id].damage * (1 + GROWTH.dmgPerLevel * (lv - 1)) * (1 + GROWTH.dmgPerPower * this.passive('power')) * (this.starMult[id] ?? 1);
     }
 
     cooldown(id: TalismanId): number {

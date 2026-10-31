@@ -176,10 +176,10 @@ export class GameUI {
     }
 
     refresh(c: Combat, s: SkillSystem, time: number): void {
-        this.setBar(this.wallBar, c.wallHp / GAME.wallHp);
+        this.setBar(this.wallBar, c.wallHp / c.wallMax);
         this.setBar(this.xpBar, s.xp / s.xpNeed);
         const t = Math.floor(time);
-        this.wallBar.text.string = `结界 ${Math.ceil(c.wallHp)}/${GAME.wallHp}`;
+        this.wallBar.text.string = `结界 ${Math.ceil(c.wallHp)}/${c.wallMax}`;
         this.xpBar.text.string = `Lv${s.level}`;
         const mm = Math.floor(t / 60);
         const ss = Math.floor(t % 60);
@@ -475,56 +475,68 @@ export class GameUI {
     }
 
     /**
-     * 结算板。CD D re-spot PASS：win/lose settle 全封挂
-     *   Win：ui_settle_panel + fx_settle_win
-     *   Lose：fx_settle_lose + banner/card 回退（无专属 lose 匾则用横卡）
+     * 结算板（第 4.4 节）：标题、击杀用时、逐行奖励、累计余额、按钮。
+     *   Win：ui_settle_panel 作底 + fx_settle_win；Lose / 缺图：深色圆角底
+     * rewards 为已记账的结果；saved=false 时标"待保存"。
      */
-    showResult(win: boolean, kills: number, time: number, buttons: { text: string; cb: () => void }[]): void {
+    showResult(
+        win: boolean, kills: number, time: number, buttons: { text: string; cb: () => void }[],
+        rewards?: { lines: { text: string; coin: number; paper: number }[]; coin: number; paper: number; saved: boolean },
+    ): void {
         const ov = this.openOverlay();
-        const RESULT_BANNER = 'ui_title_banner';
-        const RESULT_PLAQUE_WIN = 'ui_settle_panel';
-        const RESULT_PLAQUE_FALLBACK = 'ui_level_card';
-        const RESULT_FX = win ? 'fx_settle_win' : 'fx_settle_lose';
-
-        const settleVfx = makeNode('settleVfx', ov);
-        settleVfx.setPosition(0, 300);
-        const fx = spriteNode(RESULT_FX, 128, 128, settleVfx);
-        if (fx) popIn(fx, 0.3);
-
-        const banner = spriteNode(RESULT_BANNER, 620, 150, ov);
+        const fx = spriteNode(win ? 'fx_settle_win' : 'fx_settle_lose', 128, 128, ov);
+        if (fx) {
+            fx.setPosition(0, 470);
+            popIn(fx, 0.3);
+        }
+        const titleText = win ? '镇妖成功' : '结界破碎';
+        const titleColor = win ? '#FFD700' : '#E74C3C';
+        const banner = spriteNode('ui_title_banner', 620, 150, ov);
         if (banner) {
-            banner.setPosition(0, win ? 200 : 240);
-            const title = addLabel(banner, win ? '镇妖成功' : '结界破碎', 56, win ? '#FFD700' : '#E74C3C');
-            title.node.setPosition(0, 8);
+            banner.setPosition(0, 380);
+            addLabel(banner, titleText, 56, titleColor).node.setPosition(0, 8);
             popIn(banner, 0.4);
         } else {
-            const title = addLabel(ov, win ? '镇妖成功' : '结界破碎', 64, win ? '#FFD700' : '#E74C3C');
-            title.node.setPosition(0, 200);
+            const title = addLabel(ov, titleText, 64, titleColor);
+            title.node.setPosition(0, 380);
             popIn(title.node, 0.4);
         }
 
-        // Win：竖匾 ui_settle_panel（384×512 封挂）；Lose / 缺图：横卡回退
-        let plaque: Node | null = null;
-        let usingSettlePanel = false;
-        if (win) {
-            plaque = spriteNode(RESULT_PLAQUE_WIN, 300, 400, ov);
-            usingSettlePanel = !!plaque;
+        // 奖励底板：胜利用竖匾（384×512 等比放大），失败或缺图用深色圆角底
+        const plaque = (win ? spriteNode('ui_settle_panel', 480, 640, ov) : null)
+            ?? rectNode('resultPlaque', 520, 600, '#1A1622', ov, 16, 235);
+        plaque.setPosition(0, -20);
+        addLabel(plaque, `击杀 ${kills}    用时 ${Math.floor(time)} 秒`, 28, '#E8E2D0').node.setPosition(0, 220);
+        if (rewards) {
+            const amount = (c: number, p: number) =>
+                [c ? `铜钱 +${c}` : '', p ? `符纸 +${p}` : ''].filter(Boolean).join('  ') || '—';
+            rewards.lines.forEach((l, i) => {
+                const y = 150 - i * 70;
+                addLabel(plaque, l.text, 24, '#C9B98F').node.setPosition(0, y + 14);
+                const v = addLabel(plaque, amount(l.coin, l.paper), 28, '#FFD66E');
+                v.node.setPosition(0, y - 16);
+                popIn(v.node, 0.3 + i * 0.12);
+            });
+            addLabel(plaque, `本局 铜钱 +${rewards.coin}  符纸 +${rewards.paper}`, 26, '#FFFFFF').node.setPosition(0, -150);
+            const total = addLabel(plaque, '', 24, rewards.saved ? '#E8E2D0' : '#E07A6A');
+            total.node.setPosition(0, -200);
+            this.resultTotal = total;
         }
-        if (!plaque) plaque = spriteNode(RESULT_PLAQUE_FALLBACK, 560, 176, ov);
-        if (!plaque) plaque = rectNode('resultPlaque', 560, 160, '#2C2440', ov, 16);
-        plaque.setPosition(0, usingSettlePanel ? -20 : 40);
-        // 横卡回退时补装饰章；封挂竖匾自带纹样不叠
-        if (!usingSettlePanel) {
-            const seal = spriteNode(win ? 'ui_seal_heishan' : 'ui_lock_seal', 72, 72, plaque);
-            if (seal) seal.setPosition(-210, 8);
-        }
-        addLabel(plaque, `击杀 ${kills}    用时 ${Math.floor(time)} 秒`, 30, '#E8E2D0').node.setPosition(0, usingSettlePanel ? 40 : 0);
         popIn(plaque, 0.35);
 
         buttons.forEach((b, i) => {
-            const btn = this.button(ov, b.text, b.cb, 300, 90, i === 0 ? '#8E2C2C' : '#3A3350', 0, -160 - i * 120);
+            const btn = this.button(ov, b.text, b.cb, 300, 80, i === 0 ? '#8E2C2C' : '#3A3350', 0, -390 - i * 100);
             popIn(btn, 0.25 + i * 0.08);
         });
+    }
+
+    private resultTotal: Label | null = null;
+
+    /** 结算页底部的累计余额（保存状态变化后可再调用刷新） */
+    setResultTotal(coin: number, paper: number, saved: boolean): void {
+        if (!this.resultTotal?.isValid) return;
+        this.resultTotal.string = `${saved ? '共有' : '待保存 · 共有'} 铜钱 ${coin}  符纸 ${paper}`;
+        this.resultTotal.color = hex(saved ? '#E8E2D0' : '#E07A6A');
     }
 
     private button(parent: Node, text: string, cb: () => void, w: number, h: number, color: string, x: number, y: number): Node {

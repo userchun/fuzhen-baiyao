@@ -14,11 +14,12 @@ fi
 cat > "$DIR/tsconfig.sim.json" <<JSON
 { "compilerOptions": { "target": "ES2020", "module": "ESNext", "moduleResolution": "bundler", "skipLibCheck": true,
   "noCheck": true, "rootDir": "$SRC", "outDir": "$DIR/out" },
-  "files": ["$SRC/game/Combat.ts", "$SRC/game/Spawner.ts"] }
+  "files": ["$SRC/game/Combat.ts", "$SRC/game/Spawner.ts", "$SRC/meta/Settlement.ts", "$SRC/meta/Profile.ts"] }
 JSON
 $TSC -p "$DIR/tsconfig.sim.json"
 echo '{"type":"module"}' > "$DIR/out/package.json"
 find "$DIR/out" -name "*.js" -exec sed -i.bak -E "s#(from '\.[^']*)'#\1.js'#g" {} \; -exec rm -f {}.bak \;
 cd "$DIR"
 node test-siege.mjs
+node test-settlement.mjs
 node sim.mjs

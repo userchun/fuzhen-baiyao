@@ -3,13 +3,13 @@
 // 这里按图上位置叠文字、红点、锁定状态和点击区域。拆图后换成独立素材时只改 IMG 坐标表。
 
 import { Node, Label, EventTouch, Graphics } from 'cc';
-import { GAME, LevelDef } from '../config/GameConfig';
-import { Difficulty, FIRST_CLEAR_NORMAL, FIRST_CLEAR_HARD_PAPER } from '../config/MetaConfig';
+import { GAME, LevelDef, TALISMANS, TalismanId } from '../config/GameConfig';
+import { Difficulty, FIRST_CLEAR_NORMAL, FIRST_CLEAR_HARD_PAPER, StatId, STAT_UPGRADES, STAT_EFFECT, STAR_COSTS, TALISMAN_IDS } from '../config/MetaConfig';
 import { makeNode, addLabel, rectNode, hex, setOpacity } from '../core/Draw';
 import { spriteNode } from '../core/Art';
 import { AudioManager } from '../core/AudioManager';
 import {
-    Profile, canPlay, maxBrowsableLevel, canAffordUpgrade, canAffordStar, formatAmount,
+    Profile, canPlay, maxBrowsableLevel, canAffordUpgrade, canAffordStar, formatAmount, statCost, starCost,
 } from '../meta/Profile';
 import { popIn } from './Anim';
 
@@ -329,5 +329,104 @@ export class HomeUI {
         });
         setOpacity(panel, 255);
         popIn(panel, 0.2);
+    }
+
+    /**
+     * 养成页（第 4.4 节）：上方余额，"道士"页签四项属性，"符咒"页签六符升星。
+     * onBuy 返回是否买成功；买完由调用方存档，这里只负责重画。
+     */
+    showUpgrade(p: Profile, tab: 'stat' | 'star', onBuy: (kind: 'stat' | 'star', id: string) => boolean, onClose: () => void): void {
+        if (!this.node) return;
+        this.node.getChildByName('upgrade')?.destroy();
+        const mask = rectNode('upgrade', GAME.width, GAME.height, '#000000', this.node, 0, 200);
+        mask.on(Node.EventType.TOUCH_END, (e: EventTouch) => (e.propagationStopped = true));
+        const W = 660;
+        const H = 1000;
+        const panel = rectNode('panel', W, H, '#12141C', mask, 16, 250);
+        const g = makeNode('border', panel).addComponent(Graphics);
+        g.lineWidth = 2;
+        g.strokeColor = hex('#B8924A');
+        g.roundRect(-W / 2, -H / 2, W, H, 16);
+        g.stroke();
+        const redraw = (t = tab) => this.showUpgrade(p, t, onBuy, onClose);
+        const tap = (n: Node, cb: () => void) => n.on(Node.EventType.TOUCH_END, (e: EventTouch) => {
+            e.propagationStopped = true;
+            cb();
+        });
+
+        addLabel(panel, '养　成', 40, GOLD).node.setPosition(0, H / 2 - 50);
+        addLabel(panel, `铜钱 ${formatAmount(p.coin)}　　符纸 ${formatAmount(p.paper)}`, 28, CREAM).node.setPosition(0, H / 2 - 105);
+
+        // 页签
+        (['stat', 'star'] as const).forEach((t, i) => {
+            const on = t === tab;
+            const b = rectNode('tab', 220, 56, on ? '#7A1F18' : '#2A2830', panel, 12);
+            b.setPosition(i === 0 ? -120 : 120, H / 2 - 170);
+            addLabel(b, t === 'stat' ? '道　士' : '符　咒', 28, on ? GOLD : DIM);
+            const dot = t === 'stat' ? canAffordUpgrade(p) : canAffordStar(p);
+            if (dot) rectNode('dot', 16, 16, '#E23B3B', b, 8).setPosition(96, 22);
+            tap(b, () => {
+                this.audio?.playSfx('click', 0.6);
+                redraw(t);
+            });
+        });
+
+        const buyBtn = (parent: Node, cost: number | null, have: number, unit: string, x: number, y: number, w: number, cb: () => void) => {
+            const ok = cost !== null && have >= cost;
+            const b = rectNode('buy', w, 56, cost === null ? '#2A2830' : ok ? '#8E2C2C' : '#3A3036', parent, 12);
+            b.setPosition(x, y);
+            addLabel(b, cost === null ? '已满' : `${unit} ${cost}`, 26, cost === null ? DIM : ok ? GOLD : '#E07A6A');
+            if (ok) tap(b, cb);
+        };
+        const buy = (kind: 'stat' | 'star', id: string) => {
+            if (!onBuy(kind, id)) return;
+            this.audio?.playSfx('levelup', 0.6);
+            redraw();
+        };
+
+        const top = H / 2 - 250;
+        if (tab === 'stat') {
+            const pct = (v: number) => `${Math.round(v * 100)}%`;
+            const effect = (id: StatId, lv: number): string => {
+                if (id === 'wall') return `城墙 ${GAME.wallHp + STAT_EFFECT.wallPerLv * lv}`;
+                if (id === 'brush') return `镇妖符伤害 +${pct(STAT_EFFECT.brushPerLv * lv)}`;
+                if (id === 'spirit') return `灵气 +${pct(STAT_EFFECT.spiritPerLv * lv)}`;
+                return `开局选卡 +${STAT_EFFECT.altarPerLv * lv}`;
+            };
+            (Object.keys(STAT_UPGRADES) as StatId[]).forEach((id, i) => {
+                const y = top - i * 170;
+                const card = rectNode('card', W - 60, 150, '#1E1A26', panel, 12);
+                card.setPosition(0, y);
+                const max = STAT_UPGRADES[id].costs.length;
+                const lv = p.stats[id];
+                const name = addLabel(card, `${STAT_UPGRADES[id].name}  ${lv}/${max}`, 30, GOLD);
+                name.node.setPosition(-110, 30);
+                const next = lv < max ? `${effect(id, lv)} → ${effect(id, lv + 1)}` : effect(id, lv);
+                addLabel(card, next, 22, CREAM).node.setPosition(-110, -25);
+                buyBtn(card, statCost(p, id), p.coin, '铜钱', 205, 0, 170, () => buy('stat', id));
+            });
+        } else {
+            TALISMAN_IDS.forEach((id: TalismanId, i) => {
+                const x = i % 2 === 0 ? -150 : 150;
+                const y = top - 20 - Math.floor(i / 2) * 210;
+                const card = rectNode('card', 280, 190, '#1E1A26', panel, 12);
+                card.setPosition(x, y);
+                const st = p.stars[id];
+                addLabel(card, TALISMANS[id].name, 28, GOLD).node.setPosition(0, 62);
+                addLabel(card, '★'.repeat(st) + '☆'.repeat(STAR_COSTS.length - st), 30, '#FFD66E').node.setPosition(0, 18);
+                addLabel(card, `伤害 +${st * 5}%`, 20, CREAM).node.setPosition(0, -20);
+                buyBtn(card, starCost(p, id), p.paper, '符纸', 0, -62, 200, () => buy('star', id));
+            });
+        }
+
+        const close = rectNode('close', 220, 60, '#3A3226', panel, 12);
+        close.setPosition(0, -H / 2 + 55);
+        addLabel(close, '返　回', 28, CREAM);
+        tap(close, () => {
+            this.audio?.playSfx('click', 0.6);
+            mask.destroy();
+            onClose();
+        });
+        setOpacity(panel, 255);
     }
 }

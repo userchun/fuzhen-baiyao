@@ -1,7 +1,10 @@
 import { _decorator, Component, Node, UITransform, EventTouch, view, ResolutionPolicy, input, Input, sys, screen } from 'cc';
 import { GAME, LEVELS, COMBOS, ENEMIES, applyScreen } from './config/GameConfig';
 import { Difficulty, HARD_HP_MULT } from './config/MetaConfig';
-import { Profile, loadProfile, saveProfile, defaultProfile, defaultLevel, recordClear, PROFILE_KEY, PROFILE_BAK_KEY, LEGACY_UNLOCK_KEY } from './meta/Profile';
+import { Profile, loadProfile, saveProfile, defaultProfile, defaultLevel, PROFILE_KEY, PROFILE_BAK_KEY, LEGACY_UNLOCK_KEY, buyStat, buyStar, nextRunId, commitSettlement } from './meta/Profile';
+import { computeSettlement, metaSnapshot, MetaSnapshot } from './meta/Settlement';
+import { StatId } from './config/MetaConfig';
+import { TalismanId } from './config/GameConfig';
 import { makeNode, rectNode } from './core/Draw';
 import { loadArt, spriteNode } from './core/Art';
 import { loadAudio, AudioManager } from './core/AudioManager';
@@ -38,6 +41,9 @@ export class GameRoot extends Component {
     private home: HomeUI;
     private bg: Node;
     private time = 0;
+    private runId = '';
+    private eliteKills = 0;
+    private meta: MetaSnapshot;
 
     onLoad(): void {
         view.setDesignResolutionSize(GAME.width, GAME.height, ResolutionPolicy.FIXED_WIDTH);
@@ -146,8 +152,11 @@ export class GameRoot extends Component {
         else this.audio.playBgm(BGM_BY_LEVEL[this.levelIndex] ?? 'village');
     }
 
-    private save(): void {
-        if (!saveProfile(sys.localStorage, this.profile, LEVELS.length)) this.home.showToast('存档写入失败');
+    /** 写档；失败时提示并返回 false（内存里的结果保留，下次写档会一起带上） */
+    private save(): boolean {
+        const ok = saveProfile(sys.localStorage, this.profile, LEVELS.length);
+        if (!ok) this.home.showToast('存档写入失败');
+        return ok;
     }
 
     /** 把设置里的开关应用到音频和震屏 */
@@ -165,7 +174,10 @@ export class GameRoot extends Component {
         this.syncBgm();
         this.home.show(this.profile, LEVELS, level, {
             onFight: (i, diff) => this.startLevel(i, diff),
-            onEntry: (id) => this.home.showToast(`${{ upgrade: '养成', talisman: '符咒', record: '记录' }[id]}页开发中`),
+            onEntry: (id) => {
+                if (id === 'record') this.home.showToast('记录页开发中');
+                else this.openUpgrade(id === 'upgrade' ? 'stat' : 'star');
+            },
             onSettings: () => this.home.showSettings(
                 this.profile,
                 () => { this.applySettings(); this.syncBgm(); this.save(); },
@@ -173,6 +185,15 @@ export class GameRoot extends Component {
             ),
         });
     }
+    /** 养成页：买完立即存档；关闭后重画主界面刷新余额和红点 */
+    private openUpgrade(tab: 'stat' | 'star'): void {
+        this.home.showUpgrade(this.profile, tab, (kind, id) => {
+            const ok = kind === 'stat' ? buyStat(this.profile, id as StatId) : buyStar(this.profile, id as TalismanId);
+            if (ok) this.save();
+            return ok;
+        }, () => this.showMenu(this.home.currentLevel));
+    }
+
 
     /** 清除存档：删掉主档、备份和旧版解锁进度，回到新档 */
     private clearSave(): void {
@@ -204,10 +225,22 @@ export class GameRoot extends Component {
         const combatLayer = makeNode('combat', this.world);
         const textLayer = makeNode('texts', this.world); // 飘字在战斗层之上
         this.fb = new Feedback(textLayer, this.world);
-        this.combat = new Combat(combatLayer, this.skills, this.fb, (e) => this.skills.addXp(e.def.xp), this.audio);
+        this.combat = new Combat(combatLayer, this.skills, this.fb, (e) => {
+            if (e.def.elite) this.eliteKills++;
+            this.skills.addXp(e.def.xp * this.meta.spiritMult);
+        }, this.audio);
+        // 开局冻结养成快照，本局中途不再变化
+        this.meta = metaSnapshot(this.profile, GAME.wallHp);
+        this.combat.wallMax = this.meta.wallMax;
+        this.combat.wallHp = this.meta.wallMax;
+        this.combat.brushMult = this.meta.brushMult;
+        this.skills.starMult = this.meta.starMult;
+        this.eliteKills = 0;
+        this.runId = nextRunId(this.profile);
+        this.save();
         this.combat.hpMult = level.hpMult * (diff === 'hard' ? HARD_HP_MULT : 1);
         this.spawner = new Spawner(level.waves, (id) => this.combat.spawnEnemy(id));
-        this.skills.pending = level.startPicks;
+        this.skills.pending = level.startPicks + this.meta.extraPicks;
         this.time = 0;
         this.state = 'play';
         this.syncBgm();
@@ -222,7 +255,7 @@ export class GameRoot extends Component {
             this.skills.pending--;
             // click 由 GameUI 卡牌点击统一播放
             if (opt.type === 'heal') {
-                this.combat.wallHp = Math.min(GAME.wallHp, this.combat.wallHp + 30);
+                this.combat.wallHp = Math.min(this.combat.wallMax, this.combat.wallHp + 30);
             } else {
                 const unlocked = this.skills.apply(opt);
                 unlocked.forEach((id) => {
@@ -245,15 +278,25 @@ export class GameRoot extends Component {
         this.combat.stopHold();
         // D：win 播一次（短金属石）；lose = barrier_crack（CD）；Combat 不再播 win
         this.audio.playSfx(win ? 'win' : 'barrier_crack', 0.9);
-        if (win) {
-            recordClear(this.profile, this.levelIndex, this.difficulty, LEVELS.length);
-            this.save();
-        }
-        const buttons = [{ text: '再来一局', cb: () => this.startLevel(this.levelIndex) }];
-        if (win && this.difficulty === 'normal' && this.levelIndex + 1 < LEVELS.length) {
-            buttons.unshift({ text: '下一关', cb: () => this.startLevel(this.levelIndex + 1, 'normal') });
-        }
-        buttons.push({ text: '返回主界面', cb: () => this.showMenu(this.levelIndex) });
-        this.ui.showResult(win, this.combat.kills, this.time, buttons);
+
+        // 先算好奖励（箱子在这里一次抽定），记进存档后再展示；同一 runId 只记一次
+        const lv = this.levelIndex;
+        const diff = this.difficulty;
+        const st = computeSettlement(this.runId, {
+            level: lv, diff, result: win ? 'win' : 'lose', time: this.time,
+            eliteKills: this.eliteKills, firstClear: !this.profile.cleared[lv]?.[diff],
+        });
+        commitSettlement(this.profile, st, LEVELS.length);
+        const saved = this.save();
+
+        const toMenu = { text: '返回主界面', cb: () => this.showMenu(lv) };
+        const toUpgrade = { text: '去养成', cb: () => { this.showMenu(lv); this.openUpgrade('stat'); } };
+        let buttons: { text: string; cb: () => void }[];
+        if (!win) buttons = [toUpgrade, { text: '再来一局', cb: () => this.startLevel(lv) }, toMenu];
+        else if (diff === 'normal' && lv + 1 < LEVELS.length) {
+            buttons = [{ text: '下一关', cb: () => this.startLevel(lv + 1, 'normal') }, toUpgrade, toMenu];
+        } else buttons = [toMenu, toUpgrade];
+        this.ui.showResult(win, this.combat.kills, this.time, buttons, { lines: st.lines, coin: st.coin, paper: st.paper, saved });
+        this.ui.setResultTotal(this.profile.coin, this.profile.paper, saved);
     }
 }

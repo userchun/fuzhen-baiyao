@@ -61,7 +61,9 @@ export class Combat {
     playerX = 0;
     /** 位移目标 X；实位 playerX 每帧缓动跟上（sine/exp 平滑，避免拖动硬切） */
     playerTargetX = 0;
+    wallMax = GAME.wallHp; // 本局城墙上限（基础 + 局外城墙加固），开局由 GameRoot 设置
     wallHp = GAME.wallHp;
+    brushMult = 1; // 局外符笔：只强化镇妖符
     kills = 0;
     bossDead = false;
     /** D：Boss 进入 death/settle 后停刷杂鱼（GameRoot → Spawner.stop） */
@@ -435,7 +437,7 @@ export class Combat {
         const dx = tx - ox;
         const dy = Math.max(10, ty - oy); // 只能往城墙外打
         const dist = Math.hypot(dx, dy);
-        const dmg = BASE_ATTACK.damage * (1 + 0.2 * this.skills.passive('power'));
+        const dmg = BASE_ATTACK.damage * this.brushMult * (1 + 0.2 * this.skills.passive('power'));
         this.shoot('manual', ox, oy, dx / dist * BASE_ATTACK.speed, dy / dist * BASE_ATTACK.speed, dmg, { radius: 14, pierce: 1 });
         this.playPlayerCast();
     }
@@ -449,7 +451,7 @@ export class Combat {
             const t = this.nearest(this.playerX, GAME.playerY);
             if (t) this.manualShot(t.x, t.y, BASE_ATTACK.autoCd);
         }
-        this.wallHp = Math.min(GAME.wallHp, this.wallHp + this.skills.regen * dt);
+        this.wallHp = Math.min(this.wallMax, this.wallHp + this.skills.regen * dt);
         // 位移缓动：exp 平滑追 playerTargetX（≈sineOut 起步/刹停，无线性硬切）
         const moveK = 1 - Math.exp(-14 * dt);
         this.playerX += (this.playerTargetX - this.playerX) * moveK;
