@@ -1,6 +1,6 @@
 // 网页试玩：战斗 / 刷怪 / 选卡直接用游戏代码（build.sh 编译到 ./game），这里只管画面、操作和界面。
 import { Node } from 'cc';
-import { GAME, LAYOUT, LEVELS, ENEMIES, ELEMENT_COLOR, COMBOS, ULT_NAMES, applyScreen, depthScale } from './game/config/GameConfig.js';
+import { GAME, LAYOUT, LEVELS, ENEMIES, ELEMENT_COLOR, COMBOS, ULT_NAMES, TALISMANS, PASSIVES, applyScreen, depthScale } from './game/config/GameConfig.js';
 import { ENEMY_ART } from './game/core/Art.js';
 import { SkillSystem } from './game/game/SkillSystem.js';
 import { Combat } from './game/game/Combat.js';
@@ -241,8 +241,7 @@ function bar(x, y, w, h, k, color, back = 'rgba(0,0,0,.6)') {
 function drawPlay(dt) {
   const c = g.combat;
   juiceTrack(c, c.playerX);
-  const sp = g.shakeNode.position;
-  ctx.save(); ctx.translate(sp.x, -sp.y); // 震屏
+  ctx.save(); // 震屏已去掉（Feedback.shake 为空）
   drawBg(); drawWall();
   if (on('showFx')) for (const z of c.zones) {
     ctx.save(); ctx.globalAlpha = 0.28; ctx.fillStyle = ELEMENT_COLOR[z.el] ?? '#fff';
@@ -287,10 +286,45 @@ function drawPlay(dt) {
     bar(120, 56, W - 240, 18, boss.hp / boss.maxHp, '#C0392B');
     ctx.textAlign = 'center'; ctx.fillText(boss.def.name, W / 2, 50);
   }
+  drawSkillPanel();
   drawUlt(c);
   if (toastT > 0) {
     ctx.save(); ctx.globalAlpha = Math.min(1, toastT); ctx.font = 'bold 24px sans-serif'; ctx.textAlign = 'center';
     ctx.fillStyle = '#FFD66E'; ctx.fillText(toastMsg, W / 2, H * 0.3); ctx.restore();
+  }
+}
+// 左侧技能栏：和 GameUI.buildSkillPanel 一致（x = 左边 +44，顶部 = 安全区 60 + 160；符咒 52 方图 + 冷却遮罩 + 等级角标 + 名字，被动 44 方图）
+function drawSkillPanel() {
+  const s = g.skills, x = 44;
+  let y = 60 + 160;
+  const badge = (bx, by, text) => {
+    ctx.save(); ctx.fillStyle = '#1A1A2E'; ctx.strokeStyle = '#FFD700'; ctx.lineWidth = 1.5;
+    ctx.beginPath(); ctx.arc(bx, by, text === 'MAX' ? 16 : 12, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+    ctx.font = `bold ${text === 'MAX' ? 11 : 15}px sans-serif`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.lineWidth = 3; ctx.strokeStyle = '#000'; ctx.strokeText(text, bx, by + 1); ctx.fillStyle = '#FFD700'; ctx.fillText(text, bx, by + 1); ctx.restore();
+  };
+  for (const [id, st] of s.talismans) {
+    const d = TALISMANS[id], S = 52;
+    if (!drawImg(img(`icon_talisman_${id}.png`), x, y, S, S)) {
+      ctx.fillStyle = ELEMENT_COLOR[d.element]; ctx.beginPath(); ctx.arc(x, y, 22, 0, Math.PI * 2); ctx.fill();
+    }
+    const k = Math.min(1, Math.max(0, st.cdT / s.cooldown(id)));
+    if (k > 0) { ctx.fillStyle = 'rgba(0,0,0,0.55)'; ctx.fillRect(x - S / 2, y + S / 2 - k * S, S, k * S); } // 剩余冷却从下往上盖
+    badge(x + 16, y + 24, st.level >= d.maxLevel ? 'MAX' : String(st.level));
+    ctx.save(); ctx.font = '14px "Hiragino Sans GB", sans-serif'; ctx.textAlign = 'center'; ctx.lineWidth = 3; ctx.strokeStyle = '#000';
+    ctx.fillStyle = '#E8E0F0'; ctx.strokeText(d.name, x, y + 46); ctx.fillText(d.name, x, y + 46); ctx.restore();
+    y += 84;
+  }
+  for (const [id, lv] of s.passives) {
+    const d = PASSIVES[id];
+    drawImg(img(`icon_passive_${id}.png`), x, y - 10, 44, 44);
+    badge(x + 15, y + 5, lv >= d.maxLevel ? 'MAX' : String(lv));
+    y += 56;
+  }
+  const combos = COMBOS.filter((cb) => s.combos.has(cb.id)).map((cb) => cb.name);
+  if (combos.length) {
+    ctx.save(); ctx.font = 'bold 18px "Hiragino Sans GB", sans-serif'; ctx.textAlign = 'center'; ctx.fillStyle = '#FFD700';
+    ['合击', ...combos].forEach((t, i) => ctx.fillText(t, x + 6, y + 10 + i * 22)); ctx.restore();
   }
 }
 function drawUlt(c) {

@@ -69,8 +69,8 @@ export function travelPixels(): number {
 }
 
 // 基础攻击（镇妖符）：按住瞄准时射速更快，鼓励手动操作
-// 2026-10-31 改为全自动攻击（🧪）：自动打最近妖怪的间隔从 0.7 提到和按住连发一样的 0.25，操作只剩拖动走位
-export const BASE_ATTACK = { damage: 12, holdCd: 0.25, autoCd: 0.25, speed: 1100 };
+// 2026-10-31 改为全自动攻击（🧪）：自动打最近妖怪，操作只剩拖动走位；试玩觉得 0.25 太快，放慢到 0.45
+export const BASE_ATTACK = { damage: 12, holdCd: 0.25, autoCd: 0.45, speed: 1100 };
 
 export const ELEMENT_COLOR: Record<Element, string> = {
     metal: '#F5D76E', wood: '#5FBF6A', water: '#5AB4F0',
@@ -180,8 +180,8 @@ export const LEVEL2_WAVES: WaveDef[] = [
 export interface LevelDef { name: string; desc: string; bg: string; waves: WaveDef[]; startPicks: number; hpMult: number; }
 
 export const LEVELS: LevelDef[] = [
-    { name: '第一关 · 荒村', desc: 'Boss：黑山老妖', bg: '#141428', waves: LEVEL1_WAVES, startPicks: 1, hpMult: 1.65 }, // 🧪 2026-10-31 全自动攻击后 1.0→1.65
-    { name: '第二关 · 古寺', desc: 'Boss：白骨夫人（三相）\n新妖：铜甲尸、水鬼', bg: '#1E1A2B', waves: LEVEL2_WAVES, startPicks: 2, hpMult: 1.8 }, // 🧪 2026-10-31 1.2→1.8，保持比第一关难
+    { name: '第一关 · 荒村', desc: 'Boss：黑山老妖', bg: '#141428', waves: LEVEL1_WAVES, startPicks: 1, hpMult: 1.05 }, // 🧪 2026-10-31 全自动攻击 + 放慢攻速冷却后定为 1.05
+    { name: '第二关 · 古寺', desc: 'Boss：白骨夫人（三相）\n新妖：铜甲尸、水鬼', bg: '#1E1A2B', waves: LEVEL2_WAVES, startPicks: 2, hpMult: 1.1 }, // 🧪 2026-10-31 放慢攻速冷却、符咒改随机落点后定为 1.1，保持比第一关难
 ];
 
 /** 本地存档：已解锁关卡数（默认 1，即只开放第一关） */
@@ -192,13 +192,14 @@ export interface TalismanDef {
     cd: number; damage: number; maxLevel: number; desc: string; upgrade: string;
 }
 
+// 2026-10-31 六符冷却统一 ×1.3（🧪，试玩觉得出手太密）
 export const TALISMANS: Record<TalismanId, TalismanDef> = {
-    metal: { id: 'metal', name: '金光符', element: 'metal', cd: 0.6, damage: 12, maxLevel: 5, desc: '直线穿透光束，克木\n与寒冰符相生：天河倒悬', upgrade: '伤害提升，穿透 +1' },
-    water: { id: 'water', name: '寒冰符', element: 'water', cd: 1.3, damage: 15, maxLevel: 5, desc: '冰锥弹射并冻结，克火\n与金光符相生：天河倒悬', upgrade: '伤害提升，弹射 +1' },
-    fire: { id: 'fire', name: '烈焰符', element: 'fire', cd: 1.8, damage: 22, maxLevel: 5, desc: '火球落地爆炸，克金\n与青藤符相生：焚林燎原', upgrade: '伤害提升，爆炸范围扩大' },
-    earth: { id: 'earth', name: '镇山符', element: 'earth', cd: 2.0, damage: 20, maxLevel: 5, desc: '石柱砸地，击退并眩晕，克水', upgrade: '伤害提升，范围扩大' },
-    thunder: { id: 'thunder', name: '天雷符', element: 'none', cd: 1.8, damage: 20, maxLevel: 5, desc: '随机落雷，在妖群中连锁弹跳', upgrade: '伤害提升，连锁 +1' },
-    wood: { id: 'wood', name: '青藤符', element: 'wood', cd: 3.0, damage: 8, maxLevel: 5, desc: '藤蔓减速并持续伤害，克土\n与烈焰符相生：焚林燎原', upgrade: '伤害提升，范围扩大' },
+    metal: { id: 'metal', name: '金光符', element: 'metal', cd: 0.8, damage: 12, maxLevel: 5, desc: '直线穿透光束，克木\n与寒冰符相生：天河倒悬', upgrade: '伤害提升，穿透 +1' },
+    water: { id: 'water', name: '寒冰符', element: 'water', cd: 1.7, damage: 15, maxLevel: 5, desc: '冰锥弹射并冻结，克火\n与金光符相生：天河倒悬', upgrade: '伤害提升，弹射 +1' },
+    fire: { id: 'fire', name: '烈焰符', element: 'fire', cd: 2.3, damage: 22, maxLevel: 5, desc: '火球落地爆炸，克金\n与青藤符相生：焚林燎原', upgrade: '伤害提升，爆炸范围扩大' },
+    earth: { id: 'earth', name: '镇山符', element: 'earth', cd: 2.6, damage: 20, maxLevel: 5, desc: '石柱砸地，击退并眩晕，克水', upgrade: '伤害提升，范围扩大' },
+    thunder: { id: 'thunder', name: '天雷符', element: 'none', cd: 2.3, damage: 20, maxLevel: 5, desc: '随机落雷，在妖群中连锁弹跳', upgrade: '伤害提升，连锁 +1' },
+    wood: { id: 'wood', name: '青藤符', element: 'wood', cd: 3.9, damage: 8, maxLevel: 5, desc: '藤蔓减速并持续伤害，克土\n与烈焰符相生：焚林燎原', upgrade: '伤害提升，范围扩大' },
 };
 
 export interface PassiveDef { name: string; desc: string; maxLevel: number; }

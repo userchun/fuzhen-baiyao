@@ -270,7 +270,7 @@ export class HomeUI {
         }
     }
 
-    /** 设置面板：音乐、音效、震屏开关，清除存档（二次确认） */
+    /** 设置面板：音乐、音效开关，清除存档（二次确认）；震屏 2026-10-31 已去掉 */
     showSettings(p: Profile, onChange: () => void, onClear: () => void): void {
         if (!this.node) return;
         this.node.getChildByName('settings')?.destroy();
@@ -285,8 +285,8 @@ export class HomeUI {
         g.stroke();
         addLabel(panel, '设　置', 40, GOLD).node.setPosition(0, 220);
 
-        const rows: { name: string; key: 'music' | 'sfx' | 'shake' }[] = [
-            { name: '音乐', key: 'music' }, { name: '音效', key: 'sfx' }, { name: '震屏', key: 'shake' },
+        const rows: { name: string; key: 'music' | 'sfx' }[] = [
+            { name: '音乐', key: 'music' }, { name: '音效', key: 'sfx' },
         ];
         const redraw = () => this.showSettings(p, onChange, onClear);
         rows.forEach((r, i) => {

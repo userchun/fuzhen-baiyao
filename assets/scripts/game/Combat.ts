@@ -577,24 +577,31 @@ export class Combat {
         const skillGlow = id === 'thunder' ? '#B48CFF' : (ELEMENT_COLOR[id as Element] ?? '#E23B3B');
         this.playPlayerCast(skillGlow);
 
+        // 2026-10-31：六符都改成在战场上随机挑一只妖怪、从天而降（不再从主角身上发射）；镇妖符仍由主角发出
+        const skyY = top() + 60; // 从出怪线附近落下（再高会被当成出界）
         if (id === 'metal') {
-            const base = this.aimAngle(ox, oy);
+            // 金光：一道光柱从顶端竖直劈下，穿透这一列
+            const used = new Set<Enemy>();
             for (let i = 0; i < count; i++) {
-                const ang = base + (i - (count - 1) / 2) * 0.12;
-                this.shoot('metal', ox, oy, Math.sin(ang) * 1000, Math.cos(ang) * 1000, dmg, { pierce: lv, radius: 10 });
+                const t = this.randomTarget(used);
+                if (!t) return;
+                used.add(t);
+                this.shoot('metal', t.x, skyY, 0, -1600, dmg, { pierce: lv, radius: 16, life: 2 });
             }
             this.audio?.playSfx('shoot', 0.45);
         } else if (id === 'water' || id === 'fire') {
+            // 寒冰：冰锥从天上砸向目标，命中后照常弹射；烈焰：火流星砸下，落点爆炸
             const used = new Set<Enemy>();
             for (let i = 0; i < count; i++) {
-                const t = this.nearest(ox, oy, used) ?? this.nearest(ox, oy);
+                const t = this.randomTarget(used);
                 if (!t) return;
                 used.add(t);
-                const speed = id === 'water' ? 700 : 600;
-                const dx = t.x - ox;
-                const dy = t.y - oy;
+                const sx = t.x + (Math.random() * 2 - 1) * 60;
+                const speed = 1300;
+                const dx = t.x - sx;
+                const dy = t.y - skyY;
                 const dist = Math.max(1, Math.hypot(dx, dy));
-                this.shoot(id, ox, oy, dx / dist * speed, dy / dist * speed, dmg, id === 'water'
+                this.shoot(id, sx, skyY, dx / dist * speed, dy / dist * speed, dmg, id === 'water'
                     ? { bounces: lv, radius: 11 }
                     : { explodeR: 70 + 15 * lv, radius: 14, life: dist / speed });
             }
@@ -602,7 +609,7 @@ export class Combat {
         } else if (id === 'wood') {
             const used = new Set<Enemy>();
             for (let i = 0; i < count; i++) {
-                const t = this.nearest(ox, oy, used);
+                const t = this.randomTarget(used);
                 if (!t) return;
                 used.add(t);
                 this.addZone(t.x, t.y, 60 + 10 * lv, dmg, 3);
@@ -611,7 +618,7 @@ export class Combat {
             const used = new Set<Enemy>();
             const r = 50 + 8 * lv;
             for (let i = 0; i < count; i++) {
-                const t = this.nearest(ox, oy, used);
+                const t = this.randomTarget(used);
                 if (!t) return;
                 used.add(t);
                 const cx = t.x;
@@ -1270,6 +1277,14 @@ export class Combat {
             f.node.setScale(s, s, 1);
             setOpacity(f.node, Math.round(200 * k));
         }
+    }
+
+    /** 符咒随机落点：在已进入画面的妖怪里随机挑一只（优先没挑过的） */
+    private randomTarget(exclude?: Set<Enemy>): Enemy | null {
+        const onScreen = (e: Enemy) => e.alive && !e.dying && !e.diving && e.y < top() - 80; // 出怪线在屏幕顶边外 60
+        let pool = this.enemies.filter((e) => onScreen(e) && !exclude?.has(e));
+        if (!pool.length) pool = this.enemies.filter(onScreen);
+        return pool.length ? pool[Math.floor(Math.random() * pool.length)] : null;
     }
 
     private nearest(x: number, y: number, exclude?: Set<Enemy>, maxDist = Infinity): Enemy | null {

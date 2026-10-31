@@ -32,15 +32,8 @@ export class Feedback {
         this.texts.push({ label, life: TEXT_LIFE });
     }
 
-    /** 设置页的震屏开关 */
-    static shakeEnabled = true;
-
-    shake(power: number, time = 0.2): void {
-        if (!Feedback.shakeEnabled) return;
-        this.shakePower = Math.max(this.shakePower, power);
-        this.shakeT = Math.max(this.shakeT, time);
-        this.shakeMax = Math.max(this.shakeMax, this.shakeT);
-    }
+    /** 2026-10-31 去掉震屏（试玩觉得不需要）：保留接口，调用处不用改；需要恢复时还原这里即可 */
+    shake(_power: number, _time = 0.2): void {}
 
     hitStop(time: number): void {
         this.hitStopT = Math.max(this.hitStopT, time);

@@ -159,11 +159,10 @@ export class GameRoot extends Component {
         return ok;
     }
 
-    /** 把设置里的开关应用到音频和震屏 */
+    /** 把设置里的开关应用到音频（震屏已去掉，存档里的 shake 字段只为兼容保留） */
     private applySettings(): void {
         this.audio.setMusic(this.profile.settings.music);
         this.audio.setSfx(this.profile.settings.sfx);
-        Feedback.shakeEnabled = this.profile.settings.shake;
     }
 
     /** 主界面：选关、切难度、出战；右侧入口和设置 */
@@ -185,6 +184,7 @@ export class GameRoot extends Component {
             ),
         });
     }
+
     /** 养成页：买完立即存档；关闭后重画主界面刷新余额和红点 */
     private openUpgrade(tab: 'stat' | 'star'): void {
         this.home.showUpgrade(this.profile, tab, (kind, id) => {
@@ -193,7 +193,6 @@ export class GameRoot extends Component {
             return ok;
         }, () => this.showMenu(this.home.currentLevel));
     }
-
 
     /** 清除存档：删掉主档、备份和旧版解锁进度，回到新档 */
     private clearSave(): void {
@@ -229,6 +228,7 @@ export class GameRoot extends Component {
             if (e.def.elite) this.eliteKills++;
             this.skills.addXp(e.def.xp * this.meta.spiritMult);
         }, this.audio);
+        this.combat.hpMult = level.hpMult * (diff === 'hard' ? HARD_HP_MULT : 1);
         // 开局冻结养成快照，本局中途不再变化
         this.meta = metaSnapshot(this.profile, GAME.wallHp);
         this.combat.wallMax = this.meta.wallMax;
@@ -238,7 +238,6 @@ export class GameRoot extends Component {
         this.eliteKills = 0;
         this.runId = nextRunId(this.profile);
         this.save();
-        this.combat.hpMult = level.hpMult * (diff === 'hard' ? HARD_HP_MULT : 1);
         this.spawner = new Spawner(level.waves, (id) => this.combat.spawnEnemy(id));
         this.skills.pending = level.startPicks + this.meta.extraPicks;
         this.time = 0;
