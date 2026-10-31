@@ -129,7 +129,7 @@ export class Combat {
     private static readonly ENEMY_MOVE: Record<string, { fps: number; bobPx: number; swayDeg?: number; prefix?: string; still?: boolean; stepHz?: number; squash?: number; driftPx?: number }> = {
         jiangshi: { fps: 12, bobPx: 0, swayDeg: 2 }, // 2026-10-31 v14 造型 12 帧跳跃：蹲、起跳、腾空、落地缓冲
         paperman: { fps: 12, bobPx: 0, swayDeg: 3 }, // 2026-10-31 新造型 12 帧走路（逐帧以定稿图生图），起伏已画在帧里，只叠轻微摇摆
-        foxfire: { fps: 14, bobPx: 0 }, // 12 帧奔跑，快怪略快
+        foxfire: { fps: 14, bobPx: 0 }, // 2026-10-31 v14 侧身火狐 12 帧奔跑，快怪略快
         tongjia: { fps: 11, bobPx: 0 },
         shuigui: { fps: 8, bobPx: 0 }, // 略慢以缓和 f6–f7 观感；无 bob
         lantern: { fps: 10, bobPx: 0 }, // 漂浮精英；12 帧一个摇摆来回约 1.2 秒；无 bob

@@ -80,13 +80,17 @@ export class SkillSystem {
         return TALISMANS[id].cd * Math.pow(GROWTH.cdPerLevel, lv - 1) / (1 + GROWTH.speedPerHaste * this.passive('haste'));
     }
 
+    /** 已持有的技能种数（符咒 + 心法） */
+    get skillKinds(): number { return this.talismans.size + this.passives.size; }
+
     rollOptions(n = 3): Option[] {
         const pool: Option[] = [];
+        const canNew = this.skillKinds < GAME.maxSkills;
         (Object.keys(TALISMANS) as TalismanId[]).forEach((id) => {
             const d = TALISMANS[id];
             const st = this.talismans.get(id);
             if (!st) {
-                if (this.talismans.size < GAME.maxTalismans) {
+                if (canNew && this.talismans.size < GAME.maxTalismans) {
                     pool.push({ type: 'talisman', id, title: `${d.name}（新）`, desc: d.desc });
                 }
             } else if (st.level < d.maxLevel) {
@@ -96,7 +100,7 @@ export class SkillSystem {
         Object.keys(PASSIVES).forEach((id) => {
             const d = PASSIVES[id];
             const lv = this.passive(id);
-            if (lv < d.maxLevel) pool.push({ type: 'passive', id, title: `${d.name} Lv${lv + 1}`, desc: d.desc });
+            if (lv < d.maxLevel && (lv > 0 || canNew)) pool.push({ type: 'passive', id, title: `${d.name} Lv${lv + 1}`, desc: d.desc });
         });
         for (let i = pool.length - 1; i > 0; i--) {
             const j = Math.floor(this.rng() * (i + 1));

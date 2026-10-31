@@ -305,7 +305,7 @@ function drawPlay(dt) {
     ctx.fillStyle = '#FFD66E'; ctx.fillText(toastMsg, W / 2, H * 0.3); ctx.restore();
   }
 }
-// 左侧技能栏：和 GameUI.buildSkillPanel 一致（x = 左边 +44，顶部 = 安全区 60 + 160；符咒 52 方图 + 冷却遮罩 + 等级角标 + 名字，被动 44 方图）
+// 左侧技能栏：和 GameUI.buildSkillPanel 一致（x = 左边 +44，顶部 = 安全区 60 + 160；符咒和心法都是 52 方图 + 等级角标 + 名字，符咒另有冷却遮罩）
 function drawSkillPanel() {
   const s = g.skills, x = 44;
   let y = 60 + 160;
@@ -329,9 +329,11 @@ function drawSkillPanel() {
   }
   for (const [id, lv] of s.passives) {
     const d = PASSIVES[id];
-    drawImg(img(`icon_passive_${id}.png`), x, y - 10, 44, 44);
-    badge(x + 15, y + 5, lv >= d.maxLevel ? 'MAX' : String(lv));
-    y += 56;
+    drawImg(img(`icon_passive_${id}.png`), x, y, 52, 52);
+    badge(x + 16, y + 24, lv >= d.maxLevel ? 'MAX' : String(lv));
+    ctx.save(); ctx.font = '14px "Hiragino Sans GB", sans-serif'; ctx.textAlign = 'center'; ctx.lineWidth = 3; ctx.strokeStyle = '#000';
+    ctx.fillStyle = '#E8E0F0'; ctx.strokeText(d.name, x, y + 46); ctx.fillText(d.name, x, y + 46); ctx.restore();
+    y += 84;
   }
   const combos = COMBOS.filter((cb) => s.combos.has(cb.id)).map((cb) => cb.name);
   if (combos.length) {

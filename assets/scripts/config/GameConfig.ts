@@ -14,6 +14,7 @@ export const GAME = {
     xpBase: 5,        // 第一次升级所需灵气
     xpGrow: 1.3,      // 每级所需灵气倍率
     maxTalismans: 4,  // 最多持有符咒数
+    maxSkills: 4,     // 符咒 + 心法合计最多几种（2026-10-31）
 };
 
 /**
@@ -180,8 +181,8 @@ export const LEVEL2_WAVES: WaveDef[] = [
 export interface LevelDef { name: string; desc: string; bg: string; waves: WaveDef[]; startPicks: number; hpMult: number; }
 
 export const LEVELS: LevelDef[] = [
-    { name: '第一关 · 荒村', desc: 'Boss：黑山老妖', bg: '#141428', waves: LEVEL1_WAVES, startPicks: 1, hpMult: 1.05 }, // 🧪 2026-10-31 全自动攻击 + 放慢攻速冷却后定为 1.05
-    { name: '第二关 · 古寺', desc: 'Boss：白骨夫人（三相）\n新妖：铜甲尸、水鬼', bg: '#1E1A2B', waves: LEVEL2_WAVES, startPicks: 2, hpMult: 1.1 }, // 🧪 2026-10-31 放慢攻速冷却、符咒改随机落点后定为 1.1，保持比第一关难
+    { name: '第一关 · 荒村', desc: 'Boss：黑山老妖', bg: '#141428', waves: LEVEL1_WAVES, startPicks: 1, hpMult: 0.9 }, // 🧪 2026-10-31 技能合计上限 4 种后定为 0.9（模拟 250 局：随机 78% / 偏好 99%）
+    { name: '第二关 · 古寺', desc: 'Boss：白骨夫人（三相）\n新妖：铜甲尸、水鬼', bg: '#1E1A2B', waves: LEVEL2_WAVES, startPicks: 2, hpMult: 1.0 }, // 🧪 2026-10-31 技能合计上限 4 种后定为 1.0（随机 64% / 偏好 96%），保持比第一关难
 ];
 
 /** 本地存档：已解锁关卡数（默认 1，即只开放第一关） */

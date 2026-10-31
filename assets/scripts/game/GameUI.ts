@@ -232,13 +232,14 @@ export class GameUI {
         });
         s.passives.forEach((lv, id) => {
             const d = PASSIVES[id];
-            // v14 正方形徽章（不再用旧的竖纸 frameless）
-            let icon = spriteNode('icon_passive_' + id, 44, 44, panel);
-            // 有图不叠字；被动无 CD 遮罩
-            if (!icon) icon = circleNode('passive', 20, '#6F6888', d.name[0], panel);
-            icon.setPosition(0, y + 10);
-            this.levelBadge(icon, lv >= d.maxLevel ? 'MAX' : `${lv}`, 15, -15);
-            y -= 56;
+            // 和符咒同尺寸、同排版（v14 正方形徽章 + 等级角标 + 名字）；被动无 CD 遮罩
+            let icon = spriteNode('icon_passive_' + id, TALISMAN_ICON_W, TALISMAN_ICON_H, panel);
+            const art = !!icon;
+            if (!icon) icon = circleNode('passive', 22, '#6F6888', d.name[0], panel);
+            icon.setPosition(0, y);
+            this.levelBadge(icon, lv >= d.maxLevel ? 'MAX' : `${lv}`, 16, art ? -24 : -16);
+            addLabel(panel, d.name, 14, '#E8E0F0').node.setPosition(0, y - (art ? 40 : 32));
+            y -= art ? 84 : 72;
         });
         const combos = COMBOS.filter((cb) => s.combos.has(cb.id)).map((cb) => cb.name);
         if (combos.length) {
