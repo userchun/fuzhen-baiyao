@@ -20,8 +20,8 @@ const WALL_FILL_COLOR = '#9B3D2E'; // 暗朱砂
 const XP_FILL_COLOR = '#E8C56A';   // 骨白→淡金
 const WALL_CAP = 36;              // SLICES.md
 const XP_CAP = 18;
-const TALISMAN_ICON_W = 40;  // 符牌图标显示尺寸（素材 128×192；相对原 56 约缩 30%）
-const TALISMAN_ICON_H = 60;
+const TALISMAN_ICON_W = 52;  // 符咒图标显示尺寸（2026-10-31 改为 v14 正方形徽章，素材 256×256）
+const TALISMAN_ICON_H = 52;
 const CD_MASK_ALPHA = 150; // 冷却遮罩不透明度（上→下 burn）
 
 /** 9-slice 卷轴框：只左右保轴头，上下 0 */
@@ -232,9 +232,8 @@ export class GameUI {
         });
         s.passives.forEach((lv, id) => {
             const d = PASSIVES[id];
-            // 优先竖纸 frameless（缩入侧栏槽）；缺图回退旧方图
-            let icon = spriteNode('icon_passive_' + id + '_frameless', 30, 44, panel)
-                ?? spriteNode('icon_passive_' + id, 44, 44, panel);
+            // v14 正方形徽章（不再用旧的竖纸 frameless）
+            let icon = spriteNode('icon_passive_' + id, 44, 44, panel);
             // 有图不叠字；被动无 CD 遮罩
             if (!icon) icon = circleNode('passive', 20, '#6F6888', d.name[0], panel);
             icon.setPosition(0, y + 10);
@@ -376,20 +375,11 @@ export class GameUI {
                 badge.node.setPosition(66, TITLE_Y);
             }
 
-            // —— 2) 大图标槽（主动/被动同规格 ~156×192 竖纸；被动方图居中）——
-            // 优先无框 *_frameless；缺图回退旧 icon_*
+            // —— 2) 大图标槽：v14 正方形徽章，主动/被动同规格，在槽里居中 ——
             let pickIcon: Node | null = null;
-            if (o.type === 'talisman') {
-                pickIcon = spriteNode('icon_talisman_' + o.id + '_frameless', ICON_W, ICON_H, card)
-                    ?? spriteNode('icon_talisman_' + o.id, ICON_W, ICON_H, card);
-            } else if (o.type === 'passive') {
-                // 竖纸 *_frameless 与主动同槽；旧方图回退居中方槽
-                pickIcon = spriteNode('icon_passive_' + o.id + '_frameless', ICON_W, ICON_H, card);
-                if (!pickIcon) {
-                    const s = Math.min(ICON_W, ICON_H);
-                    pickIcon = spriteNode('icon_passive_' + o.id, s, s, card);
-                }
-            }
+            const iconSide = Math.min(ICON_W, ICON_H);
+            if (o.type === 'talisman') pickIcon = spriteNode('icon_talisman_' + o.id, iconSide, iconSide, card);
+            else if (o.type === 'passive') pickIcon = spriteNode('icon_passive_' + o.id, iconSide, iconSide, card);
             if (pickIcon) pickIcon.setPosition(0, ICON_Y);
 
             // —— 3) 底描述带：两行 SHRINK，顶锚在图标底之下 ——

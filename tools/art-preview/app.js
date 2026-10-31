@@ -96,7 +96,15 @@ function update(dt) {
 function openPick() {
   g.state = 'pick'; g.combat.stopHold();
   const opts = g.skills.rollOptions();
-  showOverlay('<h2>灵气充盈 · 择一而修</h2>', opts.map((o) => [`<b>${o.title}</b>${o.desc ?? ''}`, () => {
+  const iconOf = (o) => o.type === 'talisman' ? `icon_talisman_${o.id}.png` : o.type === 'passive' ? `icon_passive_${o.id}.png` : '';
+  // 和游戏一样：卡底 + 符咒叠五行品质卡（同尺寸整张盖上）
+  const cardOf = (o) => o.type === 'talisman' ? `ui_card_rarity_${o.id}.png` : 'ui_card_pick_base.png';
+  overlay.classList.add('pick');
+  showOverlay('<h2>灵气充盈 · 择一而修</h2>', opts.map((o) => [
+    `<i class="bg" style="background-image:url('${TEX}${cardOf(o)}${bust}')"></i>`
+    + `<b>${o.title.replace(/[（(]新[）)]/, '')}</b>`
+    + (iconOf(o) ? `<img src="${TEX}${iconOf(o)}${bust}" alt="">` : '<em>✚</em>')
+    + `<span>${o.desc ?? ''}</span>`, () => {
     g.skills.pending--;
     if (o.type === 'heal') g.combat.wallHp = Math.min(GAME.wallHp, g.combat.wallHp + 30);
     else g.skills.apply(o).forEach((id) => {
@@ -117,12 +125,13 @@ function end(win) {
 const overlay = $('overlay');
 function showOverlay(head, buttons) {
   overlay.innerHTML = head;
+  const row = document.createElement('div'); row.className = 'row-cards'; overlay.appendChild(row);
   for (const [html, fn] of buttons) {
-    const b = document.createElement('button'); b.className = 'card'; b.innerHTML = html; b.onclick = fn; overlay.appendChild(b);
+    const b = document.createElement('button'); b.className = 'card'; b.innerHTML = html; b.onclick = fn; row.appendChild(b);
   }
   overlay.style.display = 'flex';
 }
-function hideOverlay() { overlay.style.display = 'none'; overlay.innerHTML = ''; }
+function hideOverlay() { overlay.style.display = 'none'; overlay.innerHTML = ''; overlay.classList.remove('pick'); }
 let toastMsg = '', toastT = 0;
 const toast = (m) => { toastMsg = m; toastT = 2.5; };
 
