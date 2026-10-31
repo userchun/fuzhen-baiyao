@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "skills": {
+    "game-production-flow": {
+      "source": "tangchen2016/game-dev-workflow",
+      "sourceType": "github",
+      "skillPath": "skills/game-production-flow/SKILL.md",
+      "computedHash": "088bea39edbd0448912441016cc21db8d334e18df893f30dedf1708b4edb1162"
+    }
+  }
+}

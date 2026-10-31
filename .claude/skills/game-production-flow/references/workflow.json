@@ -1,0 +1,124 @@
+{
+  "version": "1.0",
+  "scope": "游戏通用流程，默认适配现有植物守城项目；不自动变更玩法或引擎",
+  "entrySkill": "game-production-flow",
+  "automaticInstallation": false,
+  "automaticPublishing": false,
+  "steps": [
+    {
+      "id": "01",
+      "name": "需求与范围",
+      "primarySkill": "game-production-flow",
+      "supportSkills": [],
+      "deliverables": "需求清单、统一待办、验收条件",
+      "gate": "范围和延期项明确"
+    },
+    {
+      "id": "02",
+      "name": "玩法与经济",
+      "primarySkill": "game-rules-balance",
+      "supportSkills": [
+        "tower-defense"
+      ],
+      "deliverables": "规则与参数JSON、资源产消表",
+      "gate": "重大规则已确认；类型技能仅在适用时使用"
+    },
+    {
+      "id": "03",
+      "name": "关卡与节奏",
+      "primarySkill": "level-design",
+      "supportSkills": [
+        "game-rules-balance"
+      ],
+      "deliverables": "波次、敌群、首领、教学与压力曲线",
+      "gate": "可玩的关卡逻辑及难度证据"
+    },
+    {
+      "id": "04",
+      "name": "界面与视觉规范",
+      "primarySkill": "frontend-app-builder",
+      "supportSkills": [
+        "imagegen"
+      ],
+      "deliverables": "页面流程、设计图、尺寸/品质规范",
+      "gate": "按已确认设计评审；不擅自替换现有架构"
+    },
+    {
+      "id": "05",
+      "name": "角色与素材",
+      "primarySkill": "imagegen",
+      "supportSkills": [
+        "game-runtime-integration"
+      ],
+      "deliverables": "阶段/品质素材、提示词、索引",
+      "gate": "透明度、轮廓、尺寸、裁切符合运行要求"
+    },
+    {
+      "id": "06",
+      "name": "动作与手感",
+      "primarySkill": "game-feel",
+      "supportSkills": [
+        "imagegen",
+        "game-runtime-integration"
+      ],
+      "deliverables": "状态动作、投射物、命中特效、反馈音效",
+      "gate": "触发时序正确；普通克制、高阶差异化"
+    },
+    {
+      "id": "07",
+      "name": "功能接入",
+      "primarySkill": "game-runtime-integration",
+      "supportSkills": [],
+      "deliverables": "可操作运行版本",
+      "gate": "真实路径使用正确素材和规则"
+    },
+    {
+      "id": "08",
+      "name": "存档与奖励",
+      "primarySkill": "game-save-safety",
+      "supportSkills": [],
+      "deliverables": "迁移、幂等、冲突和续战证据",
+      "gate": "旧资产保留；失败可恢复"
+    },
+    {
+      "id": "09",
+      "name": "数值与回归",
+      "primarySkill": "game-rules-balance",
+      "supportSkills": [
+        "game-save-safety"
+      ],
+      "deliverables": "多配置模拟与回归报告",
+      "gate": "使用正式引擎与正确配置"
+    },
+    {
+      "id": "10",
+      "name": "视觉与完整实战",
+      "primarySkill": "game-acceptance-release",
+      "supportSkills": [
+        "frontend-app-builder"
+      ],
+      "deliverables": "真实操作、截图/录像、缺陷记录",
+      "gate": "正常胜负与成长闭环通过"
+    },
+    {
+      "id": "11",
+      "name": "移动端与性能",
+      "primarySkill": "web-perf",
+      "supportSkills": [
+        "game-acceptance-release"
+      ],
+      "deliverables": "视口检查、真机和性能报告",
+      "gate": "区分浏览器、设备和估算证据"
+    },
+    {
+      "id": "12",
+      "name": "整理与交付",
+      "primarySkill": "game-acceptance-release",
+      "supportSkills": [
+        "game-production-flow"
+      ],
+      "deliverables": "文档、素材索引、运行包和哈希报告",
+      "gate": "交付文件与已验证运行版本一致"
+    }
+  ]
+}

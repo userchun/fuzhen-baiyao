@@ -1,0 +1,20 @@
+{
+  "id": "",
+  "type": "character|weapon|enemy|scene|ui|vfx|audio",
+  "owner": "",
+  "stage": null,
+  "rarity": null,
+  "sourcePath": "",
+  "runtimePath": "",
+  "promptPath": "",
+  "width": null,
+  "height": null,
+  "transparent": null,
+  "frames": [],
+  "anchors": [],
+  "emissionPoints": [],
+  "usedBy": [],
+  "status": "designed|generated|integrated|verified",
+  "evidence": [],
+  "limitations": []
+}
