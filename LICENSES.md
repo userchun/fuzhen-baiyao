@@ -7,8 +7,8 @@
 | 来源 | 范围 | 数量 | 授权 / 商用 | 状态 |
 |---|---|---|---|---|
 | AI 出图 | 暂无（2026-10-31 已全部删除，美术待重新定方向） | 0 | — | — |
-| 程序生成：`tools/asset-pipeline/gen_audio.py` | 2 首 BGM（village / temple）、26 个音效 / 环境音 | 28 项 | 自有，可商用 | ✅ |
-| 来源不明的音频 | `baigu_*`（5）、`heishan_*`（2）、`barrier_crack`、`combo_sheng`、`jiangshi_presence`、`lantern_split` 等 | 13 项 | 未知 | ⚠️ 待核实：补上来源；不能确认的就重新生成替换 |
+| 程序生成：`tools/asset-pipeline/gen_audio.py` | 暂无（2026-10-31 已删除；需要时可用脚本重新生成 2 首 BGM 和 26 个音效） | 0 | 自有，可商用 | — |
+| 来源不明的音频 | 暂无（2026-10-31 已删除） | 0 | — | — |
 | 第三方 CC0（Kenney 等） | 暂无 | 0 | CC0，无需署名 | — |
 
 ## 规则
