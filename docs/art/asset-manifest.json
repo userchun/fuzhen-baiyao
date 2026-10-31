@@ -512,20 +512,6 @@
       "style": "legacy（待按暗黑国风 Q 版重做）"
     },
     {
-      "id": "icon_passive_haste_frameless",
-      "category": "icon",
-      "type": "sprite",
-      "path": "assets/resources/textures/icon_passive_haste_frameless.png",
-      "size": [
-        256,
-        384
-      ],
-      "status": "in_game",
-      "source": "AI 生成（平台待核实）",
-      "license": "待核实",
-      "style": "legacy（待按暗黑国风 Q 版重做）"
-    },
-    {
       "id": "icon_passive_multi",
       "category": "icon",
       "type": "sprite",
@@ -540,20 +526,6 @@
       "style": "legacy（待按暗黑国风 Q 版重做）"
     },
     {
-      "id": "icon_passive_multi_frameless",
-      "category": "icon",
-      "type": "sprite",
-      "path": "assets/resources/textures/icon_passive_multi_frameless.png",
-      "size": [
-        256,
-        384
-      ],
-      "status": "in_game",
-      "source": "AI 生成（平台待核实）",
-      "license": "待核实",
-      "style": "legacy（待按暗黑国风 Q 版重做）"
-    },
-    {
       "id": "icon_passive_power",
       "category": "icon",
       "type": "sprite",
@@ -561,20 +533,6 @@
       "size": [
         128,
         128
-      ],
-      "status": "in_game",
-      "source": "AI 生成（平台待核实）",
-      "license": "待核实",
-      "style": "legacy（待按暗黑国风 Q 版重做）"
-    },
-    {
-      "id": "icon_passive_power_frameless",
-      "category": "icon",
-      "type": "sprite",
-      "path": "assets/resources/textures/icon_passive_power_frameless.png",
-      "size": [
-        256,
-        384
       ],
       "status": "in_game",
       "source": "AI 生成（平台待核实）",
@@ -610,20 +568,6 @@
       "style": "legacy（待按暗黑国风 Q 版重做）"
     },
     {
-      "id": "icon_talisman_earth_frameless",
-      "category": "icon",
-      "type": "sprite",
-      "path": "assets/resources/textures/icon_talisman_earth_frameless.png",
-      "size": [
-        256,
-        384
-      ],
-      "status": "in_game",
-      "source": "AI 生成（平台待核实）",
-      "license": "待核实",
-      "style": "legacy（待按暗黑国风 Q 版重做）"
-    },
-    {
       "id": "icon_talisman_fire",
       "category": "icon",
       "type": "sprite",
@@ -631,20 +575,6 @@
       "size": [
         128,
         192
-      ],
-      "status": "in_game",
-      "source": "AI 生成（平台待核实）",
-      "license": "待核实",
-      "style": "legacy（待按暗黑国风 Q 版重做）"
-    },
-    {
-      "id": "icon_talisman_fire_frameless",
-      "category": "icon",
-      "type": "sprite",
-      "path": "assets/resources/textures/icon_talisman_fire_frameless.png",
-      "size": [
-        256,
-        384
       ],
       "status": "in_game",
       "source": "AI 生成（平台待核实）",
@@ -680,20 +610,6 @@
       "style": "legacy（待按暗黑国风 Q 版重做）"
     },
     {
-      "id": "icon_talisman_thunder_frameless",
-      "category": "icon",
-      "type": "sprite",
-      "path": "assets/resources/textures/icon_talisman_thunder_frameless.png",
-      "size": [
-        256,
-        384
-      ],
-      "status": "in_game",
-      "source": "AI 生成（平台待核实）",
-      "license": "待核实",
-      "style": "legacy（待按暗黑国风 Q 版重做）"
-    },
-    {
       "id": "icon_talisman_water",
       "category": "icon",
       "type": "sprite",
@@ -701,20 +617,6 @@
       "size": [
         128,
         192
-      ],
-      "status": "in_game",
-      "source": "AI 生成（平台待核实）",
-      "license": "待核实",
-      "style": "legacy（待按暗黑国风 Q 版重做）"
-    },
-    {
-      "id": "icon_talisman_water_frameless",
-      "category": "icon",
-      "type": "sprite",
-      "path": "assets/resources/textures/icon_talisman_water_frameless.png",
-      "size": [
-        256,
-        384
       ],
       "status": "in_game",
       "source": "AI 生成（平台待核实）",
@@ -1468,22 +1370,6 @@
       "style": "legacy（待按暗黑国风 Q 版重做）"
     },
     {
-      "id": "enemy_lantern_split_death",
-      "category": "enemy",
-      "type": "frame_anim",
-      "path": "assets/resources/textures/anim/enemy_lantern_split/death_NN.png",
-      "frames": 6,
-      "size": [
-        128,
-        128
-      ],
-      "status": "unused",
-      "source": "AI 生成（平台待核实）",
-      "license": "待核实",
-      "note": "仅在灯笼死亡帧缺失时作后备特效，当前不会出现",
-      "style": "legacy（待按暗黑国风 Q 版重做）"
-    },
-    {
       "id": "enemy_lantern_split_move",
       "category": "enemy",
       "type": "frame_anim",
@@ -2150,20 +2036,6 @@
       "size": [
         256,
         256
-      ],
-      "status": "in_game",
-      "source": "2026-10-27 magpie /imagegen（半写实光效版，符咒特效阶段产出）",
-      "license": "待核实",
-      "style": "legacy（待按暗黑国风 Q 版重做）"
-    },
-    {
-      "id": "icon_talisman_metal_frameless",
-      "category": "icon",
-      "type": "sprite",
-      "path": "assets/resources/textures/icon_talisman_metal_frameless.png",
-      "size": [
-        256,
-        384
       ],
       "status": "in_game",
       "source": "2026-10-27 magpie /imagegen（半写实光效版，符咒特效阶段产出）",
