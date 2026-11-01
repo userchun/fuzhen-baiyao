@@ -17,7 +17,7 @@ export const ENEMY_ART: Record<string, { tex: string; sealY: number; sealX?: num
     jiangshi: { tex: 'enemy_jiangshi', sealY: 0.47, sealX: 0.50, sealR: 0.06, scale: 1.65, sealYFrames: [0.469, 0.492, 0.521, 0.426, 0.409, 0.398, 0.398, 0.413, 0.435, 0.525, 0.492, 0.469] }, // 2026-11-01 泥尸像素定稿：33×33 格放大到 495 方图，显示 99（碰撞直径 60），字印落在胸前补子上并逐帧跟随跳跃
     foxfire: { tex: 'enemy_foxfire', sealY: 0.75, sealX: 0.44, sealR: 0.05, scale: 2.36, sealYFrames: [0.754, 0.748, 0.744, 0.742, 0.744, 0.748, 0.754, 0.748, 0.744, 0.742, 0.744, 0.748] }, // 2026-11-01 火狐像素定稿（正面奔跑、火焰尾巴）：33×33 格放大到 495 方图，显示 99（碰撞直径 42），字印落在胸前符牌上并逐帧跟随起伏
     lantern: { tex: 'enemy_lantern', sealY: 0.40, sealR: 0.08, scale: 2.52 }, // 2026-10-31 v14 獠牙红灯笼 12 帧漂浮：字印落在独眼
-    shuigui: { tex: 'enemy_shuigui', sealY: 0.61, sealR: 0.125, scale: 3.51 },
+    shuigui: { tex: 'enemy_shuigui', sealY: 0.39, sealX: 0.50, sealR: 0.05, scale: 1.98, sealYFrames: [0.387, 0.383, 0.38, 0.379, 0.38, 0.383, 0.387, 0.391, 0.393, 0.395, 0.393, 0.391] }, // 2026-11-01 井鬼像素定稿（湿发女鬼飘在水洼上）：33×33 格放大到 495 方图，显示 99（碰撞直径 50），字印落在胸前符牌上并逐帧跟随浮动
     tongjia: { tex: 'enemy_tongjia', sealY: 0.69, sealR: 0.12, scale: 3.52 },
     heishan: { tex: 'boss_heishan', sealY: 0.51, sealX: 0.48, sealR: 0.09, scale: 2.75 }, // 2026-10-27 新岩石巨妖：字印对齐胸口封印圆
     baigu: { tex: 'boss_baigu_metal', sealY: 0.65, sealR: 0.10, scale: 3.05 },
