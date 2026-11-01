@@ -118,21 +118,23 @@ export interface EnemyDef {
 export const SIEGE = { slots: 8, damagePerSecond: 8, attackPeriod: 1.2, hitAt: 0.5 };
 
 export const ENEMIES: Record<string, EnemyDef> = {
-    paperman: { id: 'paperman', name: '小纸人', char: '纸', element: 'wood', hp: 80, speed: 60, radius: 25, damage: 1, xp: 1, move: 'straight' },
-    jiangshi: { id: 'jiangshi', name: '跳尸', char: '尸', element: 'earth', hp: 120, speed: 70, radius: 30, damage: 2, xp: 2, move: 'hop' },
-    foxfire: { id: 'foxfire', name: '狐火', char: '狐', element: 'fire', hp: 38, speed: 110, radius: 21, damage: 1, xp: 1, move: 'sine' },
+    paperman: { id: 'paperman', name: '稻草人', char: '草', element: 'wood', hp: 80, speed: 60, radius: 25, damage: 1, xp: 1, move: 'straight' },
+    jiangshi: { id: 'jiangshi', name: '泥尸', char: '泥', element: 'earth', hp: 120, speed: 70, radius: 30, damage: 2, xp: 2, move: 'hop' },
+    foxfire: { id: 'foxfire', name: '火狐', char: '狐', element: 'fire', hp: 38, speed: 110, radius: 21, damage: 1, xp: 1, move: 'sine' },
     lantern: {
         id: 'lantern', name: '灯笼鬼', char: '灯', element: 'fire', hp: 700, speed: 40, radius: 42, damage: 3, xp: 10,
         move: 'straight', elite: true, splitInto: 'foxfire', splitCount: 3,
     },
     heishan: {
-        id: 'heishan', name: '黑山老妖', char: '山', element: 'earth', hp: 2600, speed: 22, radius: 80, damage: 15, xp: 0,
+        id: 'heishan', name: '荒坟老妖', char: '坟', element: 'earth', hp: 2600, speed: 22, radius: 80, damage: 15, xp: 0,
         move: 'straight', boss: true, summon: 'jiangshi', summonCount: 2, summonInterval: 5,
         armor: 10, // T2：常态岩甲；虚弱窗内 Combat 临时取消减免（不砍 Boss HP）
     },
     // ---- 第二章 · 古寺 ----
     tongjia: { id: 'tongjia', name: '铜甲尸', char: '铜', element: 'metal', hp: 240, speed: 45, radius: 32, damage: 2, xp: 3, move: 'straight', armor: 5 },
-    shuigui: { id: 'shuigui', name: '水鬼', char: '水', element: 'water', hp: 80, speed: 80, radius: 25, damage: 1, xp: 2, move: 'straight', dive: true },
+    // 🧪 2026-11-01 第一关补金属性：铜钱精，带少量护甲（沿用铜甲尸的护甲机制）
+    tongqian: { id: 'tongqian', name: '铜钱精', char: '钱', element: 'metal', hp: 120, speed: 55, radius: 26, damage: 1, xp: 2, move: 'straight', armor: 3 },
+    shuigui: { id: 'shuigui', name: '井鬼', char: '井', element: 'water', hp: 80, speed: 80, radius: 25, damage: 1, xp: 2, move: 'straight', dive: true },
     baigu: {
         id: 'baigu', name: '白骨夫人', char: '骨', element: 'metal', hp: 5000, speed: 20, radius: 80, damage: 18, xp: 0,
         move: 'straight', boss: true, summon: 'shuigui', summonCount: 2, summonInterval: 6,
@@ -148,13 +150,15 @@ export const LEVEL1_WAVES: WaveDef[] = [
     { time: 0, enemy: 'paperman', count: 10, interval: 1.18 },
     { time: 15, enemy: 'foxfire', count: 8, interval: 1.42 },
     { time: 25, enemy: 'paperman', count: 24, interval: 0.6 },
+    { time: 35, enemy: 'shuigui', count: 6, interval: 1.5 }, // 🧪 2026-11-01 第一关补水属性：井鬼
     { time: 45, enemy: 'jiangshi', count: 6, interval: 2.0 },
     { time: 60, enemy: 'lantern', count: 1, interval: 0 },
     { time: 70, enemy: 'foxfire', count: 15, interval: 0.6 },
-    { time: 85, enemy: 'paperman', count: 45, interval: 0.25 },
+    { time: 85, enemy: 'paperman', count: 38, interval: 0.25 }, // 🧪 45→38，给井鬼、铜钱精腾压力
     { time: 100, enemy: 'jiangshi', count: 16, interval: 0.6 },
     { time: 110, enemy: 'lantern', count: 2, interval: 8 },
-    { time: 130, enemy: 'foxfire', count: 30, interval: 0.3 },
+    { time: 120, enemy: 'tongqian', count: 8, interval: 1.0 }, // 🧪 2026-11-01 第一关补金属性：铜钱精
+    { time: 130, enemy: 'foxfire', count: 24, interval: 0.3 }, // 🧪 30→24
     { time: 150, enemy: 'heishan', count: 1, interval: 0 },
     { time: 155, enemy: 'paperman', count: 60, interval: 0.4 },
 ];
@@ -181,8 +185,8 @@ export const LEVEL2_WAVES: WaveDef[] = [
 export interface LevelDef { name: string; desc: string; bg: string; waves: WaveDef[]; startPicks: number; hpMult: number; }
 
 export const LEVELS: LevelDef[] = [
-    { name: '第一关 · 荒村', desc: 'Boss：黑山老妖', bg: '#141428', waves: LEVEL1_WAVES, startPicks: 1, hpMult: 0.9 }, // 🧪 2026-10-31 技能合计上限 4 种后定为 0.9（模拟 250 局：随机 78% / 偏好 99%）
-    { name: '第二关 · 古寺', desc: 'Boss：白骨夫人（三相）\n新妖：铜甲尸、水鬼', bg: '#1E1A2B', waves: LEVEL2_WAVES, startPicks: 2, hpMult: 1.0 }, // 🧪 2026-10-31 技能合计上限 4 种后定为 1.0（随机 64% / 偏好 96%），保持比第一关难
+    { name: '第一关 · 荒村', desc: 'Boss：荒坟老妖', bg: '#141428', waves: LEVEL1_WAVES, startPicks: 1, hpMult: 0.9 }, // 🧪 2026-10-31 技能合计上限 4 种后定为 0.9（模拟 250 局：随机 78% / 偏好 99%）
+    { name: '第二关 · 古寺', desc: 'Boss：白骨夫人（三相）\n新妖：铜甲尸', bg: '#1E1A2B', waves: LEVEL2_WAVES, startPicks: 2, hpMult: 1.0 }, // 🧪 2026-10-31 技能合计上限 4 种后定为 1.0（随机 64% / 偏好 96%），保持比第一关难
 ];
 
 /** 本地存档：已解锁关卡数（默认 1，即只开放第一关） */
