@@ -118,7 +118,7 @@ export interface EnemyDef {
 export const SIEGE = { slots: 8, damagePerSecond: 8, attackPeriod: 1.2, hitAt: 0.5 };
 
 export const ENEMIES: Record<string, EnemyDef> = {
-    paperman: { id: 'paperman', name: '稻草人', char: '草', element: 'wood', hp: 80, speed: 60, radius: 25, damage: 1, xp: 1, move: 'straight' },
+    paperman: { id: 'paperman', name: '槐树精', char: '槐', element: 'wood', hp: 80, speed: 60, radius: 25, damage: 1, xp: 1, move: 'straight' },
     jiangshi: { id: 'jiangshi', name: '泥尸', char: '泥', element: 'earth', hp: 120, speed: 70, radius: 30, damage: 2, xp: 2, move: 'hop' },
     foxfire: { id: 'foxfire', name: '火狐', char: '狐', element: 'fire', hp: 38, speed: 110, radius: 21, damage: 1, xp: 1, move: 'sine' },
     lantern: {
