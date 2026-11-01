@@ -1,4 +1,4 @@
-import { resources, Texture2D, SpriteFrame, Sprite, Node, UITransform } from 'cc';
+import { resources, Texture2D, SpriteFrame, Sprite, Node, UITransform, Rect, Size } from 'cc';
 import { makeNode } from './Draw';
 
 // 美术素材：启动时加载 resources/textures 下全部图片，按相对路径取 SpriteFrame。
@@ -45,6 +45,27 @@ export function loadArt(): Promise<void> {
                     sf.texture = tex;
                     const key = artKeyFromPath(info.path);
                     frames.set(key, sf);
+                    if (key === 'player_actions') {
+                        // 像素符师 4×3 原图；仅引擎取样，不改写生成图片。
+                        // 各帧以双脚中心 / 脚底校准，避免换帧左右跳位或浮起。
+                        const feet = [
+                            [[206,343],[206,343],[194,344],[194,344]],
+                            [[203,346],[204,345],[195,345],[194,345]],
+                            [[204,334],[201,334],[191,334],[194,339]],
+                        ];
+                        const cell = 362;
+                        ['idle', 'cast', 'hit'].forEach((action, row) => {
+                            for (let col = 0; col < 4; col++) {
+                                const frame = new SpriteFrame();
+                                frame.texture = tex;
+                                frame.rect = new Rect(col * cell + feet[row][col][0] - 200,
+                                    row * cell + feet[row][col][1] - 343, cell, cell);
+                                frame.originalSize = new Size(cell, cell);
+                                frames.set(`anim/player_taoist/${action}_${String(col).padStart(2, '0')}`, frame);
+                                if (row === 0 && col === 0) frames.set('player_taoist', frame);
+                            }
+                        });
+                    }
                 }
                 if (--left === 0) resolve();
             });

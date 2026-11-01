@@ -11,7 +11,7 @@ import { loadAudio, AudioManager } from './core/AudioManager';
 
 const BG_ART = ['bg_level1_village', 'bg_level2_temple']; // 与 LEVELS 下标对应
 const BGM_BY_LEVEL = ['village', 'temple'] as const; // 与 LEVELS 下标对应
-// 背景图高宽比，与 BG_ART 对应：第一关是暗黑国风俯视荒村 1080×2340（9:19.5）；第二关仍是旧透视图 720×1280
+// 背景图高宽比：第一关青绿绘卷俯视荒村，按生成原图 853×1844 等比显示；第二关素材尚缺。
 const BG_ART_RATIO = [2340 / 1080, 1280 / 720];
 import { SkillSystem } from './game/SkillSystem';
 import { Combat } from './game/Combat';
@@ -104,8 +104,14 @@ export class GameRoot extends Component {
         input.on(Input.EventType.TOUCH_END, release);
         input.on(Input.EventType.TOUCH_CANCEL, release);
 
-        // 先加载美术素材再进菜单；加载失败时各处退回色块绘制
-        loadArt().then(() => this.showMenu());
+        // 先加载美术素材再进菜单；热更/Preview 重载后也强制主界面，勿停在 play
+        loadArt().then(() => {
+            this.world.destroyAllChildren();
+            this.combat = null!;
+            this.spawner = null!;
+            this.state = 'menu';
+            this.showMenu();
+        });
         // 音频异步加载，失败静默（无声音仍可玩）；按当前状态切 BGM
         loadAudio().then(() => this.syncBgm());
     }
@@ -126,6 +132,7 @@ export class GameRoot extends Component {
         }
         this.ui.update(dt);
         this.home.update(dt);
+        if (this.state === 'over') this.combat?.updateBarrier(dt);
         if (this.state !== 'play') return;
         dt = Math.min(dt, 1 / 20);
         this.fb.update(dt);
@@ -258,6 +265,7 @@ export class GameRoot extends Component {
         this.combat.hpMult = level.hpMult * (diff === 'hard' ? HARD_HP_MULT : 1);
         // 开局冻结养成快照，本局中途不再变化
         this.meta = metaSnapshot(this.profile, GAME.wallHp);
+        this.combat.setBarrierElement(this.home.currentBarrier);
         this.combat.wallMax = this.meta.wallMax;
         this.combat.wallHp = this.meta.wallMax;
         this.combat.brushMult = this.meta.brushMult;
@@ -270,7 +278,8 @@ export class GameRoot extends Component {
         this.time = 0;
         this.state = 'play';
         this.syncBgm();
-        this.ui.showToast(diff === 'hard' ? `${level.name} · 困难` : level.name);
+        // 关名短闪 ≤1.2s，勿常驻压路
+        this.ui.showToast(diff === 'hard' ? `${level.name} · 困难` : level.name, 1.1);
     }
 
     private openPick(): void {

@@ -1,6 +1,6 @@
 # 符镇百妖 · 项目说明（给 AI 助手和协作者）
 
-Cocos Creator 3.8.8 竖屏守墙割草游戏。代码在 `assets/scripts/`，全部数值在 `assets/scripts/config/GameConfig.ts`。
+Cocos Creator 3.8.8 竖屏结界防守割草游戏。代码在 `assets/scripts/`，全部数值在 `assets/scripts/config/GameConfig.ts`。
 
 ## 文档地图：每件事只有一个文档
 
@@ -9,7 +9,8 @@ Cocos Creator 3.8.8 竖屏守墙割草游戏。代码在 `assets/scripts/`，全
 | 内容 | 唯一文档 | 说明 |
 |---|---|---|
 | 玩法：定位、局内战斗、局外养成、奖励经济、关卡推进、验收标准、开发顺序 | `docs/gameplay-design.md` | 玩法的唯一来源。第 0 节是简纲，末尾有改动记录 |
-| 美术方向、样板图、素材清单 | 暂无 | 2026-10-31 旧方向作废，`docs/art/` 已整个删除；新方向定下后再建，并补回这几行 |
+| 美术方向和素材规格 | `docs/art/art-bible.md` | 只管视觉，玩法规则写进 gameplay-design 再在这里引用 |
+| 风格样板图 | `docs/art/ref/style_target.png` | 2026-11-01 当前选定：⑤精致像素 |
 | 构建、运行、发布 | `docs/build-run.md` | |
 | 验收截图、录屏 | `docs/evidence/` | 命名规则见目录里的 README |
 | 素材授权汇总 | `LICENSES.md`（根目录） | |
@@ -22,3 +23,7 @@ Cocos Creator 3.8.8 竖屏守墙割草游戏。代码在 `assets/scripts/`，全
 - **不复制内容**：一个规则只写在一个地方，别的文档用"见 `路径` 第 X 节"引用，不要抄一遍。
 - **改名或移动文档**：同时全局搜索旧路径（`git grep`），把引用一起改掉，并更新上面的文档地图。
 - **提交**：提交信息用中文，结尾带 `(hold push)`，默认不 push。
+
+## 生图
+
+本项目后续生图必须遵守 `.claude/skills/level-art/SKILL.md` 第 2 节的用户指定工具与模型，不使用内置 imagegen 的默认路由。

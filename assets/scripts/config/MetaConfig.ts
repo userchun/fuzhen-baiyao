@@ -8,7 +8,7 @@ export type StatId = 'wall' | 'brush' | 'spirit' | 'altar';
 
 /** 四项属性：每级价格（数组长度即等级上限） */
 export const STAT_UPGRADES: Record<StatId, { name: string; costs: number[] }> = {
-    wall: { name: '城墙加固', costs: [50, 65, 85, 110, 143] },
+    wall: { name: '结界加固', costs: [50, 65, 85, 110, 143] },
     brush: { name: '符笔', costs: [60, 78, 101, 132, 171] },
     spirit: { name: '聚灵', costs: [80, 104, 135, 176, 228] },
     altar: { name: '开坛', costs: [400] },

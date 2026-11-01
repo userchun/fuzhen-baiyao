@@ -1,35 +1,27 @@
-// 主界面：⑤精致像素夜色插画 + CD 像素首页 IA（A 顶栏 / B 标题 / D 右三钮 / E 关卡牌+出战）。
-// 色板与分层见 docs/art/art-bible.md；交互见 docs/gameplay-design.md §4.4。
-// 右栏文案锁死：养成→符咒→记录。冻：每日/无尽/图鉴/商城/体力（不画）。
-// 底图只舞台；文字/出战/切关/右钮/设置/红点/锁/引导/最佳时间/困难竖符/Boss 槽由引擎画。
-// L1/局内旧素材仍为旧风格待换，勿标新风格完成。
+// 主页：像素夜城背景、独立符师与代码绘制的像素控件。
+// 视觉见 docs/art/art-bible.md；交互与解锁规则见 docs/gameplay-design.md §4.4。
+// 局内旧素材与五行结界不在本次首页改造范围。
 
 import { Node, Label, EventTouch, Graphics, tween, UIOpacity, UITransform } from 'cc';
 import { GAME, LevelDef, ENEMIES, TALISMANS, TalismanId } from '../config/GameConfig';
 import { Difficulty, FIRST_CLEAR_NORMAL, FIRST_CLEAR_HARD_PAPER, StatId, STAT_UPGRADES, STAT_EFFECT, STAR_COSTS, TALISMAN_IDS } from '../config/MetaConfig';
 import { makeNode, addLabel, rectNode, hex, setOpacity } from '../core/Draw';
-import { spriteNode, hasArt } from '../core/Art';
+import { spriteNode } from '../core/Art';
 import { AudioManager } from '../core/AudioManager';
 import {
     Profile, canPlay, maxBrowsableLevel, canAffordUpgrade, canAffordStar, formatAmount, statCost, starCost,
     formatBestTime,
 } from '../meta/Profile';
 import { popIn, breathe } from './Anim';
+import { BARRIER_STYLES, BarrierElement } from './BarrierArt';
 
 /** 主页设计坐标：1080×2340（像素夜色底），顶部和底部控件分别贴合安全边距。 */
 const IMG = { w: 1080, h: 2340 };
 const SRC_K = 1;
 const POS = {
-    // A 顶栏 / B 标题 / D 右竖三钮 / E 关卡牌（Boss 圆框+关名+难度）+出战。
-    progress: [539, 428], coin: [281, 152], paper: [677, 152], gear: [981, 152],
-    title: [539, 313],
-    entries: [[930, 840], [930, 1092], [930, 1344]],
-    boss: [320, 1658], plaque: [600, 1658], ring: [539, 1755],
-    arrowL: [195, 1658], arrowR: [884, 1658], hardSeal: [790, 1658],
-    bestTime: [539, 1718],
-    fight: [539, 2113],
-    diffNormal: [404, 1808], diffHard: [675, 1808],
-    reward: [539, 1880],
+    progress: [540, 365], coin: [270, 132], paper: [670, 132], gear: [967, 132],
+    title: [540, 275], entries: [[930, 570], [930, 800], [930, 1030]],
+    ring: [540, 1745], fight: [540, 2160],
 } as const;
 
 /** 像素夜色色板：金暖 / 暖纸字 / 石墙冷灰 */
@@ -86,8 +78,14 @@ export class HomeUI {
     private s = 1;
     private level = 0;
     private diff: Difficulty = 'normal';
+    private barrierElement: BarrierElement = 'metal';
+    get currentBarrier(): BarrierElement { return this.barrierElement; }
     private toast: Label | null = null;
     private toastT = 0;
+    private heroIdle: Node | null = null;
+    private heroClock = 0;
+    private talismanGlow: UIOpacity | null = null;
+    private heroSparks: { node: Node; opacity: UIOpacity; phase: number; x: number; y: number }[] = [];
     /** 本帧主界面是否画首局养成暖光引导（仅当次 show 生命周期） */
     private metaGuide = false;
 
@@ -99,9 +97,9 @@ export class HomeUI {
     }
 
     private at(p: readonly number[]): [number, number] {
-        // 仅长屏把 y>1400 控件贴底；短屏不再用负 extra 上推，避免侧栏/关卡卡/出战叠在一起。
+        // 底部控件始终贴底，正负高度差均参与；人物舞台单独适配短屏。
         const extra = GAME.height - IMG.h * this.s;
-        const dock = extra > 0 && p[1] > 1400 ? extra : 0;
+        const dock = p[1] > 1400 ? extra : 0;
         return [(p[0] - IMG.w / 2) * this.s, GAME.height / 2 - p[1] * this.s - dock];
     }
 
@@ -118,11 +116,38 @@ export class HomeUI {
         this.node = root;
         rectNode('homeBase', GAME.width, GAME.height, INDIGO, root);
         // 插画等比铺满；交互独立于背景，适配长屏时底部控件仍然靠下。
-        const cover = Math.max(GAME.width / IMG.w, GAME.height / IMG.h);
-        spriteNode('ui_home_bg', IMG.w * cover, IMG.h * cover, root);
+        const cover = Math.max(GAME.width / IMG.w, GAME.height / (IMG.w * 1846 / 852));
+        spriteNode('ui_home_bg', IMG.w * cover, IMG.w * (1846 / 852) * cover, root);
+        // 符师独立层，短屏随可用舞台等比收小，完整脚底始终在关卡牌上方。
+        const stageTop = GAME.height / 2 - 450 * this.u;
+        const stageBottom = this.at([540, 1550])[1] + 16;
+        const heroH = Math.min(1040 * this.u, stageTop - stageBottom);
+        const heroW = heroH * 1024 / 1536;
+        const hero = spriteNode('ui_home_hero', heroW, heroH, root);
+        if (hero) {
+            // 脚底是缩放支点，呼吸时不浮离石台，也不旋转整张立绘。
+            hero.getComponent(UITransform).setAnchorPoint(0.5, 0.04);
+            hero.setPosition(-72 * this.u, stageBottom + heroH * 0.04);
+            this.heroIdle = hero;
+            const glow = makeNode('homeTalismanGlow', hero);
+            glow.setPosition(heroW * 0.37, heroH * 0.70);
+            const gg = glow.addComponent(Graphics);
+            gg.fillColor = hex('#FFB849', 55);
+            gg.rect(-12*this.u, -28*this.u, 24*this.u, 56*this.u); gg.fill();
+            gg.fillColor = hex('#FFE7A6', 110);
+            gg.rect(-5*this.u, -20*this.u, 10*this.u, 40*this.u); gg.fill();
+            this.talismanGlow = glow.addComponent(UIOpacity);
+            // 仅五粒方形金光，限定在符纸附近，避免遮住侧栏。
+            for (let i = 0; i < 5; i++) {
+                const size = (i % 2 === 0 ? 4 : 3) * this.u;
+                const spark = rectNode('homeTalismanSpark', size, size, i%2 ? '#FFE7A6' : '#F4B41B', hero);
+                this.heroSparks.push({ node: spark, opacity: spark.addComponent(UIOpacity),
+                    phase: i / 5, x: heroW * (0.30 + (i % 3) * 0.035), y: heroH * 0.66 });
+            }
+        }
         // 上下柔暗遮罩承托文字；中段保持原插画亮度。
         for (let i = 0; i < 16; i++) {
-            const top = rectNode('headerShade', GAME.width, 18, INDIGO, root, 0, Math.round(70 * (1 - i / 16)));
+            const top = rectNode('headerShade', GAME.width, 18, INDIGO, root, 0, Math.round(170 * (1 - i / 16)));
             top.setPosition(0, GAME.height / 2 - 9 - i * 18);
             const bottom = rectNode('footerShade', GAME.width, 28, '#0E1018', root, 0, Math.round(210 * (1 - i / 16)));
             bottom.setPosition(0, -GAME.height / 2 + 14 + i * 28);
@@ -133,6 +158,10 @@ export class HomeUI {
     hide(): void {
         this.node?.destroy();
         this.node = null;
+        this.heroIdle = null;
+        this.talismanGlow = null;
+        this.heroSparks = [];
+        this.heroClock = 0;
         this.toast = null;
         this.metaGuide = false;
     }
@@ -147,6 +176,21 @@ export class HomeUI {
     }
 
     update(dt: number): void {
+        if (this.heroIdle) {
+            // 切关只重画 dyn，因此同一首页会话中的待机相位不会重置。
+            this.heroClock = (this.heroClock + Math.min(dt, 0.1)) % 50.4;
+            const breath = (1 - Math.cos(this.heroClock * Math.PI * 2 / 3.6)) / 2;
+            this.heroIdle.setScale(1 - breath * 0.002, 1 + breath * 0.008, 1);
+            if (this.talismanGlow) {
+                this.talismanGlow.opacity = Math.round(95 + 115 * (1 + Math.sin(this.heroClock * Math.PI * 2 / 2.4)) / 2);
+            }
+            for (const spark of this.heroSparks) {
+                const t = (this.heroClock / 2.8 + spark.phase) % 1;
+                spark.node.setPosition(spark.x + Math.round(Math.sin(t * Math.PI * 2 + spark.phase * 6) * 5 * this.u),
+                    spark.y + Math.round(t * 70 * this.u));
+                spark.opacity.opacity = Math.round(Math.sin(t * Math.PI) * 210);
+            }
+        }
         if (this.toast && this.toastT > 0) {
             this.toastT -= dt;
             if (this.toastT <= 0) this.toast.node.parent.active = false;
@@ -166,362 +210,139 @@ export class HomeUI {
         this.toastT = 1.8;
     }
 
-    /** 重画所有会变的部分（切关、切难度、设置改动后调用） */
+    /** 仅重建控件，背景与符师独立保留。 */
     private render(p: Profile, levels: LevelDef[], act: HomeActions): void {
         const root = this.node;
         root.getChildByName('dyn')?.destroy();
         const dyn = makeNode('dyn', root, GAME.width, GAME.height);
-        const put = (text: string, pos: readonly number[], size: number, color: string, parent: Node = dyn): Label => {
-            const l = addLabel(parent, text, size, color);
-            l.enableOutline = true;
-            l.outlineColor = hex('#0C0A08');
-            l.outlineWidth = 1.2;
+        const put = (text: string, pos: readonly number[], size: number, color = CREAM): Label => {
+            const l = addLabel(dyn, text, size * this.u, color);
             l.node.setPosition(...this.at(pos));
+            l.enableOutline = true; l.outlineColor = hex('#10111D'); l.outlineWidth = 2 * this.u;
             return l;
         };
-        const hit = (pos: readonly number[], w: number, h: number, cb: () => void, sound = true): Node => {
-            // 游戏坐标 720 宽：96px ≈ 48 CSS px（360 宽手机），落在 88–96 触控下限上沿。
-            const minTouch = 96;
-            const n = makeNode('hit', dyn, Math.max(w * this.u, minTouch), Math.max(h * this.u, minTouch));
+        const frame = (name: string, pos: readonly number[], w: number, h: number, fill = '#20263D', edge = '#AC8A47'): Node => {
+            const n = makeNode(name, dyn, w * this.u, h * this.u);
+            n.setPosition(...this.at(pos));
+            const g = n.addComponent(Graphics), u = this.u;
+            g.fillColor = hex('#080D1D', 210); g.rect(-w*u/2, -h*u/2-8*u, w*u, h*u); g.fill();
+            g.fillColor = hex(fill, 245); g.rect(-w*u/2+5*u, -h*u/2, (w-10)*u, h*u); g.fill();
+            g.rect(-w*u/2, (-h/2+5)*u, w*u, (h-10)*u); g.fill();
+            g.strokeColor = hex(edge); g.lineWidth = 3*u;
+            g.rect((-w/2+6)*u, (-h/2+6)*u, (w-12)*u, (h-12)*u); g.stroke();
+            g.strokeColor = hex('#FFFFFF', 20); g.lineWidth = 2*u;
+            g.moveTo((-w/2+12)*u, (h/2-12)*u); g.lineTo((w/2-12)*u, (h/2-12)*u); g.stroke();
+            return n;
+        };
+        const hit = (name: string, pos: readonly number[], w: number, h: number, cb: () => void): Node => {
+            const n = makeNode(name, dyn, Math.max(w*this.u, 96), Math.max(h*this.u, 96));
             n.setPosition(...this.at(pos));
             n.on(Node.EventType.TOUCH_END, (e: EventTouch) => {
-                e.propagationStopped = true;
-                if (sound) this.audio?.playSfx('click', 0.6);
-                cb();
+                e.propagationStopped = true; this.audio?.playSfx('click', 0.6); cb();
             });
             return n;
         };
-        // 精致像素：深靛石墙 + 金暖描边 + 朱砂出战，文字图标独立于插画。
-        const art = (name: string, pos: readonly number[], w: number, h: number): Node => {
-            const primary = name === 'fightPanel';
-            const level = name === 'levelPanel';
-            const entry = name.startsWith('entry-');
-            // CD 锁表：出战 820×180 硬边；关卡卡 890×300；侧钮约 140×140。
-            const width = w * this.u;
-            const height = h * this.u;
-            const n = makeNode(name, dyn, width, height);
-            n.setPosition(...this.at(pos));
-            const g = n.addComponent(Graphics);
-            // 出战硬边平涂；关卡/侧钮仅轻微像素圆角。
-            const radius = (primary ? 0 : level ? 8 : entry ? 6 : 12) * this.u;
-            g.fillColor = hex('#0A0C14', primary ? 0 : 55);
-            if (!primary) {
-                g.roundRect(-width / 2, -height / 2 - 7 * this.u, width, height, radius); g.fill();
-            }
-            g.fillColor = hex(primary ? CINNABAR : level ? '#242736' : '#2A2E3F', level ? 247 : 255);
-            if (primary) {
-                g.rect(-width / 2, -height / 2, width, height); g.fill();
-            } else {
-                g.roundRect(-width / 2, -height / 2, width, height, radius); g.fill();
-            }
-            // CD：金描边 1–2 逻辑像素；出战朱砂底 + 金框。
-            g.strokeColor = hex(primary || level ? GOLD : '#C9A84A');
-            g.lineWidth = (primary ? 2 : 1.5) * this.u;
-            if (primary) {
-                g.rect(-width / 2 + 4 * this.u, -height / 2 + 4 * this.u, width - 8 * this.u, height - 8 * this.u); g.stroke();
-            } else {
-                g.roundRect(-width / 2 + 4 * this.u, -height / 2 + 4 * this.u, width - 8 * this.u, height - 8 * this.u, Math.max(0, radius - 3 * this.u)); g.stroke();
-            }
-            if (level) return n;
-            const icon = makeNode('icon', n);
-            icon.setPosition(entry || primary || name === 'settingsPanel' ? 0 : -width / 2 + 46 * this.u, 0);
-            const ig = icon.addComponent(Graphics);
-            ig.lineWidth = 4 * this.u;
-            ig.strokeColor = hex(GOLD);
-            ig.fillColor = hex('#E0A010');
-            const k = this.u;
-            if (primary) {
-                // 两侧短云纹，保留中央清楚的出战文案。
-                for (const side of [-1, 1]) {
-                    ig.moveTo(side * 290 * k, -15 * k); ig.lineTo(side * 320 * k, -15 * k);
-                    ig.lineTo(side * 320 * k, 8 * k); ig.lineTo(side * 300 * k, 8 * k); ig.stroke();
-                }
-            } else if (name === 'coinPanel') {
-                ig.circle(0, 0, 26 * k); ig.fill();
-                ig.strokeColor = hex('#936134'); ig.rect(-8 * k, -8 * k, 16 * k, 16 * k); ig.stroke();
-            } else if (name === 'paperPanel' || name === 'entry-talisman') {
-                ig.roundRect(-19 * k, -30 * k, 38 * k, 60 * k, 4 * k); ig.fill();
-                ig.strokeColor = hex('#D96050');
-                ig.moveTo(-9 * k, 18 * k); ig.lineTo(9 * k, 18 * k);
-                ig.moveTo(0, 24 * k); ig.lineTo(0, -20 * k);
-                ig.moveTo(-10 * k, 0); ig.lineTo(10 * k, 0); ig.stroke();
-            } else if (name === 'entry-upgrade') {
-                ig.roundRect(-30 * k, -24 * k, 60 * k, 44 * k, 3 * k); ig.stroke();
-                ig.moveTo(-36 * k, 20 * k); ig.lineTo(0, 41 * k); ig.lineTo(36 * k, 20 * k);
-                ig.moveTo(-10 * k, -24 * k); ig.lineTo(-10 * k, 0); ig.lineTo(10 * k, 0); ig.lineTo(10 * k, -24 * k); ig.stroke();
-            } else if (name === 'entry-record') {
-                ig.roundRect(-26 * k, -31 * k, 52 * k, 62 * k, 6 * k); ig.stroke();
-                for (const y of [-14, 0, 14]) { ig.moveTo(-14 * k, y * k); ig.lineTo(14 * k, y * k); } ig.stroke();
-            } else {
-                ig.circle(0, 0, 19 * k); ig.stroke();
-                for (let i = 0; i < 8; i++) {
-                    const angle = i * Math.PI / 4;
-                    ig.moveTo(Math.cos(angle) * 25 * k, Math.sin(angle) * 25 * k);
-                    ig.lineTo(Math.cos(angle) * 34 * k, Math.sin(angle) * 34 * k);
-                } ig.stroke();
-            }
-            return n;
+        // 真实功能图标：整数方格绘制，保持像素硬边，不用单字替代图标。
+        const glyphs: Record<string, string[]> = {
+            coin: ['..#####..','.#######.','###...###','###...###','###...###','.#######.','..#####..'],
+            paper: ['.######..','.######..','.##..##..','.######..','.##..##..','.######..','.######..','..####...'],
+            upgrade: ['.......####.','......######','.....######.','....######..','.....####...','....###.....','...###......','..###.......','.###........','..#.........'],
+            talisman: ['.#######.','.##...##.','.#######.','.###.###.','.##...##.','.#######.','.###.###.','..#####..'],
+            record: ['.######..','##....##.','##.##.##.','##....##.','##.##.##.','##....##.','########.','..######.'],
+            gear: ['...###...','.#.###.#.','.#######.','###...###','###...###','###...###','.#######.','.#.###.#.','...###...'],
+            lock: ['..#####..','.##...##.','.##...##.','#########','#########','####.####','####.####','#########'],
+            left: ['....##...','...##....','..##.....','.##......','..##.....','...##....','....##...'],
+            right: ['...##....','....##...','.....##..','......##.','.....##..','....##...','...##....'],
         };
-        // CD chrome 贴图优先；有贴图则禁对应 Graphics 底板/内槽，只留引擎字。stone_bar/hero 不挂。
-        const chromeTop = hasArt('ui_home_topbar');
-        const chromeSide = hasArt('ui_home_side_btn');
-        const chromePip = hasArt('ui_home_pip');
-        const chromeCard = hasArt('ui_home_level_card');
-        const chromeFight = hasArt('ui_home_battle_btn');
-        let fightArt: Node | null = null;
-        if (chromeTop) {
-            const bar = spriteNode('ui_home_topbar', 1000 * this.u, 72 * this.u, dyn);
-            bar?.setPosition(...this.at([540, 152]));
-        } else {
-            art('coinPanel', POS.coin, 330, 103);
-            art('paperPanel', POS.paper, 330, 105);
-            art('settingsPanel', POS.gear, 100, 94);
-        }
-        if (chromeCard) {
-            const card = spriteNode('ui_home_level_card', 890 * this.u, 300 * this.u, dyn);
-            card?.setPosition(...this.at(POS.ring));
-        } else {
-            art('levelPanel', POS.ring, 890, 300);
-        }
-        if (chromeFight) {
-            fightArt = spriteNode('ui_home_battle_btn', 820 * this.u, 180 * this.u, dyn);
-            fightArt?.setPosition(...this.at(POS.fight));
-        } else {
-            fightArt = art('fightPanel', POS.fight, 820, 180);
-        }
-        const rerender = () => this.render(p, levels, act);
-        const count = levels.length;
-
-        // 顶部：通关进度、资源、设置（字/热区由引擎画；有 topbar 贴图不再画 Graphics 井）
-        const clearedN = p.cleared.filter((c) => c.normal).length;
-        put(`已通 ${clearedN} / ${count}`, POS.progress, 28, CREAM);
-        put(formatAmount(p.coin), [POS.coin[0] + 24, POS.coin[1]], 32, '#FFFFFF');
-        put(formatAmount(p.paper), [POS.paper[0] + 24, POS.paper[1]], 32, '#FFFFFF');
-        hit(POS.gear, 110, 110, act.onSettings);
-
-        // 标题
-        const title = put('符 镇 百 妖', POS.title, 82, GOLD);
-        title.fontFamily = 'serif';
-        title.outlineColor = hex('#0C0A08');
-        title.outlineWidth = 2;
-        title.isBold = true;
-        const titleOrnament = makeNode('titleOrnament', dyn);
-        titleOrnament.setPosition(...this.at([470, 282]));
-        const tg = titleOrnament.addComponent(Graphics);
-        tg.lineWidth = this.u;
-        tg.strokeColor = hex(GOLD, 220);
-        for (const side of [-1, 1]) {
-            tg.moveTo(side * 28 * this.u, 0); tg.lineTo(side * 173 * this.u, 0);
-            tg.moveTo(side * 186 * this.u, 5 * this.u); tg.lineTo(side * 191 * this.u, 0); tg.lineTo(side * 186 * this.u, -5 * this.u);
-        }
-        tg.moveTo(0, 6 * this.u); tg.lineTo(6 * this.u, 0); tg.lineTo(0, -6 * this.u); tg.lineTo(-6 * this.u, 0); tg.close(); tg.stroke();
-
-        // D 右竖三钮文案锁死：养成→符咒→记录；红点仅前两项且买得起。冻入口不画。
-        const entries: { id: 'upgrade' | 'talisman' | 'record'; name: string; dot: boolean }[] = [
-            { id: 'upgrade', name: '养成', dot: canAffordUpgrade(p) },
-            { id: 'talisman', name: '符咒', dot: canAffordStar(p) },
-            { id: 'record', name: '记录', dot: false },
+        const icon = (id: string, pos: readonly number[], cell = 7, color = GOLD) => {
+            const n = makeNode('icon-'+id, dyn); n.setPosition(...this.at(pos));
+            const g = n.addComponent(Graphics), rows = glyphs[id];
+            g.fillColor = hex(color);
+            rows.forEach((row, y) => [...row].forEach((c, x) => {
+                if (c === '#') g.rect((x-row.length/2)*cell*this.u, (rows.length/2-y-1)*cell*this.u, cell*this.u, cell*this.u);
+            })); g.fill();
+        };
+        frame('coinPanel', POS.coin, 370, 100);
+        frame('paperPanel', POS.paper, 370, 100);
+        frame('settingsPanel', POS.gear, 110, 100);
+        icon('coin', [135,132], 7); icon('paper', [535,132], 7); icon('gear', POS.gear, 7);
+        put(formatAmount(p.coin), [300,132], 44, '#FFFFFF');
+        put(formatAmount(p.paper), [700,132], 44, '#FFFFFF');
+        hit('settingsHit', POS.gear, 120, 120, act.onSettings);
+        const title = put('符镇百妖', POS.title, 98, '#F3D394');
+        title.fontFamily = 'serif'; title.isBold = true;
+        put(`已通 ${p.cleared.filter(c => c.normal).length} / ${levels.length}`, POS.progress, 34, '#B4BED0');
+        const entries: {id: 'upgrade'|'talisman'|'record'; name: string; dot: boolean}[] = [
+            {id:'upgrade',name:'养成',dot:canAffordUpgrade(p)},
+            {id:'talisman',name:'符咒',dot:canAffordStar(p)},
+            {id:'record',name:'记录',dot:false},
         ];
-        entries.forEach((e, i) => {
-            if (chromeSide) {
-                // 贴图已含金环+灰方槽；不再画 Graphics 底板/图标，只叠文案。
-                const side = spriteNode('ui_home_side_btn', 140 * this.u, 140 * this.u, dyn);
-                side?.setPosition(...this.at(POS.entries[i]));
-            } else {
-                art(`entry-${e.id}`, POS.entries[i], 140, 140);
-            }
-            const caption = put(e.name, POS.entries[i], 29, CREAM);
-            caption.node.setPosition(caption.node.position.x, caption.node.position.y - 72 * this.u);
-            caption.outlineColor = hex('#0C0A08');
-            caption.outlineWidth = 3;
-            hit([POS.entries[i][0], POS.entries[i][1] + 8], 160, 180, () => act.onEntry(e.id));
+        entries.forEach((e,i) => {
+            const pos = POS.entries[i];
+            frame('entry-'+e.id, pos, 160, 146);
+            icon(e.id, [pos[0],pos[1]-7], 9);
+            put(e.name, [pos[0],pos[1]+105], 38);
+            hit('entryHit-'+e.id, [pos[0],pos[1]+20], 190, 190, () => act.onEntry(e.id));
             if (e.dot) {
-                const [x, y] = this.at(POS.entries[i]);
-                if (chromePip) {
-                    const pip = spriteNode('ui_home_pip', 24 * this.u, 24 * this.u, dyn);
-                    pip?.setPosition(x + 58 * this.u, y + 58 * this.u);
-                } else {
-                    const dot = makeNode('dot', dyn, 24, 24);
-                    const g = dot.addComponent(Graphics);
-                    g.fillColor = hex('#2A0A06');
-                    g.rect(-12 * this.u, -12 * this.u, 24 * this.u, 24 * this.u); g.fill();
-                    g.fillColor = hex(CINNABAR);
-                    g.rect(-10 * this.u, -10 * this.u, 20 * this.u, 20 * this.u); g.fill();
-                    dot.setPosition(x + 58 * this.u, y + 58 * this.u);
-                }
+                const dot = rectNode('availableUpgrade', 18*this.u, 18*this.u, CINNABAR, dyn);
+                const [x,y]=this.at(pos); dot.setPosition(x+65*this.u,y+60*this.u);
             }
         });
-
-        // E 关卡牌：v3 贴图仅空圆+左右箭+外框（无关名槽）；引擎排关名→难度→奖励。
-        const lv = this.level;
-        const open = lv < p.unlockedLevels;
-        const maxLv = maxBrowsableLevel(p, count);
-        const best = p.bestTimes[lv]?.[this.diff] ?? null;
-        // 卡内上→下：关名 → 难度 pill → 首通奖励。chrome 时 pill 右移避开 Boss 圆（圆右缘≈406）。
-        const namePos: [number, number] = chromeCard
-            ? [640, 1686]
-            : [POS.plaque[0], POS.plaque[1] + (best === null ? 14 : 0)];
-        const diffY = chromeCard ? 1810 : POS.diffNormal[1];
-        // Boss 圆右缘≈406；pill 半宽≈100 → 中心≥620，气口充足。
-        const diffNormalPos: [number, number] = chromeCard ? [620, diffY] : [POS.diffNormal[0], diffY];
-        const diffHardPos: [number, number] = chromeCard ? [840, diffY] : [POS.diffHard[0], diffY];
-        // 卡底边 y≈1905；字号24 中心须上收到 ~1848–1860，否则贴/溢出底金边（pill 底≈1834）。
-        const rewardPos: [number, number] = chromeCard ? [640, 1854] : [POS.reward[0], POS.reward[1]];
-        const bestPos: [number, number] = chromeCard ? [640, 1638] : [POS.bestTime[0], POS.bestTime[1]];
-        if (!chromeCard) {
-            const bossY = POS.boss[1] + (best === null ? 14 : 0);
-            const slot = makeNode('bossSlot', dyn);
-            slot.setPosition(...this.at([POS.boss[0], bossY]));
-            const bg = slot.addComponent(Graphics);
-            const r = 48 * this.u;
-            bg.fillColor = hex('#0A0C14', 200);
-            bg.circle(0, 0, r); bg.fill();
-            bg.fillColor = hex(open ? '#242736' : '#1A1C2C', 245);
-            bg.circle(0, 0, r - 3 * this.u); bg.fill();
-            bg.strokeColor = hex(open ? GOLD : STONE, open ? 230 : 140);
-            bg.lineWidth = 2 * this.u;
-            bg.circle(0, 0, r - 1 * this.u); bg.stroke();
-            const bossWave = levels[lv].waves.find((w) => ENEMIES[w.enemy]?.boss);
-            const boss = bossWave ? ENEMIES[bossWave.enemy] : null;
-            const glyph = addLabel(slot, boss?.char ?? '？', 40, open ? CREAM : DIM);
-            glyph.isBold = true;
-            glyph.enableOutline = true;
-            glyph.outlineColor = hex('#0C0A08');
-            glyph.outlineWidth = 1.5;
-            if (p.cleared[lv]?.hard === true) {
-                const seal = makeNode('homeHardSeal', dyn);
-                seal.setPosition(...this.at([POS.hardSeal[0], bossY]));
-                const sg = seal.addComponent(Graphics);
-                sg.fillColor = hex('#C9A24A');
-                sg.roundRect(-16 * this.u, -40 * this.u, 32 * this.u, 80 * this.u, 3 * this.u); sg.fill();
-                sg.fillColor = hex('#E8C878');
-                sg.roundRect(-12 * this.u, -36 * this.u, 24 * this.u, 72 * this.u, 2 * this.u); sg.fill();
-                sg.fillColor = hex(CINNABAR);
-                sg.roundRect(-10 * this.u, -6 * this.u, 20 * this.u, 20 * this.u, 2 * this.u); sg.fill();
-                const mark = addLabel(seal, '印', 14, '#F2D6A0');
-                mark.isBold = true;
-                mark.node.setPosition(0, 4 * this.u);
-            }
-            if (this.diff === 'hard' && open) {
-                const [x, y] = this.at(POS.ring);
-                const ring = makeNode('hardRing', dyn);
-                ring.setPosition(x, y);
-                const g = ring.addComponent(Graphics);
-                g.lineWidth = 2 * this.u;
-                g.strokeColor = hex(CINNABAR);
-                g.moveTo(-180 * this.u, 32 * this.u);
-                g.lineTo(180 * this.u, 32 * this.u);
-                g.stroke();
-            }
-        } else if (p.cleared[lv]?.hard === true) {
-            // 贴图卡：困难金印靠关名右侧，不画第二套圆框。
-            const seal = makeNode('homeHardSeal', dyn);
-            seal.setPosition(...this.at([820, namePos[1]]));
-            const sg = seal.addComponent(Graphics);
-            sg.fillColor = hex('#C9A24A');
-            sg.roundRect(-14 * this.u, -34 * this.u, 28 * this.u, 68 * this.u, 3 * this.u); sg.fill();
-            sg.fillColor = hex(CINNABAR);
-            sg.roundRect(-9 * this.u, -5 * this.u, 18 * this.u, 18 * this.u, 2 * this.u); sg.fill();
-            const mark = addLabel(seal, '印', 12, '#F2D6A0');
-            mark.isBold = true;
-        }
-        const plaque = put(levels[lv].name, namePos, chromeCard ? 40 : 34, open ? CREAM : DIM);
-        if (!open) plaque.string = `${levels[lv].name}（未解锁）`;
-        plaque.enableWrapText = false;
-        plaque.overflow = Label.Overflow.SHRINK;
-        plaque.isBold = true;
-        plaque.node.getComponent(UITransform).setContentSize((chromeCard ? 480 : 420) * this.u, 60 * this.u);
-        const arrow = (pos: readonly number[], enabled: boolean, delta: number) => {
-            // chrome PNG 已烤左右箭（尖≈画布 114/963，体质心≈184/894 @ ringY=1755）。
-            // chrome 路径只留透明热区，禁止再画 Graphics 圆/三角，避免双箭或与烤箭错位「歪」。
-            const arrowPos: [number, number] = chromeCard
-                ? (delta < 0 ? [184, POS.ring[1]] : [894, POS.ring[1]])
-                : [pos[0], namePos[1]];
-            const n = hit(arrowPos, 110, 110, () => {
+        const lv = this.level, open = lv < p.unlockedLevels;
+        const playable = canPlay(p,lv,this.diff), hardOpen = open && p.cleared[lv]?.normal === true;
+        const maxLv = maxBrowsableLevel(p,levels.length);
+        const redraw = () => this.render(p,levels,act);
+        frame('levelPanel',POS.ring,920,280,'#1B2237',this.diff==='hard'?CINNABAR:'#AC8A47');
+        const name = put(levels[lv].name,[540,1665],48,open?CREAM:DIM);
+        name.isBold=true; name.enableWrapText=false; name.overflow=Label.Overflow.SHRINK;
+        if (p.cleared[lv]?.hard) put('印', [800,1665], 30, GOLD);
+        name.node.getComponent(UITransform).setContentSize(600*this.u,65*this.u);
+        for (const delta of [-1,1]) {
+            const enabled = delta<0?lv>0:lv<maxLv;
+            const pos=[delta<0?150:930,1665];
+            icon(delta<0?'left':'right',pos,7,enabled?GOLD:'#50596C');
+            hit('levelArrow'+delta,pos,130,120,()=>{
                 if (!enabled) return;
-                this.level += delta;
-                if (!canPlay(p, this.level, this.diff)) this.diff = 'normal';
-                rerender();
-            }, enabled);
-            if (!chromeCard) {
-                const g = n.addComponent(Graphics);
-                g.fillColor = hex('#2A2E3F', enabled ? 255 : 180);
-                g.circle(0, 0, 31 * this.u); g.fill();
-                g.lineWidth = 2 * this.u;
-                g.strokeColor = hex(enabled ? GOLD : DIM, enabled ? 240 : 120);
-                g.circle(0, 0, 31 * this.u); g.stroke();
-                g.lineWidth = 4 * this.u;
-                g.moveTo(-delta * 6 * this.u, 12 * this.u);
-                g.lineTo(delta * 6 * this.u, 0);
-                g.lineTo(-delta * 6 * this.u, -12 * this.u); g.stroke();
-            }
-        };
-        arrow(POS.arrowL, lv > 0, -1);
-        arrow(POS.arrowR, lv < maxLv, 1);
-
-        // 出战：有 battle 贴图则只用贴图底板；字引擎画在钮上。
-        const playable = canPlay(p, lv, this.diff);
-        const fightLabel = put('出　战', POS.fight, 64, playable ? '#FFFFFF' : DIM);
-        fightLabel.isBold = true;
-        fightLabel.fontFamily = 'serif';
-        fightLabel.outlineColor = hex('#5A1010');
-        fightLabel.outlineWidth = 3;
-        hit(POS.fight, 820, 180, () => {
-            if (playable) act.onFight(lv, this.diff);
-            else this.showToast('通关上一关后解锁');
-        });
-        // 保证字在贴图与热区之上
-        fightLabel.node.setSiblingIndex(dyn.children.length - 1);
-        if (!playable) {
-            if (fightArt) setOpacity(fightArt, 120);
-        } else {
-            popIn(fightLabel.node, 0.25);
-        }
-
-        // 难度切换：引擎 pill（贴图卡不烤难度）
-        const hardOpen = open && p.cleared[lv]?.normal === true;
-        const pill = (text: string, d: Difficulty, pos: readonly number[]) => {
-            const on = this.diff === d;
-            const enabled = d === 'normal' ? open : hardOpen;
-            const bg = on ? CINNABAR : '#2A2E3F';
-            const n = rectNode(`difficulty-${d}`, 200 * this.u, 56 * this.u, bg, dyn, 18, 230);
-            n.setPosition(...this.at(pos));
-            const pg = n.getComponent(Graphics);
-            pg.fillColor = hex(on && enabled ? CINNABAR : '#242736', 215);
-            pg.roundRect(-96 * this.u, -24 * this.u, 192 * this.u, 48 * this.u, 16); pg.fill();
-            n.getComponent(UITransform).setContentSize(220 * this.u, Math.max(96 * this.u, 96));
-            addLabel(n, enabled ? text : `${text}·锁`, 28, enabled ? (on ? '#FFFFFF' : CREAM) : DIM);
-            n.on(Node.EventType.TOUCH_END, (e: EventTouch) => {
-                e.propagationStopped = true;
-                if (!enabled) {
-                    this.showToast(open ? '普通难度通关后解锁困难' : '通关上一关后解锁');
-                    return;
-                }
-                this.audio?.playSfx('click', 0.6);
-                this.diff = d;
-                rerender();
+                this.level+=delta;
+                if (!canPlay(p,this.level,this.diff)) this.diff='normal';
+                redraw();
             });
-        };
-        pill('普通', 'normal', diffNormalPos);
-        pill('困难', 'hard', diffHardPos);
-
-        // 首通奖励小字（引擎画）
-        const done = p.cleared[lv]?.[this.diff] === true;
-        const col = open && !done ? CREAM : DIM;
-        let rewardText = '首通奖励已领取';
-        if (!done && this.diff === 'normal') {
-            const r = FIRST_CLEAR_NORMAL[lv];
-            rewardText = r ? `首通  ${r.coin}铜钱 · ${r.paper}符纸 · ${r.chest}` : '暂无首通奖励';
-        } else if (!done) {
-            const paper = FIRST_CLEAR_HARD_PAPER[lv];
-            rewardText = `奖励  铜钱×2 · 符纸+${paper ?? 0} · 宝箱×2`;
         }
-        put(rewardText, rewardPos, 24, col);
-        if (open && best !== null) {
-            put(`本关最短 ${formatBestTime(best)}`, bestPos, 20, DIM);
+        for (const [i,d] of (['normal','hard'] as const).entries()) {
+            const enabled=d==='normal'?open:hardOpen;
+            const selected=this.diff===d;
+            const pos=[i===0?390:690,1765];
+            frame('difficulty-'+d,pos,260,76,selected&&enabled?'#862B32':'#242D43',selected&&enabled?'#E6B868':'#4E5970');
+            put((d==='normal'?'普通':'困难')+(enabled?'':' · 锁'),pos,34,enabled?CREAM:DIM);
+            hit('difficultyHit-'+d,pos,260,96,()=>{
+                if (!enabled) {this.showToast(open?'普通难度通关后解锁困难':'通关上一关后解锁');return;}
+                this.diff=d;redraw();
+            });
         }
-
-        if (this.metaGuide) this.paintMetaGuide();
+        const done=p.cleared[lv]?.[this.diff]===true;
+        const reward=FIRST_CLEAR_NORMAL[lv];
+        const rewardText=!open?'通关上一关后解锁':done?'首通奖励已领取':this.diff==='normal'
+            ?(reward?`首通 ${reward.coin}铜钱 · ${reward.paper}符纸 · ${reward.chest}`:'暂无首通奖励')
+            :`首通 铜钱×2 · 符纸+${FIRST_CLEAR_HARD_PAPER[lv]??0} · 宝箱×2`;
+        put(rewardText,[540,1845],32,open? '#BDC5D2':DIM);
+        const best=p.bestTimes[lv]?.[this.diff]??null;
+        if(open&&best!==null) put(`最短 ${formatBestTime(best)}`,[540,1585],26,DIM);
+        put('结界', [165,1970], 32, DIM);
+        (Object.keys(BARRIER_STYLES) as BarrierElement[]).forEach((el,i) => {
+            const style=BARRIER_STYLES[el], pos=[320+i*144,1970];
+            const chosen=this.barrierElement===el;
+            frame('barrier-'+el,pos,128,100,chosen?'#36405A':'#1B2237',chosen?style.color:'#4E5970');
+            put(style.name,pos,38,chosen?style.light:DIM);
+            hit('barrierHit-'+el,pos,128,100,()=>{this.barrierElement=el;redraw();});
+        });
+        frame('fightPanel',POS.fight,920,170,playable?'#A52B35':'#303748',playable?'#E6B868':'#596278');
+        const fight=put(playable?'出　战':'尚 未 解 锁',POS.fight,62,playable?'#FFF0D4':DIM);
+        fight.isBold=true; fight.fontFamily='serif';
+        if(!playable) icon('lock',[240,POS.fight[1]],6,DIM);
+        hit('fightHit',POS.fight,920,180,()=>{
+            if(playable)act.onFight(lv,this.diff);else this.showToast('通关上一关后解锁');
+        });
+        if(this.metaGuide)this.paintMetaGuide();
     }
 
     /** 养成入口暖金光圈 + 旁白（禁霓虹箭头） */

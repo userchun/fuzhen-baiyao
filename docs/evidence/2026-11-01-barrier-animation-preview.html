@@ -1,0 +1,27 @@
+<!doctype html><html lang="zh-CN"><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>五行结界 · 动画预览</title><style>
+*{box-sizing:border-box}body{margin:0;background:#0d1422;color:#e8e4d9;font-family:system-ui,sans-serif;padding:28px;max-width:1080px;margin:auto}h1{font-size:27px;margin:0 0 10px}p{color:#99aac2;font-size:14px;line-height:1.6}header{margin-bottom:24px}.tools{display:flex;gap:12px;align-items:center;flex-wrap:wrap}button,select{background:#26314a;color:#fff;border:1px solid #78869e;border-radius:5px;padding:10px 16px;font:inherit;cursor:pointer}main{display:grid;gap:18px;grid-template-columns:1fr 1fr}article{border:1px solid #34435c;background:#151f30;padding:15px;overflow:hidden}h2{font-size:17px;margin:0 0 8px;color:#e8ca86}.meta{font-size:12px;color:#96a8bf}canvas{display:block;width:100%;height:auto;background:#121c2b;image-rendering:pixelated}footer{margin-top:20px;color:#8b9bb4;font-size:13px}@media(max-width:680px){body{padding:18px}main{grid-template-columns:1fr}}
+</style><header><h1>五行结界 · 代码动画</h1><p>五种结界共用固定轮廓，使用各自的阵纹与粒子运动。<br>点击任意结界查看局部受击；强度归零播放破碎，恢复强度后重建。</p><div class="tools"><button id="play">暂停</button><label>速度 <select id="speed"><option value="0.5">0.5×</option><option value="1" selected>1×</option><option value="1.5">1.5×</option></select></label><label>强度 <select id="health"><option value="1">100%</option><option value="0.5">50%</option><option value="0.2">20%</option><option value="0">0% · 破碎</option></select></label><button id="hit">受击</button><button id="ground">切换背景</button></div></header><main></main><footer>当前与 Cocos 共用绘制代码。首页可选择结界外观；五行伤害关系尚未接入。</footer><script type="module">
+import {barrierArt,BARRIER_STYLES} from './barrier-code/BarrierArt.js';
+let paused=false,last=performance.now(),floor=true;const views=[];const ground=new Image();ground.src='../../assets/resources/textures/bg_level1_village.png';
+const names={metal:'阵片碎光',wood:'藤叶流转',water:'水幕波纹',fire:'短焰火星',earth:'山纹岩片'};
+for(const [element,style] of Object.entries(BARRIER_STYLES)){
+ const article=document.createElement('article');article.innerHTML=`<h2>${style.name} · ${names[element]}</h2><div class="meta">点击结界查看受击</div><canvas width="720" height="200"></canvas>`;document.querySelector('main').append(article);
+ const canvas=article.querySelector('canvas'),state={element,time:0,health:1,level:0,hits:[],breakTime:0};
+ canvas.onclick=e=>{const r=canvas.getBoundingClientRect();state.hits.push({x:(e.clientX-r.left)*720/r.width-360,age:0});if(state.hits.length>8)state.hits.shift();};views.push({canvas,state});
+}
+document.querySelector('#play').onclick=e=>{paused=!paused;e.target.textContent=paused?'继续播放':'暂停';};
+document.querySelector('#ground').onclick=()=>floor=!floor;
+document.querySelector('#hit').onclick=()=>{for(const v of views)v.state.hits=[{x:0,age:0}];};
+document.querySelector('#health').onchange=e=>{for(const v of views){v.state.health=Number(e.target.value);v.state.breakTime=0;}};
+function draw(now){const dt=Math.min((now-last)/1000,.1)*Number(document.querySelector('#speed').value);last=now;
+ for(const v of views){const s=v.state;if(!paused){s.time+=dt;if(s.health<=0)s.breakTime+=dt;for(const h of s.hits)h.age+=dt;s.hits=s.hits.filter(h=>h.age<.45);}
+ const c=v.canvas.getContext('2d');c.setTransform(1,0,0,1,0,0);c.fillStyle=floor?'#26344a':'#080d16';c.fillRect(0,0,720,200);
+ if(floor&&ground.complete&&ground.naturalWidth){c.drawImage(ground,0,1350,853,235,0,0,720,200);c.fillStyle='rgba(10,18,32,.25)';c.fillRect(0,0,720,200);}
+
+ c.translate(360,155);c.scale(1,-1);
+ for(const sh of barrierArt(s,720)){c.globalAlpha=sh.alpha/255;c.fillStyle=sh.color;c.strokeStyle=sh.color;
+ if(sh.rect)c.fillRect(...sh.rect);else if(sh.path){c.beginPath();c.moveTo(sh.path[0],sh.path[1]);for(let i=2;i<sh.path.length;i+=2)c.lineTo(sh.path[i],sh.path[i+1]);if(sh.stroke){c.lineWidth=sh.stroke;c.stroke();}else c.fill();}}
+ c.globalAlpha=1;
+ }requestAnimationFrame(draw);
+}requestAnimationFrame(draw);
+</script></html>

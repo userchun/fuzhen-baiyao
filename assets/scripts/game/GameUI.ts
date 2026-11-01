@@ -11,9 +11,9 @@ const top = (): number => GAME.height / 2;
 const SAFE_TOP = 60; // 刘海/状态栏留白
 const BOSS_W = 220;
 const BAR_W = 600;
-// 状态条都放在城墙下方、玩家脚下，屏幕顶部留给妖怪进场
-const WALL_BAR_OFFSET = -160;     // 结界血条中心相对垛口线（紧贴城墙图下沿）
-const XP_BAR_OFFSET = -186;       // 灵气条中心相对垛口线（紧贴血条下方）
+// 状态条放在结界后方、玩家脚下，屏幕顶部留给妖怪进场
+const WALL_BAR_OFFSET = -210;     // 结界血条中心相对逻辑防线
+const XP_BAR_OFFSET = -234;       // 灵气条中心相对逻辑防线（紧贴血条下方）
 const WALL_BAR_H = 20;            // U1：16–24
 const XP_BAR_H = 10;              // U3：8–12
 const WALL_FILL_COLOR = '#9B3D2E'; // 暗朱砂
@@ -73,6 +73,7 @@ export class GameUI {
     private cdMasks = new Map<TalismanId, Graphics>(); // 符咒图标上的冷却遮罩
     private toast: Label;
     private toastT = 0;
+    private toastFade = 0.35; // 末段淡出秒数
     private overlay: Node | null = null;
 
     constructor(private root: Node, private audio?: AudioManager) {
@@ -103,8 +104,9 @@ export class GameUI {
         this.bossBar = bossNode.addComponent(Graphics);
         this.bossText = addLabel(root, '', 16, '#D8C8A8');
         this.bossText.node.setPosition(-GAME.width / 2 + 24 + BOSS_W / 2, top() - SAFE_TOP + 6);
-        this.toast = addLabel(root, '', 36, '#FFD700');
-        this.toast.node.setPosition(0, 250);
+        // 靠顶短闪，避开路中操作区（原 y=250 压路）
+        this.toast = addLabel(root, '', 30, '#F2E0A8');
+        this.toast.node.setPosition(0, top() - SAFE_TOP - 48);
     }
 
     private makeHudBar(
@@ -297,12 +299,16 @@ export class GameUI {
         }
         if (this.toastT <= 0) return;
         this.toastT -= dt;
-        setOpacity(this.toast.node, Math.round(255 * Math.min(1, Math.max(0, this.toastT))));
+        const fade = this.toastFade;
+        const a = this.toastT <= 0 ? 0 : (this.toastT < fade ? this.toastT / fade : 1);
+        setOpacity(this.toast.node, Math.round(255 * Math.max(0, Math.min(1, a))));
     }
 
-    showToast(text: string): void {
+    /** duration 总可见秒数（含末段淡出）；关名开场请 ≤1.2 */
+    showToast(text: string, duration = 2.0): void {
         this.toast.string = text;
-        this.toastT = 2.5;
+        this.toastT = Math.max(0.2, duration);
+        this.toastFade = Math.min(0.35, this.toastT * 0.4);
         setOpacity(this.toast.node, 255);
     }
 

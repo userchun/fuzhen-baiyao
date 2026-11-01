@@ -6,7 +6,7 @@ export type TalismanId = 'metal' | 'wood' | 'water' | 'fire' | 'earth' | 'thunde
 export const GAME = {
     width: 720,
     height: 1280,
-    wallY: -440,      // 城墙顶部 y（由 applyScreen 按屏幕高度重算）
+    wallY: -440,      // 结界防线 y（内部字段沿用 wallY，由 applyScreen 重算）
     playerY: -470,
     moveZoneY: -350,  // 此线以下拖动移动，以上点按瞄准/攻击
     horizonY: 520,    // 地平线 y（2.5D 纵深最远点，由 applyScreen 按屏幕高度重算）
@@ -20,15 +20,15 @@ export const GAME = {
 /**
  * 按实际可见高度重算布局：宽固定 720，高随机型变化。
  * 俯视布局（2026-10-27，参考《向僵尸开炮》）：整屏是地面，妖怪从屏幕顶边外进入；
- * 底部从下往上：安全区 40 → 血条区 → 城墙顶（垛口线 = wallY）→ 战场。
+ * 底部从下往上：安全区 40 → 血条区 → 结界防线（wallY）→ 战场。
  */
 export const LAYOUT = {
-    wallFromBottom: 258,   // 垛口线（撞墙线）距屏幕底边
-    playerFromBottom: 333, // 主角中心距屏幕底边：脚踩法坛台面、略高于垛口线（帧内脚底在 0.94）
+    wallFromBottom: 258,   // 结界拦怪线距屏幕底边
+    playerFromBottom: 160, // 主角中心距屏幕底边：160 高的完整轮廓位于结界后方
     spawnAboveTop: 60,     // 出怪线在屏幕顶边之上多少像素
-    wallArtW: 860,         // 城墙图片显示宽度：比屏宽 720 大，两端角楼外侧被屏幕裁掉（城墙 1290×363，2026-10-30 法坛版）
-    wallArtH: 242,         // 城墙图片显示高度
-    wallArtTopAbove: 96,   // 城墙图片顶边高出垛口线多少（角楼和法坛垛口伸到战场里）
+    wallArtW: 860,         // 旧城墙图片尺寸保留；当前结界不使用
+    wallArtH: 242,         // 旧城墙图片尺寸保留；当前结界不使用
+    wallArtTopAbove: 96,   // 旧城墙定位保留；当前结界不使用
     roadHalfW: 260,        // 路面半宽：出怪和妖怪横向活动收在这个范围内（第一关像素背景路面约 ±280，留 20 边距）
 };
 

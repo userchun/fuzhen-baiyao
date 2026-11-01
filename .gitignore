@@ -14,3 +14,7 @@ assets-raw/
 # 生成过程图（本地保留，不进仓库）
 generated-images/
 
+
+# Python 运行缓存
+__pycache__/
+*.py[cod]

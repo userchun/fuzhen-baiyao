@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="zh-CN"><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>金系结界 · PixelFX 改版</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#101321;color:#eee4ce;font:16px system-ui,sans-serif;padding:32px 20px}main{max-width:760px;margin:auto}small{color:#dbb65c;letter-spacing:2px}h1{font-size:28px;margin:10px 0}p{color:#a3a8b9;font-size:14px;line-height:1.7}canvas{display:block;width:100%;height:auto;image-rendering:pixelated;background:#111321;border:1px solid #494130;margin:22px 0}.tools{display:flex;gap:10px;flex-wrap:wrap}button{font:inherit;color:#edddb7;background:#272638;border:1px solid #786447;border-radius:5px;padding:11px 16px;cursor:pointer}button:focus-visible{outline:2px solid #ffe1a0}footer{font-size:12px;line-height:1.8;color:#858b9f;margin-top:24px}a{color:#dbb65c}
+</style><main><small>金 · 符光屏障</small><h1>横向展开，符师在后</h1><p>两侧悬浮符箓维持金色薄幕。亮点沿防线流动，光带扫过表面。<br>点击屏障任意位置查看局部受击。</p>
+<canvas width="352" height="220" aria-label="金系结界动画，符师站在屏障下方"></canvas>
+<div class="tools"><button id="hit">受击</button><button id="pause">暂停</button><button id="background">切换纯色底</button><button id="health">强度 100%</button></div>
+<footer>基于 <a href="https://github.com/patch-gg/pixelfx/blob/main/src/fx/holy/divine-shield.js">PixelFX Divine Shield</a> 的薄膜、流光和闪点改制，MIT 许可。<br>当前是代码动画样板，尚未替换 Cocos 战斗结界；五行伤害规则未改。</footer></main>
+<script type="module">
+import {createFrame,clearFrame,painterFor,composite} from './pixelfx/core/index.js';
+import {draw,meta} from './pixelfx/fx/holy/gold-ward.js';
+const canvas=document.querySelector('canvas'),ctx=canvas.getContext('2d');
+const frame=createFrame(352,220),image=new ImageData(352,220),buffer=document.createElement('canvas');
+buffer.width=352;buffer.height=220;const bc=buffer.getContext('2d');
+const ground=new Image(),hero=new Image();ground.src='../../assets/resources/textures/bg_level1_village.png';hero.src='../../assets/resources/textures/player_actions.png';
+let time=0,last=performance.now(),paused=false,scene=true,health=1,hitAge=-1,hitX=0;
+const strike=x=>{hitX=Math.max(-130,Math.min(130,x));hitAge=0;};
+canvas.onclick=e=>{const r=canvas.getBoundingClientRect();strike((e.clientX-r.left)*352/r.width-176);};
+document.querySelector('#hit').onclick=()=>strike(0);
+document.querySelector('#pause').onclick=e=>{paused=!paused;e.target.textContent=paused?'继续播放':'暂停';};
+document.querySelector('#background').onclick=e=>{scene=!scene;e.target.textContent=scene?'切换纯色底':'切换战场底';};
+document.querySelector('#health').onclick=e=>{health=health===1?.2:1;e.target.textContent=`强度 ${Math.round(health*100)}%`;};
+function tick(now){const dt=Math.min(.1,(now-last)/1000);last=now;if(!paused){time+=dt;if(hitAge>=0)hitAge+=dt;}
+ctx.imageSmoothingEnabled=false;ctx.fillStyle='#111321';ctx.fillRect(0,0,352,220);
+if(scene&&ground.naturalWidth){ctx.drawImage(ground,0,1120,853,550,0,0,352,220);ctx.fillStyle='rgba(10,15,30,.25)';ctx.fillRect(0,0,352,220);}
+if(scene&&hero.naturalWidth){const col=Math.floor(time*4)%4,feet=[206,206,194,194];ctx.drawImage(hero,col*362+feet[col]-200,0,362,362,140,148,72,72);}
+clearFrame(frame);const p=painterFor(frame);p.place(176,137);
+draw(p,time%meta.duration,{...meta.options,health,hitAge,hitX});composite(frame,image.data,null);bc.putImageData(image,0,0);ctx.drawImage(buffer,0,0);
+requestAnimationFrame(tick);}
+requestAnimationFrame(tick);
+</script></html>

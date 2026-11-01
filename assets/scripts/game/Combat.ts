@@ -5,6 +5,7 @@ import {
     ULT, ULT_NAMES, GROWTH,
 } from '../config/GameConfig';
 import { Pool } from '../core/Pool';
+import { STAT_EFFECT } from '../config/MetaConfig';
 import { circleNode, rectNode, makeNode, hex, setOpacity, paintCircle, addLabel } from '../core/Draw';
 import { ENEMY_ART, hasArt, spriteNode, getFrames } from '../core/Art';
 import { SkillSystem } from './SkillSystem';
@@ -14,6 +15,8 @@ import { AudioManager } from '../core/AudioManager';
 import { FX, burst, flash, flashCombat, flashCastGlow, flashHasteTrail, flashMotionHit } from './ParticleFX';
 import { hitPulse } from './Anim';
 import { FrameAnim, FrameClip } from './FrameAnim';
+import { BarrierView } from './BarrierView';
+import type { BarrierElement } from './BarrierArt';
 import { hasMotionRef, MotionRefId, MOTION_REF_TINT } from './MotionRef';
 
 export interface Enemy {
@@ -53,7 +56,7 @@ interface Fx { key: string; node: Node; life: number; maxLife: number; scale: nu
 
 const HALF_W = LAYOUT.roadHalfW; // 出怪与妖怪横向活动范围：收在路面以内
 const top = (): number => GAME.horizonY; // 纵深最远点（地平线/出怪线）
-const PLAYER_ART_SIZE = 160; // 小道士图片显示边长（2026-10-28 暗黑国风道士：帧内留白多，120 → 160）
+const PLAYER_ART_SIZE = 160; // 当前符师动作帧显示边长，完整轮廓位于结界后方。
 
 // 战斗世界：施法、敌人移动、子弹碰撞、区域伤害、特效
 export class Combat {
@@ -91,12 +94,14 @@ export class Combat {
     private holding = false;
     private pool: Pool;
     private player: Node;
+    private barrier: BarrierView;
     private zoneLayer: Node;
     private enemyLayer: Node;
     private bulletLayer: Node;
     private fxLayer: Node;
     private playerAnim: FrameAnim | null = null;
     private castingPlayer = false;
+    private reactingPlayer = false;
     private playerIdle: FrameClip | null = null;
     private playerCast: FrameClip | null = null;
     private playerHit: FrameClip | null = null;
@@ -151,18 +156,28 @@ export class Combat {
 
     constructor(layer: Node, private skills: SkillSystem, private fb: Feedback, private onKill: (e: Enemy) => void, private audio?: AudioManager) {
         this.pool = new Pool((key) => this.create(key));
-        // 正面略俯视的城墙：垛口线 = wallY，正中法坛台面给主角站。
-        // 角楼和法坛伸到垛口线以上，放在妖怪层下面，墙下攻城的妖怪才不会被挡住
-        const wall = spriteNode('env_wall', LAYOUT.wallArtW, LAYOUT.wallArtH, layer) ?? rectNode('wall', GAME.width, 40, '#4A3B2A', layer);
-        wall.setPosition(0, hasArt('env_wall') ? GAME.wallY + LAYOUT.wallArtTopAbove - LAYOUT.wallArtH / 2 : GAME.wallY - 20);
+        this.barrier = new BarrierView(layer, GAME.width, GAME.wallY);
+        this.updateBarrier(0);
         this.zoneLayer = makeNode('zones', layer);
         this.enemyLayer = makeNode('enemies', layer);
         this.player = spriteNode('player_taoist', PLAYER_ART_SIZE, PLAYER_ART_SIZE, layer) ?? circleNode('player', 32, '#F2E3B3', '师', layer);
+        // 图集统一脚心在 x=200；锚点与实际玩家 X / 出弹位置对齐。
+        if (hasArt('player_actions')) this.player.getComponent(UITransform).setAnchorPoint(200 / 362, 0.5);
         this.player.setPosition(0, GAME.playerY);
         this.bulletLayer = makeNode('bullets', layer);
         this.fxLayer = makeNode('fx', layer);
         this.setupPlayerAnim();
         this.setupEnemyMoveClips();
+    }
+
+    setBarrierElement(element: BarrierElement): void {
+        this.barrier.setElement(element);
+        this.updateBarrier(0);
+    }
+
+    updateBarrier(dt: number): void {
+        this.barrier.update(dt, this.wallHp, this.wallMax,
+            Math.max(0, Math.round((this.wallMax-GAME.wallHp)/STAT_EFFECT.wallPerLv)));
     }
 
     private setupEnemyMoveClips(): void {
@@ -333,9 +348,9 @@ export class Combat {
     }
 
     private setupPlayerAnim(): void {
-        this.playerIdle = this.makeClip('anim/player_taoist/idle', 8, true); // 12 帧呼吸，1.5 秒一循环
-        this.playerCast = this.makeClip('anim/player_taoist/cast', 16, false); // 8 帧掷符 0.5 秒
-        this.playerHit = this.makeClip('anim/player_taoist/hit', 10, false); // 6 帧受击 0.6 秒；optional; reserved
+        this.playerIdle = this.makeClip('anim/player_taoist/idle', 4, true); // 4 帧背面呼吸与飘带，1 秒循环
+        this.playerCast = this.makeClip('anim/player_taoist/cast', 12, false); // 4 帧抬手 / 送符 / 收势，约 0.33 秒
+        this.playerHit = this.makeClip('anim/player_taoist/hit', 12, false); // 4 帧受击回正，约 0.33 秒
         // 仅当贴图玩家（spriteNode 成功）且至少有 idle 帧时启用
         if (!hasArt('player_taoist') || !this.playerIdle) return;
         this.playerAnim = new FrameAnim(this.player);
@@ -346,21 +361,23 @@ export class Combat {
 
     /** 结界被撞：主角受击 once，结束回 idle；1 秒内最多一次，施法中不打断 */
     private playPlayerHit(): void {
-        if (!this.playerAnim || !this.playerHit || this.castingPlayer) return;
+        if (!this.playerAnim || !this.playerHit || this.castingPlayer || this.reactingPlayer) return;
         const now = Date.now();
         if (now - this.lastPlayerHitMs < 1000) return;
         this.lastPlayerHitMs = now;
+        this.reactingPlayer = true;
         this.playerAnim.play(this.playerHit, () => this.playPlayerIdle());
     }
 
     private playPlayerIdle(): void {
         this.castingPlayer = false;
+        this.reactingPlayer = false;
         if (!this.playerAnim || !this.playerIdle) return;
         this.playerAnim.play(this.playerIdle);
     }
 
     /**
-     * 施法：播 cast once，结束回 idle；无帧则 noop。
+     * 施法：播 cast once，结束回 idle；无帧则保留静态图。
      * castColor：技能色族（缺省朱砂 #E23B3B）；疾书≥1 强制青绿 #3DB8A0。
      * 分符≥1 时挂金尘裂；朱砂≥1 且无疾书时叠朱红脉冲（无焰形）。
      */
@@ -387,7 +404,7 @@ export class Combat {
         if (multiLv >= 1) {
             burst(this.fxLayer, px, py, FX.goldDust(px, py));
         }
-        if (!this.playerAnim || !this.playerCast) return;
+        if (!this.playerAnim || !this.playerCast || this.castingPlayer || this.reactingPlayer) return;
         this.castingPlayer = true;
         this.playerAnim.play(this.playerCast, () => this.playPlayerIdle());
     }
@@ -465,6 +482,7 @@ export class Combat {
         this.updateEnemies(dt);
         this.updateFx(dt);
         this.cleanup();
+        this.updateBarrier(dt);
     }
 
     // ---------- 节点工厂 ----------
@@ -794,6 +812,7 @@ export class Combat {
                 e.depth = 1;
                 e.y = GAME.wallY + r;
                 this.wallHp -= d.damage * dt;
+                if (Math.floor(e.t*5)!==Math.floor((e.t-dt)*5)) this.barrier.hit(e.x);
                 if (Math.random() < dt * 4) this.fb.shake(6, 0.15);
             } else if (!d.boss && !siegeEntry && e.y - r <= GAME.wallY) {
                 // 记录本帧内到达时刻；同一时刻按生成顺序排序。
@@ -1094,7 +1113,10 @@ export class Combat {
             this.fb.shake(10, 0.25);
             this.audio?.playSfx('barrier_crack', 0.55);
             this.playPlayerHit();
-            for (const entry of hits) burst(this.fxLayer, entry.enemy.x, GAME.wallY, FX.barrier(entry.enemy.x, GAME.wallY));
+            for (const entry of hits) {
+                this.barrier.hit(entry.enemy.x);
+                burst(this.fxLayer, entry.enemy.x, GAME.wallY, FX.barrier(entry.enemy.x, GAME.wallY));
+            }
         }
     }
 
