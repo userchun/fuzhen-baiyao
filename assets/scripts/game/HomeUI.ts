@@ -352,18 +352,21 @@ export class HomeUI {
             }
         });
 
-        // E 关卡牌：有 level_card 贴图时只用贴图底板（已含空圆+关名槽+左右箭），引擎只排字/难度/奖励/热区。
+        // E 关卡牌：v3 贴图仅空圆+左右箭+外框（无关名槽）；引擎排关名→难度→奖励。
         const lv = this.level;
         const open = lv < p.unlockedLevels;
         const maxLv = maxBrowsableLevel(p, count);
         const best = p.bestTimes[lv]?.[this.diff] ?? null;
-        // 卡内上→下锁：关名 → 难度 pill → 首通奖励；贴图路径不再画「山」/第二套空框/Graphics 箭。
+        // 卡内上→下：关名 → 难度 pill → 首通奖励。chrome 时 pill 右移避开 Boss 圆（圆右缘≈406）。
         const namePos: [number, number] = chromeCard
-            ? [620, 1686]
+            ? [640, 1686]
             : [POS.plaque[0], POS.plaque[1] + (best === null ? 14 : 0)];
-        const diffY = chromeCard ? 1788 : POS.diffNormal[1];
-        const rewardPos: [number, number] = chromeCard ? [620, 1870] : [POS.reward[0], POS.reward[1]];
-        const bestPos: [number, number] = chromeCard ? [620, 1638] : [POS.bestTime[0], POS.bestTime[1]];
+        const diffY = chromeCard ? 1810 : POS.diffNormal[1];
+        // Boss 圆右缘≈406；pill 半宽≈100 → 中心≥620，气口充足。
+        const diffNormalPos: [number, number] = chromeCard ? [620, diffY] : [POS.diffNormal[0], diffY];
+        const diffHardPos: [number, number] = chromeCard ? [840, diffY] : [POS.diffHard[0], diffY];
+        const rewardPos: [number, number] = chromeCard ? [640, 1888] : [POS.reward[0], POS.reward[1]];
+        const bestPos: [number, number] = chromeCard ? [640, 1638] : [POS.bestTime[0], POS.bestTime[1]];
         if (!chromeCard) {
             const bossY = POS.boss[1] + (best === null ? 14 : 0);
             const slot = makeNode('bossSlot', dyn);
@@ -495,8 +498,8 @@ export class HomeUI {
                 rerender();
             });
         };
-        pill('普通', 'normal', [POS.diffNormal[0], diffY]);
-        pill('困难', 'hard', [POS.diffHard[0], diffY]);
+        pill('普通', 'normal', diffNormalPos);
+        pill('困难', 'hard', diffHardPos);
 
         // 首通奖励小字（引擎画）
         const done = p.cleared[lv]?.[this.diff] === true;
