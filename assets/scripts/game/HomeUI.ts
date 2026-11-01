@@ -18,14 +18,15 @@ import { popIn, breathe } from './Anim';
 const IMG = { w: 1080, h: 2340 };
 const SRC_K = 1;
 const POS = {
-    progress: [539, 428], coin: [281, 134], paper: [677, 134], gear: [981, 134],
+    // 顶栏略下移，给刘海/状态栏留呼吸；关卡牌内铭牌→难度→奖励拉开间距。
+    progress: [539, 428], coin: [281, 152], paper: [677, 152], gear: [981, 152],
     title: [539, 313],
-    entries: [[941, 840], [941, 1092], [941, 1344]],
-    plaque: [539, 1674], ring: [539, 1749], arrowL: [195, 1674], arrowR: [884, 1674],
-    bestTime: [539, 1734],
+    entries: [[930, 840], [930, 1092], [930, 1344]],
+    plaque: [539, 1658], ring: [539, 1755], arrowL: [195, 1658], arrowR: [884, 1658],
+    bestTime: [539, 1718],
     fight: [539, 2113],
-    diffNormal: [404, 1794], diffHard: [675, 1794],
-    reward: [539, 1861],
+    diffNormal: [404, 1808], diffHard: [675, 1808],
+    reward: [539, 1880],
 } as const;
 
 /** 像素夜色色板：金暖 / 暖纸字 / 石墙冷灰 */
@@ -67,7 +68,7 @@ function modalButton(name: string, w: number, h: number, parent: Node, tone: 'in
     g.strokeColor = hex(tone === 'red' || tone === 'gold' ? GOLD : STONE, 210);
     g.lineWidth = 1.5;
     g.roundRect(-w / 2 + 3, -h / 2 + 3, w - 6, h - 6, 8); g.stroke();
-    n.getComponent(UITransform).setContentSize(w, Math.max(h, 88));
+    n.getComponent(UITransform).setContentSize(w, Math.max(h, 96));
     return n;
 }
 
@@ -174,7 +175,8 @@ export class HomeUI {
             return l;
         };
         const hit = (pos: readonly number[], w: number, h: number, cb: () => void, sound = true): Node => {
-            const minTouch = 88; // 720 设计宽度下约 44 CSS px（360 宽手机）。
+            // 游戏坐标 720 宽：96px ≈ 48 CSS px（360 宽手机），落在 88–96 触控下限上沿。
+            const minTouch = 96;
             const n = makeNode('hit', dyn, Math.max(w * this.u, minTouch), Math.max(h * this.u, minTouch));
             n.setPosition(...this.at(pos));
             n.on(Node.EventType.TOUCH_END, (e: EventTouch) => {
@@ -190,7 +192,7 @@ export class HomeUI {
             const level = name === 'levelPanel';
             const entry = name.startsWith('entry-');
             const width = w * this.u;
-            const height = (level ? 260 : primary ? 170 : h) * this.u;
+            const height = (level ? 290 : primary ? 170 : h) * this.u;
             const n = makeNode(name, dyn, width, height);
             n.setPosition(...this.at(pos));
             const g = n.addComponent(Graphics);
@@ -199,7 +201,7 @@ export class HomeUI {
             g.roundRect(-width / 2, -height / 2 - 7 * this.u, width, height, radius); g.fill();
             g.fillColor = hex(primary ? CINNABAR : level ? '#242736' : '#2A2E3F', level ? 247 : 255);
             g.roundRect(-width / 2, -height / 2, width, height, radius); g.fill();
-            g.strokeColor = hex(primary ? GOLD : level ? GOLD : '#C8B06A');
+            g.strokeColor = hex(primary || level ? GOLD : '#C9A84A');
             g.lineWidth = (primary ? 4 : 3) * this.u;
             g.roundRect(-width / 2 + 5 * this.u, -height / 2 + 5 * this.u, width - 10 * this.u, height - 10 * this.u, radius - 4 * this.u); g.stroke();
             if (level) return n;
@@ -296,7 +298,7 @@ export class HomeUI {
                 g.fillColor = hex('#2A0A06');
                 g.circle(0, 0, 11);
                 g.fill();
-                g.fillColor = hex('#DC2D23');
+                g.fillColor = hex(CINNABAR);
                 g.circle(0, 0, 9);
                 g.fill();
                 dot.setPosition(x + 53 * this.u, y + 60 * this.u);
@@ -370,13 +372,13 @@ export class HomeUI {
             const on = this.diff === d;
             const enabled = d === 'normal' ? open : hardOpen;
             const bg = on ? CINNABAR : '#2A2E3F';
-            const n = rectNode(`difficulty-${d}`, 190 * this.u, 54 * this.u, bg, dyn, 20, 230);
+            const n = rectNode(`difficulty-${d}`, 200 * this.u, 60 * this.u, bg, dyn, 20, 230);
             n.setPosition(...this.at(pos));
-            // 当前难度用暖玉内衬强调，锁定状态保持低对比。
+            // 当前难度用朱砂内衬强调，锁定状态保持低对比。
             const pg = n.getComponent(Graphics);
             pg.fillColor = hex(on && enabled ? CINNABAR : '#242736', 215);
-            pg.roundRect(-91 * this.u, -24 * this.u, 182 * this.u, 48 * this.u, 18); pg.fill();
-            n.getComponent(UITransform).setContentSize(210 * this.u, Math.max(110 * this.u, 88));
+            pg.roundRect(-96 * this.u, -26 * this.u, 192 * this.u, 52 * this.u, 18); pg.fill();
+            n.getComponent(UITransform).setContentSize(220 * this.u, Math.max(110 * this.u, 96));
             addLabel(n, enabled ? text : `${text}·锁`, 30, enabled ? (on ? '#FFFFFF' : CREAM) : DIM);
             n.on(Node.EventType.TOUCH_END, (e: EventTouch) => {
                 e.propagationStopped = true;
@@ -621,7 +623,7 @@ export class HomeUI {
             b.setPosition(i === 0 ? -120 : 120, H / 2 - 170);
             addLabel(b, t === 'stat' ? '道　士' : '符　咒', 28, on ? '#FFFFFF' : CREAM);
             const dot = t === 'stat' ? canAffordUpgrade(p) : canAffordStar(p);
-            if (dot) rectNode('dot', 16, 16, '#E23B3B', b, 8).setPosition(96, 22);
+            if (dot) rectNode('dot', 16, 16, CINNABAR, b, 8).setPosition(96, 22);
             tap(b, () => {
                 this.audio?.playSfx('click', 0.6);
                 redraw(t);
