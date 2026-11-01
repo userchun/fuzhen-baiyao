@@ -194,20 +194,32 @@ export class HomeUI {
             const primary = name === 'fightPanel';
             const level = name === 'levelPanel';
             const entry = name.startsWith('entry-');
+            // CD 锁表：出战 820×180 硬边；关卡卡 890×300；侧钮约 140×140。
             const width = w * this.u;
-            const height = (level ? 290 : primary ? 170 : h) * this.u;
+            const height = h * this.u;
             const n = makeNode(name, dyn, width, height);
             n.setPosition(...this.at(pos));
             const g = n.addComponent(Graphics);
-            const radius = (level ? 24 : primary ? 38 : 20) * this.u;
-            g.fillColor = hex('#0A0C14', 55);
-            g.roundRect(-width / 2, -height / 2 - 7 * this.u, width, height, radius); g.fill();
+            // 出战硬边平涂；关卡/侧钮仅轻微像素圆角。
+            const radius = (primary ? 0 : level ? 8 : entry ? 6 : 12) * this.u;
+            g.fillColor = hex('#0A0C14', primary ? 0 : 55);
+            if (!primary) {
+                g.roundRect(-width / 2, -height / 2 - 7 * this.u, width, height, radius); g.fill();
+            }
             g.fillColor = hex(primary ? CINNABAR : level ? '#242736' : '#2A2E3F', level ? 247 : 255);
-            g.roundRect(-width / 2, -height / 2, width, height, radius); g.fill();
+            if (primary) {
+                g.rect(-width / 2, -height / 2, width, height); g.fill();
+            } else {
+                g.roundRect(-width / 2, -height / 2, width, height, radius); g.fill();
+            }
             // CD：金描边 1–2 逻辑像素；出战朱砂底 + 金框。
             g.strokeColor = hex(primary || level ? GOLD : '#C9A84A');
             g.lineWidth = (primary ? 2 : 1.5) * this.u;
-            g.roundRect(-width / 2 + 4 * this.u, -height / 2 + 4 * this.u, width - 8 * this.u, height - 8 * this.u, radius - 3 * this.u); g.stroke();
+            if (primary) {
+                g.rect(-width / 2 + 4 * this.u, -height / 2 + 4 * this.u, width - 8 * this.u, height - 8 * this.u); g.stroke();
+            } else {
+                g.roundRect(-width / 2 + 4 * this.u, -height / 2 + 4 * this.u, width - 8 * this.u, height - 8 * this.u, Math.max(0, radius - 3 * this.u)); g.stroke();
+            }
             if (level) return n;
             const icon = makeNode('icon', n);
             icon.setPosition(entry || primary || name === 'settingsPanel' ? 0 : -width / 2 + 46 * this.u, 0);
@@ -251,8 +263,8 @@ export class HomeUI {
         art('coinPanel', POS.coin, 330, 103);
         art('paperPanel', POS.paper, 330, 105);
         art('settingsPanel', POS.gear, 100, 94);
-        art('levelPanel', POS.ring, 890, 330);
-        const fightArt = art('fightPanel', POS.fight, 815, 211);
+        art('levelPanel', POS.ring, 890, 300);
+        const fightArt = art('fightPanel', POS.fight, 820, 180);
         const rerender = () => this.render(p, levels, act);
         const count = levels.length;
 
@@ -287,7 +299,7 @@ export class HomeUI {
             { id: 'record', name: '记录', dot: false },
         ];
         entries.forEach((e, i) => {
-            art(`entry-${e.id}`, [POS.entries[i][0], POS.entries[i][1] - 18], 135, 127);
+            art(`entry-${e.id}`, POS.entries[i], 140, 140);
             // 入口文案与图标分离，描边保证复杂插画上的可读性。
             const caption = put(e.name, POS.entries[i], 29, CREAM);
             // 从徽章的顶部锚点偏移，第三个标签越过 1000 时也不切到底部锚点。
@@ -297,15 +309,14 @@ export class HomeUI {
             hit([POS.entries[i][0], POS.entries[i][1] + 8], 160, 180, () => act.onEntry(e.id));
             if (e.dot) {
                 const [x, y] = this.at(POS.entries[i]);
-                const dot = makeNode('dot', dyn, 20, 20);
+                const dot = makeNode('dot', dyn, 24, 24);
                 const g = dot.addComponent(Graphics);
+                // CD Should：pip 硬边像素方点，非软圆。
                 g.fillColor = hex('#2A0A06');
-                g.circle(0, 0, 11);
-                g.fill();
+                g.rect(-12 * this.u, -12 * this.u, 24 * this.u, 24 * this.u); g.fill();
                 g.fillColor = hex(CINNABAR);
-                g.circle(0, 0, 9);
-                g.fill();
-                dot.setPosition(x + 53 * this.u, y + 60 * this.u);
+                g.rect(-10 * this.u, -10 * this.u, 20 * this.u, 20 * this.u); g.fill();
+                dot.setPosition(x + 58 * this.u, y + 58 * this.u);
             }
         });
 
@@ -397,7 +408,7 @@ export class HomeUI {
         fightLabel.isBold = true;
         fightLabel.fontFamily = 'serif';
         fightLabel.outlineColor = hex('#5A1010');
-        const fight = hit(POS.fight, 790, 180, () => {
+        const fight = hit(POS.fight, 820, 180, () => {
             if (playable) act.onFight(lv, this.diff);
             else this.showToast('通关上一关后解锁');
         });
