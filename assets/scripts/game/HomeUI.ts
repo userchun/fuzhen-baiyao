@@ -8,7 +8,7 @@ import { Node, Label, EventTouch, Graphics, tween, UIOpacity, UITransform } from
 import { GAME, LevelDef, ENEMIES, TALISMANS, TalismanId } from '../config/GameConfig';
 import { Difficulty, FIRST_CLEAR_NORMAL, FIRST_CLEAR_HARD_PAPER, StatId, STAT_UPGRADES, STAT_EFFECT, STAR_COSTS, TALISMAN_IDS } from '../config/MetaConfig';
 import { makeNode, addLabel, rectNode, hex, setOpacity } from '../core/Draw';
-import { spriteNode } from '../core/Art';
+import { spriteNode, hasArt } from '../core/Art';
 import { AudioManager } from '../core/AudioManager';
 import {
     Profile, canPlay, maxBrowsableLevel, canAffordUpgrade, canAffordStar, formatAmount, statCost, starCost,
@@ -260,11 +260,33 @@ export class HomeUI {
             }
             return n;
         };
-        art('coinPanel', POS.coin, 330, 103);
-        art('paperPanel', POS.paper, 330, 105);
-        art('settingsPanel', POS.gear, 100, 94);
-        art('levelPanel', POS.ring, 890, 300);
-        const fightArt = art('fightPanel', POS.fight, 820, 180);
+        // CD chrome 贴图优先；缺失时退回上方 Graphics art()。stone_bar/hero 不挂。
+        const chromeTop = hasArt('ui_home_topbar');
+        const chromeSide = hasArt('ui_home_side_btn');
+        const chromePip = hasArt('ui_home_pip');
+        const chromeCard = hasArt('ui_home_level_card');
+        const chromeFight = hasArt('ui_home_battle_btn');
+        let fightArt: Node | null = null;
+        if (chromeTop) {
+            const bar = spriteNode('ui_home_topbar', 1000 * this.u, 72 * this.u, dyn);
+            bar?.setPosition(...this.at([540, 152]));
+        } else {
+            art('coinPanel', POS.coin, 330, 103);
+            art('paperPanel', POS.paper, 330, 105);
+            art('settingsPanel', POS.gear, 100, 94);
+        }
+        if (chromeCard) {
+            const card = spriteNode('ui_home_level_card', 890 * this.u, 300 * this.u, dyn);
+            card?.setPosition(...this.at(POS.ring));
+        } else {
+            art('levelPanel', POS.ring, 890, 300);
+        }
+        if (chromeFight) {
+            fightArt = spriteNode('ui_home_battle_btn', 820 * this.u, 180 * this.u, dyn);
+            fightArt?.setPosition(...this.at(POS.fight));
+        } else {
+            fightArt = art('fightPanel', POS.fight, 820, 180);
+        }
         const rerender = () => this.render(p, levels, act);
         const count = levels.length;
 
@@ -299,7 +321,12 @@ export class HomeUI {
             { id: 'record', name: '记录', dot: false },
         ];
         entries.forEach((e, i) => {
-            art(`entry-${e.id}`, POS.entries[i], 140, 140);
+            if (chromeSide) {
+                const side = spriteNode('ui_home_side_btn', 140 * this.u, 140 * this.u, dyn);
+                side?.setPosition(...this.at(POS.entries[i]));
+            } else {
+                art(`entry-${e.id}`, POS.entries[i], 140, 140);
+            }
             // 入口文案与图标分离，描边保证复杂插画上的可读性。
             const caption = put(e.name, POS.entries[i], 29, CREAM);
             // 从徽章的顶部锚点偏移，第三个标签越过 1000 时也不切到底部锚点。
@@ -309,14 +336,19 @@ export class HomeUI {
             hit([POS.entries[i][0], POS.entries[i][1] + 8], 160, 180, () => act.onEntry(e.id));
             if (e.dot) {
                 const [x, y] = this.at(POS.entries[i]);
-                const dot = makeNode('dot', dyn, 24, 24);
-                const g = dot.addComponent(Graphics);
-                // CD Should：pip 硬边像素方点，非软圆。
-                g.fillColor = hex('#2A0A06');
-                g.rect(-12 * this.u, -12 * this.u, 24 * this.u, 24 * this.u); g.fill();
-                g.fillColor = hex(CINNABAR);
-                g.rect(-10 * this.u, -10 * this.u, 20 * this.u, 20 * this.u); g.fill();
-                dot.setPosition(x + 58 * this.u, y + 58 * this.u);
+                if (chromePip) {
+                    const pip = spriteNode('ui_home_pip', 24 * this.u, 24 * this.u, dyn);
+                    pip?.setPosition(x + 58 * this.u, y + 58 * this.u);
+                } else {
+                    const dot = makeNode('dot', dyn, 24, 24);
+                    const g = dot.addComponent(Graphics);
+                    // CD Should：pip 硬边像素方点，非软圆。
+                    g.fillColor = hex('#2A0A06');
+                    g.rect(-12 * this.u, -12 * this.u, 24 * this.u, 24 * this.u); g.fill();
+                    g.fillColor = hex(CINNABAR);
+                    g.rect(-10 * this.u, -10 * this.u, 20 * this.u, 20 * this.u); g.fill();
+                    dot.setPosition(x + 58 * this.u, y + 58 * this.u);
+                }
             }
         });
 
@@ -413,7 +445,7 @@ export class HomeUI {
             else this.showToast('通关上一关后解锁');
         });
         if (!playable) {
-            setOpacity(fightArt, 120);
+            if (fightArt) setOpacity(fightArt, 120);
         } else {
             popIn(fightLabel.node, 0.25);
         }
