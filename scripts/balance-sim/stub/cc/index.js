@@ -1,14 +1,20 @@
 // 最小 cc 桩：只为在 Node 里跑战斗逻辑
 const noop = () => {};
 class Comp { constructor(node) { this.node = node; } }
-export class Graphics extends Comp { clear() {} circle() {} fill() {} stroke() {} rect() {} roundRect() {} moveTo() {} lineTo() {} }
+export class Graphics extends Comp { clear() {} close() {} circle() {} fill() {} stroke() {} rect() {} roundRect() {} moveTo() {} lineTo() {} }
 export class Label extends Comp { string = ''; }
-export class UITransform extends Comp { setContentSize() {} }
+export class UITransform extends Comp { setContentSize() {} setAnchorPoint() {} }
 export class UIOpacity extends Comp { opacity = 255; }
 // 渲染资源在模拟中不加载，但战斗模块仍会静态导入这些引擎符号。
 export class Sprite extends Comp {}
+Sprite.SizeMode = { CUSTOM: 0 };
 export class SpriteFrame {}
-export class Texture2D {}
+export class Rect { constructor(x, y, width, height) { Object.assign(this, { x, y, width, height }); } }
+export class Size { constructor(width, height) { Object.assign(this, { width, height }); } }
+export class Texture2D { reset() {} setFilters() {} setMipFilter() {} setWrapMode() {} uploadData() {} destroy() {} }
+Texture2D.PixelFormat = { RGBA8888: 0 };
+Texture2D.Filter = { NONE: 0, NEAREST: 1 };
+Texture2D.WrapMode = { CLAMP_TO_EDGE: 0 };
 export class ParticleSystem2D extends Comp {}
 export class Vec3 { constructor(x = 0, y = 0, z = 0) { Object.assign(this, { x, y, z }); } }
 export const v2 = (x, y) => ({ x, y });
@@ -21,7 +27,7 @@ export function tween() {
 export class Color { a = 255; fromHEX() { return this; } }
 export const Layers = { Enum: { UI_2D: 1 } };
 export class Node {
-  constructor(name = '') { this.name = name; this.children = []; this.parent = null; this.comps = []; this.active = true; this.angle = 0; this.position = { x: 0, y: 0 }; }
+  constructor(name = '') { this.name = name; this.children = []; this.parent = null; this.comps = []; this.active = true; this.isValid = true; this.angle = 0; this.position = { x: 0, y: 0 }; }
   addComponent(C) { const c = new C(this); this.comps.push(c); return c; }
   getComponent(C) { return this.comps.find((c) => c instanceof C) ?? null; }
   setPosition(x, y) { this.position = { x, y }; }
@@ -33,4 +39,4 @@ export class Node {
   destroyAllChildren() { this.children = []; }
   on() {}
 }
-Node.EventType = {};
+Node.EventType = { NODE_DESTROYED: 'node-destroyed' };
