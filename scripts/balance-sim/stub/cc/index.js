@@ -27,11 +27,11 @@ export function tween() {
 export class Color { a = 255; fromHEX() { return this; } }
 export const Layers = { Enum: { UI_2D: 1 } };
 export class Node {
-  constructor(name = '') { this.name = name; this.children = []; this.parent = null; this.comps = []; this.active = true; this.isValid = true; this.angle = 0; this.position = { x: 0, y: 0 }; }
+  constructor(name = '') { this.name = name; this.children = []; this.parent = null; this.comps = []; this.active = true; this.isValid = true; this.angle = 0; this.position = { x: 0, y: 0 }; this.scale = { x: 1, y: 1, z: 1 }; }
   addComponent(C) { const c = new C(this); this.comps.push(c); return c; }
   getComponent(C) { return this.comps.find((c) => c instanceof C) ?? null; }
   setPosition(x, y) { this.position = { x, y }; }
-  setScale() {}
+  setScale(x = 1, y = x, z = 1) { this.scale = typeof x === "object" ? { ...x } : { x, y, z }; }
   addChild(n) { n.parent = this; this.children.push(n); }
   removeFromParent() { if (this.parent) { this.parent.children = this.parent.children.filter((c) => c !== this); this.parent = null; } }
   getChildByName(n) { return this.children.find((c) => c.name === n) ?? null; }

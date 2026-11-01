@@ -29,7 +29,7 @@ export const LAYOUT = {
     wallArtW: 860,         // 城墙图片显示宽度：比屏宽 720 大，两端角楼外侧被屏幕裁掉（城墙 1290×363，2026-10-30 法坛版）
     wallArtH: 242,         // 城墙图片显示高度
     wallArtTopAbove: 96,   // 城墙图片顶边高出垛口线多少（角楼和法坛垛口伸到战场里）
-    roadHalfW: 150,        // 路面半宽：出怪和妖怪横向活动收在这个范围内（暗黑国风背景的路更窄）
+    roadHalfW: 260,        // 路面半宽：出怪和妖怪横向活动收在这个范围内（第一关像素背景路面约 ±280，留 20 边距）
 };
 
 export function applyScreen(visibleHeight: number): void {
