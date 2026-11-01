@@ -365,7 +365,8 @@ export class HomeUI {
         // Boss 圆右缘≈406；pill 半宽≈100 → 中心≥620，气口充足。
         const diffNormalPos: [number, number] = chromeCard ? [620, diffY] : [POS.diffNormal[0], diffY];
         const diffHardPos: [number, number] = chromeCard ? [840, diffY] : [POS.diffHard[0], diffY];
-        const rewardPos: [number, number] = chromeCard ? [640, 1888] : [POS.reward[0], POS.reward[1]];
+        // 卡底边 y≈1905；字号24 中心须上收到 ~1848–1860，否则贴/溢出底金边（pill 底≈1834）。
+        const rewardPos: [number, number] = chromeCard ? [640, 1854] : [POS.reward[0], POS.reward[1]];
         const bestPos: [number, number] = chromeCard ? [640, 1638] : [POS.bestTime[0], POS.bestTime[1]];
         if (!chromeCard) {
             const bossY = POS.boss[1] + (best === null ? 14 : 0);
@@ -431,8 +432,11 @@ export class HomeUI {
         plaque.isBold = true;
         plaque.node.getComponent(UITransform).setContentSize((chromeCard ? 480 : 420) * this.u, 60 * this.u);
         const arrow = (pos: readonly number[], enabled: boolean, delta: number) => {
-            // 贴图卡已烤左右箭：只留热区，禁止再画 Graphics 圆/三角（禁双画）。
-            const arrowPos: [number, number] = chromeCard ? [pos[0], POS.ring[1]] : [pos[0], namePos[1]];
+            // chrome PNG 已烤左右箭（尖≈画布 114/963，体质心≈184/894 @ ringY=1755）。
+            // chrome 路径只留透明热区，禁止再画 Graphics 圆/三角，避免双箭或与烤箭错位「歪」。
+            const arrowPos: [number, number] = chromeCard
+                ? (delta < 0 ? [184, POS.ring[1]] : [894, POS.ring[1]])
+                : [pos[0], namePos[1]];
             const n = hit(arrowPos, 110, 110, () => {
                 if (!enabled) return;
                 this.level += delta;

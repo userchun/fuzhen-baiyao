@@ -11,3 +11,5 @@ Canvas **1080×2340**. Anchors locked to HomeUI. No baked gameplay copy.
 | `ui_home_battle_btn.png` | **820×180** | **(539, 2113)** | **平涂**朱砂 `#BC2525`+金边；**无内井/半透槽**；FE 画「出战」 |
 
 **Out / 不挂：** `ui_home_stone_bar`（底图已有城垛）。hold push。
+
+**Engine overlay (chrome card):** name/pill/reward 右于 Boss 圆；rewardY≈**1854**（卡底≈1905，禁 1888 贴边）；切关热区对齐烤箭质心 (184/894, 1755)，不画引擎三角。
