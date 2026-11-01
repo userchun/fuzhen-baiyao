@@ -14,7 +14,7 @@ const frames = new Map<string, SpriteFrame>();
 export const ENEMY_ART: Record<string, { tex: string; sealY: number; sealX?: number; sealR: number; scale: number; sealYFrames?: number[] }> = {
     // scale = 显示边长 / 碰撞直径。2026-10-31 按图里角色实际可见高度统一：普通小怪 150（纸人身形瘦，放到 165 看起来才一样大）、精英（铜甲尸、灯笼鬼）190（取 12 帧中位高度）
     paperman: { tex: 'enemy_paperman', sealY: 0.53, sealX: 0.51, sealR: 0.05, scale: 1.98 }, // 2026-11-01 槐树精像素定稿：33×33 格放大到 495 方图，显示 99 = 每格 3 单位（与背景、结界一致），可见高约 85 ≈ 符师 0.6；脚底 0.94，字印落在胸口符纸上
-    jiangshi: { tex: 'enemy_jiangshi', sealY: 0.56, sealX: 0.43, sealR: 0.07, scale: 2.78 }, // 2026-10-31 单图：字印落在左胸金色补子上（舌头挡住正中）
+    jiangshi: { tex: 'enemy_jiangshi', sealY: 0.47, sealX: 0.50, sealR: 0.06, scale: 1.65, sealYFrames: [0.469, 0.492, 0.521, 0.426, 0.409, 0.398, 0.398, 0.413, 0.435, 0.525, 0.492, 0.469] }, // 2026-11-01 泥尸像素定稿：33×33 格放大到 495 方图，显示 99（碰撞直径 60），字印落在胸前补子上并逐帧跟随跳跃
     foxfire: { tex: 'enemy_foxfire', sealY: 0.74, sealX: 0.58, sealR: 0.07, scale: 3.98 }, // 2026-10-31 v14 侧身火狐 12 帧奔跑：字印落在胸口
     lantern: { tex: 'enemy_lantern', sealY: 0.40, sealR: 0.08, scale: 2.52 }, // 2026-10-31 v14 獠牙红灯笼 12 帧漂浮：字印落在独眼
     shuigui: { tex: 'enemy_shuigui', sealY: 0.61, sealR: 0.125, scale: 3.51 },

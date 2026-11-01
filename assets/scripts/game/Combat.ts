@@ -127,7 +127,7 @@ export class Combat {
     // swayDeg：art 子节点随步伐左右摇摆的角度（一个 clip 周期摆一个来回）
     // still：单张定稿图，不用走路帧，起伏 / 摇摆按时间由代码驱动（stepHz = 每秒迈几步）
     private static readonly ENEMY_MOVE: Record<string, { fps: number; bobPx: number; swayDeg?: number; prefix?: string; still?: boolean; stepHz?: number; squash?: number; driftPx?: number }> = {
-        jiangshi: { fps: 12, bobPx: 0, swayDeg: 2 }, // 2026-10-31 v14 造型 12 帧跳跃：蹲、起跳、腾空、落地缓冲
+        jiangshi: { fps: 12, bobPx: 0, swayDeg: 1 }, // 2026-11-01 泥尸 12 帧并脚跳（部件合成：蓄力、起跳、腾空、落地缓冲），每秒跳一次
         paperman: { fps: 10, bobPx: 0 }, // 2026-11-01 槐树精 12 帧走路：定稿图拆成身子 / 手臂 / 腿后按走路节奏合成（起伏、轻晃已画进帧里），一个循环两步约 1.2 秒（🧪 待看手感）
         foxfire: { fps: 14, bobPx: 0 }, // 2026-10-31 v14 侧身火狐 12 帧奔跑，快怪略快
         tongjia: { fps: 11, bobPx: 0 },
@@ -491,7 +491,7 @@ export class Combat {
                 }
                 // 跳尸、纸人的字印随 art 跳动和摇摆，避免身体动了汉字留在原地。
                 const sealParent = id === 'jiangshi' || id === 'paperman' ? artNode : n;
-                const sealColor = id === 'jiangshi' || id === 'heishan' ? '#E8E2D0' : '#1E1A26'; // 暗色封印区用浅色字
+                const sealColor = id === 'heishan' ? '#E8E2D0' : '#1E1A26'; // 暗色封印区用浅色字（泥尸改为浅色补子，用深色字）
                 const ch = addLabel(sealParent, d.char, Math.max(12, Math.round(size * art.sealR * 1.3)), sealColor);
                 ch.node.name = 'seal';
                 ch.node.setPosition(size * ((art.sealX ?? 0.5) - 0.5), size * (0.5 - art.sealY));
