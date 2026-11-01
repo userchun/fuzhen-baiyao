@@ -70,7 +70,7 @@
 | 风格样板 | `docs/art/ref/style_target.png` | 1374×1145 | **⑤ 精致像素（现行）** |
 | 主页静态插画 | `assets/resources/textures/ui_home_bg.png` | 1080×2340 RGBA | 已换像素 v1；需负责人 Cocos Preview |
 | 荒村战斗背景 | `assets/resources/textures/bg_level1_village.png` | 1080×2340 RGB | 2026-11-01 像素夜村已接入（路面约 ±280，`roadHalfW` 260） |
-| 妖怪 | `assets/resources/textures/enemy_*` | 槐树精 `enemy_paperman.png` + `anim/enemy_paperman/move_00..11`，均为 33×33 格放大的 495 方图（脚底 0.94） | 槐树精 2026-11-01 定稿与 12 帧走路已接入（定稿图拆部件合成，10 帧/秒）；泥尸 `enemy_jiangshi.png` + `anim/enemy_jiangshi/move_00..11` 2026-11-01 定稿（袍子由靛蓝调成黄褐）与 12 帧并脚跳已接入（部件合成，12 帧/秒，字印逐帧跟随）；火狐 `enemy_foxfire.png` + `anim/enemy_foxfire/move_00..11` 2026-11-01 定稿（正面奔跑、火焰尾巴）与 12 帧奔跑已接入（部件合成，14 帧/秒）；井鬼 `enemy_shuigui.png` + `anim/enemy_shuigui/move_00..11` 2026-11-01 定稿（湿发女鬼飘在水洼上）与 12 帧漂浮已接入（部件合成，8 帧/秒，潜水由代码半透明表现）；均待试玩看手感；其余**旧风格，待换** |
+| 妖怪 | `assets/resources/textures/enemy_*` | 槐树精 `enemy_paperman.png` + `anim/enemy_paperman/move_00..11`，均为 33×33 格放大的 495 方图（脚底 0.94） | 槐树精 2026-11-01 定稿与 12 帧走路已接入（定稿图拆部件合成，10 帧/秒）；泥尸 `enemy_jiangshi.png` + `anim/enemy_jiangshi/move_00..11` 2026-11-01 定稿（袍子由靛蓝调成黄褐）与 12 帧并脚跳已接入（部件合成，12 帧/秒，字印逐帧跟随）；火狐 `enemy_foxfire.png` + `anim/enemy_foxfire/move_00..11` 2026-11-01 定稿（正面奔跑、火焰尾巴）与 12 帧奔跑已接入（部件合成，14 帧/秒）；井鬼 `enemy_shuigui.png` + `anim/enemy_shuigui/move_00..11` 2026-11-01 定稿（湿发女鬼飘在水洼上）与 12 帧漂浮已接入（部件合成，8 帧/秒，潜水由代码半透明表现）；铜钱精 `enemy_tongqian.png` + `anim/enemy_tongqian/move_00..11` 2026-11-01 定稿（铜钱串成的圆身，铜锈程序调成暗金、缩到 0.85）与 12 帧摇摆走路已接入（部件合成，10 帧/秒）；均待试玩看手感；其余**旧风格，待换** |
 | 符师 / 动作图集 | `assets/resources/textures/player_*` | — | **旧风格，待换** |
 | 旧 UI 图集 | `ui_home_kit.png` 等 | — | 停用 / 历史 |
 

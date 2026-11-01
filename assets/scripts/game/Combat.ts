@@ -131,6 +131,7 @@ export class Combat {
         paperman: { fps: 10, bobPx: 0 }, // 2026-11-01 槐树精 12 帧走路：定稿图拆成身子 / 手臂 / 腿后按走路节奏合成（起伏、轻晃已画进帧里），一个循环两步约 1.2 秒（🧪 待看手感）
         foxfire: { fps: 14, bobPx: 0 }, // 2026-11-01 火狐 12 帧正面奔跑（部件合成：前爪交替、身子起伏、火焰尾巴摆动伸缩），快怪略快
         tongjia: { fps: 11, bobPx: 0 },
+        tongqian: { fps: 10, bobPx: 0 }, // 2026-11-01 铜钱精 12 帧摇摆走路（部件合成：短腿交替、圆身左右晃）
         shuigui: { fps: 8, bobPx: 0 }, // 2026-11-01 井鬼 12 帧漂浮（部件合成：鬼身浮动轻摇、水纹胀缩），一个循环 1.5 秒；潜水仍由代码半透明表现
         lantern: { fps: 10, bobPx: 0 }, // 2026-10-31 v14 獠牙红灯笼 12 帧：左右摇摆、甩舌、火焰随摆；无 bob
         heishan: { fps: 10, bobPx: 0, prefix: 'anim/boss_heishan/idle' }, // 20 帧呼吸 idle，一个循环 2 秒；无 bob
@@ -138,10 +139,10 @@ export class Combat {
     };
     /** U11：常见怪受击 easing 名单（无 hit sheet；不改伤） */
     private static readonly HIT_REACT_MOBS = new Set([
-        'paperman', 'foxfire', 'jiangshi', 'lantern', 'shuigui', 'tongjia',
+        'paperman', 'foxfire', 'jiangshi', 'lantern', 'shuigui', 'tongjia', 'tongqian',
     ]);
     /** U11：更僵、优先加长回弹 */
-    private static readonly HIT_REACT_STIFF = new Set(['jiangshi', 'tongjia']);
+    private static readonly HIT_REACT_STIFF = new Set(['jiangshi', 'tongjia', 'tongqian']);
     /** 灯笼鬼死亡分裂 3f one-shot（非独立敌人类型；splitInto 仍为 foxfire）；U9 骨架优先 death 帧 */
     private lanternSplitClip: FrameClip | null = null;
     private fireExplodeClip: FrameClip | null = null;
