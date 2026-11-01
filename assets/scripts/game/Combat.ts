@@ -129,7 +129,7 @@ export class Combat {
     private static readonly ENEMY_MOVE: Record<string, { fps: number; bobPx: number; swayDeg?: number; prefix?: string; still?: boolean; stepHz?: number; squash?: number; driftPx?: number }> = {
         jiangshi: { fps: 12, bobPx: 0, swayDeg: 1 }, // 2026-11-01 泥尸 12 帧并脚跳（部件合成：蓄力、起跳、腾空、落地缓冲），每秒跳一次
         paperman: { fps: 10, bobPx: 0 }, // 2026-11-01 槐树精 12 帧走路：定稿图拆成身子 / 手臂 / 腿后按走路节奏合成（起伏、轻晃已画进帧里），一个循环两步约 1.2 秒（🧪 待看手感）
-        foxfire: { fps: 14, bobPx: 0 }, // 2026-10-31 v14 侧身火狐 12 帧奔跑，快怪略快
+        foxfire: { fps: 14, bobPx: 0 }, // 2026-11-01 火狐 12 帧正面奔跑（部件合成：前爪交替、身子起伏、火焰尾巴摆动伸缩），快怪略快
         tongjia: { fps: 11, bobPx: 0 },
         shuigui: { fps: 8, bobPx: 0 }, // 略慢以缓和 f6–f7 观感；无 bob
         lantern: { fps: 10, bobPx: 0 }, // 2026-10-31 v14 獠牙红灯笼 12 帧：左右摇摆、甩舌、火焰随摆；无 bob
