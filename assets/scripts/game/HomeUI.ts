@@ -1,9 +1,9 @@
-// 主界面（docs/gameplay-design.md 4.4 节）。
-// 背景暂用 v8 效果图的无字底图 ui_home_bg（框、图标、按钮都画在图里），
-// 这里按图上位置叠文字、红点、锁定状态和点击区域。拆图后换成独立素材时只改 IMG 坐标表。
+// 主界面：⑤精致像素夜色插画 + 金暖/石墙冷/朱砂控件。
+// 视觉规范见 docs/art/art-bible.md；交互规则见 docs/gameplay-design.md 第 4.4 节。
+// L1/局内旧素材仍为旧风格待换，勿标新风格完成。
 
-import { Node, Label, EventTouch, Graphics, tween, UIOpacity } from 'cc';
-import { GAME, LevelDef, TALISMANS, TalismanId, ENEMIES } from '../config/GameConfig';
+import { Node, Label, EventTouch, Graphics, tween, UIOpacity, UITransform } from 'cc';
+import { GAME, LevelDef, TALISMANS, TalismanId } from '../config/GameConfig';
 import { Difficulty, FIRST_CLEAR_NORMAL, FIRST_CLEAR_HARD_PAPER, StatId, STAT_UPGRADES, STAT_EFFECT, STAR_COSTS, TALISMAN_IDS } from '../config/MetaConfig';
 import { makeNode, addLabel, rectNode, hex, setOpacity } from '../core/Draw';
 import { spriteNode } from '../core/Art';
@@ -14,32 +14,62 @@ import {
 } from '../meta/Profile';
 import { popIn, breathe } from './Anim';
 
-/** 底图原始尺寸，以及图上各元素的中心位置（像素，左上为原点） */
-// 底图 v14（852×1846，9:19.5）：顶栏贴顶、关卡牌和出战贴底。POS 是这张图上的像素坐标
-const IMG = { w: 852, h: 1846 };
-/** 控件尺寸沿用 v12 原图（941 宽）的像素写法，换算到 v14 */
-const SRC_K = 852 / 941;
+/** 主页设计坐标：1080×2340（像素夜色底），顶部和底部控件分别贴合安全边距。 */
+const IMG = { w: 1080, h: 2340 };
+const SRC_K = 1;
 const POS = {
-    progress: [240, 85], coin: [536, 70], paper: [700, 70], gear: [806, 70],
-    title: [425, 215],
-    entries: [[770, 955], [770, 1130], [770, 1300]],
-    entryLabels: [[770, 1025], [770, 1190], [770, 1355]],
-    plaque: [500, 1572], ring: [425, 1600], arrowL: [100, 1600], arrowR: [752, 1600],
-    /** 关卡牌左侧 Boss 圆框中心（v14 底图像素） */
-    boss: [230, 1592],
-    /** 关卡牌最佳时间（铭牌下方） */
-    bestTime: [500, 1608],
-    fight: [425, 1752],
-    diffNormal: [588, 1537], diffHard: [658, 1537],
-    rewardCoin: [408, 1636], rewardPaper: [515, 1636], rewardChest: [652, 1636],
+    progress: [539, 428], coin: [281, 134], paper: [677, 134], gear: [981, 134],
+    title: [539, 313],
+    entries: [[941, 840], [941, 1092], [941, 1344]],
+    plaque: [539, 1674], ring: [539, 1749], arrowL: [195, 1674], arrowR: [884, 1674],
+    bestTime: [539, 1734],
+    fight: [539, 2113],
+    diffNormal: [404, 1794], diffHard: [675, 1794],
+    reward: [539, 1861],
 } as const;
 
-/** 与 LEVELS 下标对应的 Boss 名章（半写实夜景圆印） */
-const BOSS_SEALS = ['ui_seal_heishan', 'ui_seal_baigu'] as const;
+/** 像素夜色色板：金暖 / 暖纸字 / 石墙冷灰 */
+const GOLD = '#F4B41B';
+const CREAM = '#E8E4D9';
+const DIM = '#8A90A0';
+const INDIGO = '#1A1C2C';
+const CINNABAR = '#BC2525';
+const STONE = '#5C6B7A';
 
-const GOLD = '#FFD66E';
-const CREAM = '#E8DEC6';
-const DIM = '#7A7468';
+/** 弹窗共用的深靛石墙底 + 金暖细框；不依赖额外图片。 */
+function modalSurface(name: string, w: number, h: number, parent: Node, frame = false): Node {
+    const n = rectNode(name, w, h, frame ? '#242736' : '#1F2230', parent, frame ? 18 : 10);
+    const g = n.getComponent(Graphics);
+    g.lineWidth = frame ? 2 : 1;
+    g.strokeColor = hex(frame ? GOLD : STONE, frame ? 230 : 120);
+    g.roundRect(-w / 2, -h / 2, w, h, frame ? 18 : 10); g.stroke();
+    if (frame) {
+        g.strokeColor = hex(STONE, 95);
+        g.roundRect(-w / 2 + 10, -h / 2 + 10, w - 20, h - 20, 12); g.stroke();
+        for (const x of [-1, 1]) for (const y of [-1, 1]) {
+            const px = x * (w / 2 - 20), py = y * (h / 2 - 20);
+            g.strokeColor = hex(GOLD, 220);
+            g.moveTo(px - x * 26, py); g.lineTo(px, py); g.lineTo(px, py - y * 26); g.stroke();
+        }
+        g.strokeColor = hex(GOLD, 150);
+        const y = h / 2 - 136;
+        g.moveTo(-w / 2 + 34, y); g.lineTo(-12, y);
+        g.moveTo(12, y); g.lineTo(w / 2 - 34, y); g.stroke();
+        g.moveTo(0, y + 5); g.lineTo(5, y); g.lineTo(0, y - 5); g.lineTo(-5, y); g.close(); g.stroke();
+    }
+    return n;
+}
+
+function modalButton(name: string, w: number, h: number, parent: Node, tone: 'ink' | 'red' | 'gold' = 'ink'): Node {
+    const fill = tone === 'red' ? CINNABAR : tone === 'gold' ? '#C48A2A' : '#2A2E3F';
+    const n = rectNode(name, w, h, fill, parent, 10);
+    const g = n.getComponent(Graphics);
+    g.strokeColor = hex(tone === 'red' || tone === 'gold' ? GOLD : STONE, 210);
+    g.lineWidth = 1.5;
+    g.roundRect(-w / 2 + 3, -h / 2 + 3, w - 6, h - 6, 8); g.stroke();
+    n.getComponent(UITransform).setContentSize(w, Math.max(h, 88));
+    return n;
+}
 
 export interface HomeActions {
     onFight: (level: number, diff: Difficulty) => void;
@@ -59,14 +89,14 @@ export class HomeUI {
 
     constructor(private root: Node, private audio?: AudioManager) {}
 
-    /** 图上坐标 → 节点坐标（底图等比铺满屏幕、居中） */
-    /** v12 原图里的 1 像素对应屏幕上多少（尺寸都按 v12 原图写） */
+    /** 设计图中 1 像素对应的布局尺寸。 */
     private get u(): number {
         return this.s * SRC_K;
     }
 
     private at(p: readonly number[]): [number, number] {
-        return [(p[0] - IMG.w / 2) * this.s, (IMG.h / 2 - p[1]) * this.s];
+        const extra = GAME.height - IMG.h * this.s;
+        return [(p[0] - IMG.w / 2) * this.s, GAME.height / 2 - p[1] * this.s - (p[1] > 1400 ? extra : 0)];
     }
 
     /** 当前停在第几关（重排时保持不变） */
@@ -77,30 +107,19 @@ export class HomeUI {
     show(p: Profile, levels: LevelDef[], startLevel: number, act: HomeActions): void {
         this.hide();
         this.level = startLevel;
-        // 整张图完整放进屏幕：顶栏和出战都贴着图的上下边，不能裁；比例不同时空出的边用边缘色补
-        this.s = Math.min(GAME.width / IMG.w, GAME.height / IMG.h);
+        this.s = GAME.width / IMG.w;
         const root = makeNode('home', this.root, GAME.width, GAME.height);
         this.node = root;
-        rectNode('homeBase', GAME.width, GAME.height, '#0B0E16', root);
-        // 屏幕比底图高时，上下空出的部分用底图边缘的颜色补齐（按钮画在底图里，不能再放大底图去填）
-        const gap = (GAME.height - IMG.h * this.s) / 2;
-        if (gap > 0) {
-            const top = rectNode('homeTop', GAME.width, gap + 2, '#071523', root);
-            top.setPosition(0, GAME.height / 2 - gap / 2);
-            const bottom = rectNode('homeBottom', GAME.width, gap + 2, '#121720', root);
-            bottom.setPosition(0, -GAME.height / 2 + gap / 2);
-        }
-        spriteNode('ui_home_bg', IMG.w * this.s, IMG.h * this.s, root);
-        if (gap > 0) {
-            // 接缝处 4 层半透明细条做渐变（只压图边 16px，不碰顶栏）
-            const edge = (IMG.h * this.s) / 2;
-            for (let i = 0; i < 4; i++) {
-                const a = Math.round(180 * (1 - i / 4));
-                const t = rectNode('fadeT', GAME.width, 4, '#071523', root, 0, a);
-                t.setPosition(0, edge - 2 - i * 4);
-                const b = rectNode('fadeB', GAME.width, 4, '#121720', root, 0, a);
-                b.setPosition(0, -edge + 2 + i * 4);
-            }
+        rectNode('homeBase', GAME.width, GAME.height, INDIGO, root);
+        // 插画等比铺满；交互独立于背景，适配长屏时底部控件仍然靠下。
+        const cover = Math.max(GAME.width / IMG.w, GAME.height / IMG.h);
+        spriteNode('ui_home_bg', IMG.w * cover, IMG.h * cover, root);
+        // 上下柔暗遮罩承托文字；中段保持原插画亮度。
+        for (let i = 0; i < 16; i++) {
+            const top = rectNode('headerShade', GAME.width, 18, INDIGO, root, 0, Math.round(70 * (1 - i / 16)));
+            top.setPosition(0, GAME.height / 2 - 9 - i * 18);
+            const bottom = rectNode('footerShade', GAME.width, 28, '#0E1018', root, 0, Math.round(210 * (1 - i / 16)));
+            bottom.setPosition(0, -GAME.height / 2 + 14 + i * 28);
         }
         this.render(p, levels, act);
     }
@@ -113,7 +132,7 @@ export class HomeUI {
     }
 
     /**
-     * 第一局结束后：养成入口符咒暖光圈 + 旁白「用铜钱加固城墙」。
+     * 第一局结束后：养成入口符咒暖光圈 + 旁白「用铜钱加固结界」。
      * 调用方负责写入 metaTutorialSeen；本实例只画一次会话内的高亮。
      */
     enableMetaGuide(): void {
@@ -150,12 +169,13 @@ export class HomeUI {
             const l = addLabel(parent, text, size, color);
             l.enableOutline = true;
             l.outlineColor = hex('#0C0A08');
-            l.outlineWidth = 2;
+            l.outlineWidth = 1.2;
             l.node.setPosition(...this.at(pos));
             return l;
         };
         const hit = (pos: readonly number[], w: number, h: number, cb: () => void, sound = true): Node => {
-            const n = makeNode('hit', dyn, w * this.u, h * this.u);
+            const minTouch = 88; // 720 设计宽度下约 44 CSS px（360 宽手机）。
+            const n = makeNode('hit', dyn, Math.max(w * this.u, minTouch), Math.max(h * this.u, minTouch));
             n.setPosition(...this.at(pos));
             n.on(Node.EventType.TOUCH_END, (e: EventTouch) => {
                 e.propagationStopped = true;
@@ -164,19 +184,95 @@ export class HomeUI {
             });
             return n;
         };
+        // 精致像素：深靛石墙 + 金暖描边 + 朱砂出战，文字图标独立于插画。
+        const art = (name: string, pos: readonly number[], w: number, h: number): Node => {
+            const primary = name === 'fightPanel';
+            const level = name === 'levelPanel';
+            const entry = name.startsWith('entry-');
+            const width = w * this.u;
+            const height = (level ? 260 : primary ? 170 : h) * this.u;
+            const n = makeNode(name, dyn, width, height);
+            n.setPosition(...this.at(pos));
+            const g = n.addComponent(Graphics);
+            const radius = (level ? 24 : primary ? 38 : 20) * this.u;
+            g.fillColor = hex('#0A0C14', 55);
+            g.roundRect(-width / 2, -height / 2 - 7 * this.u, width, height, radius); g.fill();
+            g.fillColor = hex(primary ? CINNABAR : level ? '#242736' : '#2A2E3F', level ? 247 : 255);
+            g.roundRect(-width / 2, -height / 2, width, height, radius); g.fill();
+            g.strokeColor = hex(primary ? GOLD : level ? GOLD : '#C8B06A');
+            g.lineWidth = (primary ? 4 : 3) * this.u;
+            g.roundRect(-width / 2 + 5 * this.u, -height / 2 + 5 * this.u, width - 10 * this.u, height - 10 * this.u, radius - 4 * this.u); g.stroke();
+            if (level) return n;
+            const icon = makeNode('icon', n);
+            icon.setPosition(entry || primary || name === 'settingsPanel' ? 0 : -width / 2 + 46 * this.u, 0);
+            const ig = icon.addComponent(Graphics);
+            ig.lineWidth = 4 * this.u;
+            ig.strokeColor = hex(GOLD);
+            ig.fillColor = hex('#E0A010');
+            const k = this.u;
+            if (primary) {
+                // 两侧短云纹，保留中央清楚的出战文案。
+                for (const side of [-1, 1]) {
+                    ig.moveTo(side * 290 * k, -15 * k); ig.lineTo(side * 320 * k, -15 * k);
+                    ig.lineTo(side * 320 * k, 8 * k); ig.lineTo(side * 300 * k, 8 * k); ig.stroke();
+                }
+            } else if (name === 'coinPanel') {
+                ig.circle(0, 0, 26 * k); ig.fill();
+                ig.strokeColor = hex('#936134'); ig.rect(-8 * k, -8 * k, 16 * k, 16 * k); ig.stroke();
+            } else if (name === 'paperPanel' || name === 'entry-talisman') {
+                ig.roundRect(-19 * k, -30 * k, 38 * k, 60 * k, 4 * k); ig.fill();
+                ig.strokeColor = hex('#D96050');
+                ig.moveTo(-9 * k, 18 * k); ig.lineTo(9 * k, 18 * k);
+                ig.moveTo(0, 24 * k); ig.lineTo(0, -20 * k);
+                ig.moveTo(-10 * k, 0); ig.lineTo(10 * k, 0); ig.stroke();
+            } else if (name === 'entry-upgrade') {
+                ig.roundRect(-30 * k, -24 * k, 60 * k, 44 * k, 3 * k); ig.stroke();
+                ig.moveTo(-36 * k, 20 * k); ig.lineTo(0, 41 * k); ig.lineTo(36 * k, 20 * k);
+                ig.moveTo(-10 * k, -24 * k); ig.lineTo(-10 * k, 0); ig.lineTo(10 * k, 0); ig.lineTo(10 * k, -24 * k); ig.stroke();
+            } else if (name === 'entry-record') {
+                ig.roundRect(-26 * k, -31 * k, 52 * k, 62 * k, 6 * k); ig.stroke();
+                for (const y of [-14, 0, 14]) { ig.moveTo(-14 * k, y * k); ig.lineTo(14 * k, y * k); } ig.stroke();
+            } else {
+                ig.circle(0, 0, 19 * k); ig.stroke();
+                for (let i = 0; i < 8; i++) {
+                    const angle = i * Math.PI / 4;
+                    ig.moveTo(Math.cos(angle) * 25 * k, Math.sin(angle) * 25 * k);
+                    ig.lineTo(Math.cos(angle) * 34 * k, Math.sin(angle) * 34 * k);
+                } ig.stroke();
+            }
+            return n;
+        };
+        art('coinPanel', POS.coin, 330, 103);
+        art('paperPanel', POS.paper, 330, 105);
+        art('settingsPanel', POS.gear, 100, 94);
+        art('levelPanel', POS.ring, 890, 330);
+        const fightArt = art('fightPanel', POS.fight, 815, 211);
         const rerender = () => this.render(p, levels, act);
         const count = levels.length;
 
         // 顶部：通关进度、资源、设置
         const clearedN = p.cleared.filter((c) => c.normal).length;
-        put(`已通 ${clearedN} / ${count}`, POS.progress, 22, CREAM);
-        put(formatAmount(p.coin), POS.coin, 22, CREAM);
-        put(formatAmount(p.paper), POS.paper, 22, CREAM);
-        hit(POS.gear, 80, 80, act.onSettings);
+        put(`已通 ${clearedN} / ${count}`, POS.progress, 28, CREAM);
+        put(formatAmount(p.coin), [POS.coin[0] + 24, POS.coin[1]], 32, '#FFFFFF');
+        put(formatAmount(p.paper), [POS.paper[0] + 24, POS.paper[1]], 32, '#FFFFFF');
+        hit(POS.gear, 110, 110, act.onSettings);
 
         // 标题
-        const title = put('符镇百妖', POS.title, 60, GOLD);
+        const title = put('符 镇 百 妖', POS.title, 82, GOLD);
+        title.fontFamily = 'serif';
+        title.outlineColor = hex('#0C0A08');
+        title.outlineWidth = 2;
         title.isBold = true;
+        const titleOrnament = makeNode('titleOrnament', dyn);
+        titleOrnament.setPosition(...this.at([470, 282]));
+        const tg = titleOrnament.addComponent(Graphics);
+        tg.lineWidth = this.u;
+        tg.strokeColor = hex(GOLD, 220);
+        for (const side of [-1, 1]) {
+            tg.moveTo(side * 28 * this.u, 0); tg.lineTo(side * 173 * this.u, 0);
+            tg.moveTo(side * 186 * this.u, 5 * this.u); tg.lineTo(side * 191 * this.u, 0); tg.lineTo(side * 186 * this.u, -5 * this.u);
+        }
+        tg.moveTo(0, 6 * this.u); tg.lineTo(6 * this.u, 0); tg.lineTo(0, -6 * this.u); tg.lineTo(-6 * this.u, 0); tg.close(); tg.stroke();
 
         // 右侧三个入口 + 红点
         const entries: { id: 'upgrade' | 'talisman' | 'record'; name: string; dot: boolean }[] = [
@@ -185,8 +281,14 @@ export class HomeUI {
             { id: 'record', name: '记录', dot: false },
         ];
         entries.forEach((e, i) => {
-            put(e.name, POS.entryLabels[i], 20, CREAM);
-            hit(POS.entries[i], 140, 180, () => act.onEntry(e.id));
+            art(`entry-${e.id}`, [POS.entries[i][0], POS.entries[i][1] - 18], 135, 127);
+            // 入口文案与图标分离，描边保证复杂插画上的可读性。
+            const caption = put(e.name, POS.entries[i], 29, CREAM);
+            // 从徽章的顶部锚点偏移，第三个标签越过 1000 时也不切到底部锚点。
+            caption.node.setPosition(caption.node.position.x, caption.node.position.y - 72 * this.u);
+            caption.outlineColor = hex('#0C0A08');
+            caption.outlineWidth = 3;
+            hit([POS.entries[i][0], POS.entries[i][1] + 8], 160, 180, () => act.onEntry(e.id));
             if (e.dot) {
                 const [x, y] = this.at(POS.entries[i]);
                 const dot = makeNode('dot', dyn, 20, 20);
@@ -197,7 +299,7 @@ export class HomeUI {
                 g.fillColor = hex('#DC2D23');
                 g.circle(0, 0, 9);
                 g.fill();
-                dot.setPosition(x + 46 * this.u, y + 46 * this.u);
+                dot.setPosition(x + 53 * this.u, y + 60 * this.u);
             }
         });
 
@@ -205,8 +307,13 @@ export class HomeUI {
         const lv = this.level;
         const open = lv < p.unlockedLevels;
         const maxLv = maxBrowsableLevel(p, count);
-        const plaque = put(levels[lv].name, POS.plaque, 30, open ? CREAM : DIM);
+        const best = p.bestTimes[lv]?.[this.diff] ?? null;
+        const titlePos = [POS.plaque[0], POS.plaque[1] + (best === null ? 14 : 0)];
+        const plaque = put(levels[lv].name, titlePos, 36, open ? CREAM : DIM);
         if (!open) plaque.string = `${levels[lv].name}（未解锁）`;
+        plaque.enableWrapText = false;
+        plaque.overflow = Label.Overflow.SHRINK;
+        plaque.node.getComponent(UITransform).setContentSize(510 * this.u, 60 * this.u);
         if (this.diff === 'hard' && open) {
             // 困难：铭牌加一圈朱红描边
             const [x, y] = this.at(POS.ring);
@@ -214,52 +321,63 @@ export class HomeUI {
             ring.setPosition(x, y);
             const g = ring.addComponent(Graphics);
             g.lineWidth = 3;
-            g.strokeColor = hex('#C23A2A');
-            g.roundRect(-310 * this.u, -78 * this.u, 620 * this.u, 156 * this.u, 12);
+            g.strokeColor = hex(CINNABAR);
+            g.moveTo(-180 * this.u, 32 * this.u);
+            g.lineTo(180 * this.u, 32 * this.u);
             g.stroke();
         }
         const arrow = (pos: readonly number[], enabled: boolean, delta: number) => {
-            const n = hit(pos, 90, 90, () => {
+            const arrowPos = [pos[0], titlePos[1]];
+            const n = hit(arrowPos, 110, 110, () => {
                 if (!enabled) return;
                 this.level += delta;
                 if (!canPlay(p, this.level, this.diff)) this.diff = 'normal';
                 rerender();
             }, enabled);
-            if (!enabled) {
-                // 到头的箭头压暗
-                const mask = rectNode('arrowMask', 60 * this.u, 70 * this.u, '#05070C', n, 0, 170);
-                mask.setPosition(0, 0);
-            }
+            const g = n.addComponent(Graphics);
+            g.fillColor = hex('#2A2E3F', enabled ? 255 : 180);
+            g.circle(0, 0, 31 * this.u); g.fill();
+            g.lineWidth = 2 * this.u;
+            g.strokeColor = hex(enabled ? GOLD : DIM, enabled ? 240 : 120);
+            g.circle(0, 0, 31 * this.u); g.stroke();
+            g.lineWidth = 4 * this.u;
+            g.moveTo(-delta * 6 * this.u, 12 * this.u);
+            g.lineTo(delta * 6 * this.u, 0);
+            g.lineTo(-delta * 6 * this.u, -12 * this.u); g.stroke();
         };
         arrow(POS.arrowL, lv > 0, -1);
         arrow(POS.arrowR, lv < maxLv, 1);
 
         // 出战
         const playable = canPlay(p, lv, this.diff);
-        const fightLabel = put('出　战', POS.fight, 52, playable ? GOLD : DIM);
+        const fightLabel = put('出　战', POS.fight, 60, playable ? '#FFFFFF' : DIM);
         fightLabel.isBold = true;
-        const fight = hit(POS.fight, 560, 100, () => {
+        fightLabel.fontFamily = 'serif';
+        fightLabel.outlineColor = hex('#5A1010');
+        const fight = hit(POS.fight, 790, 180, () => {
             if (playable) act.onFight(lv, this.diff);
             else this.showToast('通关上一关后解锁');
         });
         if (!playable) {
-            const mask = rectNode('fightMask', 580 * this.u, 96 * this.u, '#05070C', fight, 10, 150);
-            mask.setPosition(0, 0);
-            fightLabel.node.setSiblingIndex(dyn.children.length - 1);
+            setOpacity(fightArt, 120);
         } else {
             popIn(fightLabel.node, 0.25);
         }
 
-        // 难度切换：关卡牌右上角的两格小切换，盖住底图上的样子重画
+        // 难度切换：独立一行，触控高度约 44 CSS 像素（375 宽预览）。
         const hardOpen = open && p.cleared[lv]?.normal === true;
         const pill = (text: string, d: Difficulty, pos: readonly number[]) => {
             const on = this.diff === d;
             const enabled = d === 'normal' ? open : hardOpen;
-            const [px, py] = this.at(pos);
-            const bg = on ? (d === 'hard' ? '#7A1F18' : '#8A6A2A') : '#141218';
-            const n = rectNode('pill', 76 * this.u, 34 * this.u, bg, dyn, 6, 245);
-            n.setPosition(px, py);
-            addLabel(n, enabled ? text : `${text}·锁`, 17, enabled ? (on ? '#FFF2C8' : CREAM) : DIM);
+            const bg = on ? CINNABAR : '#2A2E3F';
+            const n = rectNode(`difficulty-${d}`, 190 * this.u, 54 * this.u, bg, dyn, 20, 230);
+            n.setPosition(...this.at(pos));
+            // 当前难度用暖玉内衬强调，锁定状态保持低对比。
+            const pg = n.getComponent(Graphics);
+            pg.fillColor = hex(on && enabled ? CINNABAR : '#242736', 215);
+            pg.roundRect(-91 * this.u, -24 * this.u, 182 * this.u, 48 * this.u, 18); pg.fill();
+            n.getComponent(UITransform).setContentSize(210 * this.u, Math.max(110 * this.u, 88));
+            addLabel(n, enabled ? text : `${text}·锁`, 30, enabled ? (on ? '#FFFFFF' : CREAM) : DIM);
             n.on(Node.EventType.TOUCH_END, (e: EventTouch) => {
                 e.propagationStopped = true;
                 if (!enabled) {
@@ -274,45 +392,20 @@ export class HomeUI {
         pill('普通', 'normal', POS.diffNormal);
         pill('困难', 'hard', POS.diffHard);
 
-        // 首通奖励：数字写在底图的铜钱、符纸、宝箱图标旁边
+        // 一行摘要保留首通收益；Boss 介绍与无记录占位不常驻主页。
         const done = p.cleared[lv]?.[this.diff] === true;
         const col = open && !done ? CREAM : DIM;
-        if (this.diff === 'normal') {
+        let rewardText = '首通奖励已领取';
+        if (!done && this.diff === 'normal') {
             const r = FIRST_CLEAR_NORMAL[lv];
-            put(r ? `${r.coin}` : '-', POS.rewardCoin, 20, col);
-            put(r ? `${r.paper}` : '-', POS.rewardPaper, 20, col);
-            put(done ? '已领' : (r?.chest ?? '-'), POS.rewardChest, 20, done ? '#C23A2A' : col);
-        } else {
+            rewardText = r ? `首通  ${r.coin}铜钱 · ${r.paper}符纸 · ${r.chest}` : '暂无首通奖励';
+        } else if (!done) {
             const paper = FIRST_CLEAR_HARD_PAPER[lv];
-            put('×2', POS.rewardCoin, 20, col);
-            put(paper !== undefined ? `+${paper}` : '-', POS.rewardPaper, 20, col);
-            put(done ? '已领' : '×2', POS.rewardChest, 20, done ? '#C23A2A' : col);
+            rewardText = `奖励  铜钱×2 · 符纸+${paper ?? 0} · 宝箱×2`;
         }
-
-        // Should S1：Boss 圆框挂本关名章；已通关显示当前难度最佳时间
-        const bossKey = BOSS_SEALS[lv];
-        const [bx, by] = this.at(POS.boss);
-        const sealR = 72 * this.u;
-        if (bossKey) {
-            const seal = spriteNode(bossKey, sealR * 2, sealR * 2, dyn);
-            if (seal) {
-                seal.setPosition(bx, by);
-            } else {
-                // 缺资源时圆框占位（半写实夜景色，不空着）
-                const ph = makeNode('bossPh', dyn);
-                ph.setPosition(bx, by);
-                const pg = ph.addComponent(Graphics);
-                pg.fillColor = hex('#1A1520');
-                pg.circle(0, 0, sealR);
-                pg.fill();
-                const bossWave = levels[lv].waves.find((w) => ENEMIES[w.enemy]?.boss);
-                const nm = bossWave ? ENEMIES[bossWave.enemy].name : 'Boss';
-                addLabel(ph, nm.slice(0, 2), 22, CREAM);
-            }
-        }
-        const best = p.bestTimes[lv]?.[this.diff] ?? null;
+        put(rewardText, POS.reward, 26, col);
         if (open && best !== null) {
-            put(`最短 ${formatBestTime(best)}`, POS.bestTime, 18, GOLD);
+            put(`本关最短 ${formatBestTime(best)}`, POS.bestTime, 22, DIM);
         }
 
         if (this.metaGuide) this.paintMetaGuide();
@@ -344,11 +437,11 @@ export class HomeUI {
         g.circle(0, 0, 42 * this.u);
         g.fill();
         breathe(glow, 0.06, 1.4);
-        const tip = addLabel(layer, '用铜钱加固城墙', 24, GOLD);
+        const tip = addLabel(layer, '用铜钱加固结界', 24, GOLD);
         tip.enableOutline = true;
         tip.outlineColor = hex('#0C0A08');
         tip.outlineWidth = 2;
-        tip.node.setPosition(x - 160 * this.u, y);
+        tip.node.setPosition(x - 220 * this.u, y);
         // 旁白轻呼吸透明度
         let op = tip.node.getComponent(UIOpacity);
         if (!op) op = tip.node.addComponent(UIOpacity);
@@ -367,29 +460,26 @@ export class HomeUI {
         const mask = rectNode('records', GAME.width, GAME.height, '#000000', this.node, 0, 200);
         mask.on(Node.EventType.TOUCH_END, (e: EventTouch) => (e.propagationStopped = true));
         const W = 660;
-        const H = Math.min(1040, 180 + levels.length * 200 + 100);
-        const panel = rectNode('panel', W, H, '#12141C', mask, 16, 250);
-        const border = makeNode('border', panel).addComponent(Graphics);
-        border.lineWidth = 2;
-        border.strokeColor = hex('#B8924A');
-        border.roundRect(-W / 2, -H / 2, W, H, 16);
-        border.stroke();
+        const H = Math.min(1040, 220 + levels.length * 200 + 100);
+        const panel = modalSurface('panel', W, H, mask, true);
         const tap = (n: Node, cb: () => void) => n.on(Node.EventType.TOUCH_END, (e: EventTouch) => {
             e.propagationStopped = true;
             cb();
         });
-        addLabel(panel, '通关记录', 40, GOLD).node.setPosition(0, H / 2 - 50);
-        addLabel(panel, '本地最短时间 · 困难首通金印', 20, DIM).node.setPosition(0, H / 2 - 95);
+        const heading = addLabel(panel, '通关记录', 40, GOLD);
+        heading.fontFamily = 'serif';
+        heading.node.setPosition(0, H / 2 - 50);
+        addLabel(panel, '最短通关时间 · 困难首通金印', 24, DIM).node.setPosition(0, H / 2 - 95);
 
         levels.forEach((lv, i) => {
-            const y = H / 2 - 180 - i * 200;
-            const card = rectNode('row', W - 48, 180, '#1E1A26', panel, 12);
+            const y = H / 2 - 210 - i * 200;
+            const card = modalSurface('row', W - 64, 180, panel);
             card.setPosition(0, y);
             addLabel(card, lv.name, 28, GOLD).node.setPosition(-140, 50);
             const nt = formatBestTime(p.bestTimes[i]?.normal ?? null);
             const ht = formatBestTime(p.bestTimes[i]?.hard ?? null);
-            addLabel(card, `普通  ${nt}`, 24, CREAM).node.setPosition(-140, 8);
-            addLabel(card, `困难  ${ht}`, 24, CREAM).node.setPosition(-140, -32);
+            addLabel(card, `普通  ${nt}`, 28, CREAM).node.setPosition(-140, 8);
+            addLabel(card, `困难  ${ht}`, 28, CREAM).node.setPosition(-140, -32);
             // 困难首通：暖金竖符 + 朱砂印面（禁奖杯风）
             const hardDone = p.cleared[i]?.hard === true;
             const seal = makeNode('hardSeal', card);
@@ -416,15 +506,15 @@ export class HomeUI {
                 mark.node.setPosition(0, 6);
                 addLabel(seal, '困难', 16, '#5A3A10').node.setPosition(0, -40);
             } else {
-                sg.strokeColor = hex('#3A342C', 180);
+                sg.strokeColor = hex('#99815A', 140);
                 sg.lineWidth = 2;
                 sg.roundRect(-22, -56, 44, 112, 4);
                 sg.stroke();
-                addLabel(seal, '未印', 18, DIM).node.setPosition(0, 0);
+                addLabel(seal, '未印', 24, '#B7AE9A').node.setPosition(0, 0);
             }
         });
 
-        const close = rectNode('close', 220, 60, '#3A3226', panel, 12);
+        const close = modalButton('close', 240, 72, panel);
         close.setPosition(0, -H / 2 + 55);
         addLabel(close, '返　回', 28, CREAM);
         tap(close, () => {
@@ -442,26 +532,21 @@ export class HomeUI {
         this.node.getChildByName('settings')?.destroy();
         const mask = rectNode('settings', GAME.width, GAME.height, '#000000', this.node, 0, 170);
         mask.on(Node.EventType.TOUCH_END, (e: EventTouch) => (e.propagationStopped = true));
-        const panel = rectNode('panel', 520, 560, '#12141C', mask, 16, 245);
-        const border = makeNode('border', panel);
-        const g = border.addComponent(Graphics);
-        g.lineWidth = 2;
-        g.strokeColor = hex('#B8924A');
-        g.roundRect(-260, -280, 520, 560, 16);
-        g.stroke();
-        addLabel(panel, '设　置', 40, GOLD).node.setPosition(0, 220);
+        const panel = modalSurface('panel', 580, 660, mask, true);
+        addLabel(panel, '设　置', 40, GOLD).node.setPosition(0, 270);
+        addLabel(panel, '声 音 与 存 档', 22, DIM).node.setPosition(0, 222);
 
         const rows: { name: string; key: 'music' | 'sfx' }[] = [
             { name: '音乐', key: 'music' }, { name: '音效', key: 'sfx' },
         ];
         const redraw = () => this.showSettings(p, onChange, onClear);
         rows.forEach((r, i) => {
-            const y = 120 - i * 90;
+            const y = 120 - i * 108;
             addLabel(panel, r.name, 30, CREAM).node.setPosition(-120, y);
             const on = p.settings[r.key];
-            const sw = rectNode('switch', 140, 52, on ? '#7A1F18' : '#2A2830', panel, 26);
+            const sw = modalButton('switch', 160, 64, panel, on ? 'red' : 'ink');
             sw.setPosition(110, y);
-            addLabel(sw, on ? '开' : '关', 26, on ? GOLD : DIM);
+            addLabel(sw, on ? '开' : '关', 26, on ? '#FFFFFF' : DIM);
             sw.on(Node.EventType.TOUCH_END, (e: EventTouch) => {
                 e.propagationStopped = true;
                 p.settings[r.key] = !p.settings[r.key];
@@ -472,9 +557,9 @@ export class HomeUI {
         });
 
         let armed = false;
-        const clear = rectNode('clear', 300, 60, '#2A1412', panel, 12);
+        const clear = modalButton('clear', 360, 72, panel);
         clear.setPosition(0, -150);
-        const clearLabel = addLabel(clear, '清除存档', 26, '#E07A6A');
+        const clearLabel = addLabel(clear, '清除存档', 26, '#E07A6A');  // 警示保留偏暖红
         clear.on(Node.EventType.TOUCH_END, (e: EventTouch) => {
             e.propagationStopped = true;
             if (!armed) {
@@ -485,8 +570,8 @@ export class HomeUI {
             onClear();
         });
 
-        const close = rectNode('close', 200, 56, '#3A3226', panel, 12);
-        close.setPosition(0, -230);
+        const close = modalButton('close', 240, 72, panel);
+        close.setPosition(0, -270);
         addLabel(close, '关　闭', 26, CREAM);
         close.on(Node.EventType.TOUCH_END, (e: EventTouch) => {
             e.propagationStopped = true;
@@ -517,27 +602,24 @@ export class HomeUI {
         mask.on(Node.EventType.TOUCH_END, (e: EventTouch) => (e.propagationStopped = true));
         const W = 660;
         const H = 1000;
-        const panel = rectNode('panel', W, H, '#12141C', mask, 16, 250);
-        const g = makeNode('border', panel).addComponent(Graphics);
-        g.lineWidth = 2;
-        g.strokeColor = hex('#B8924A');
-        g.roundRect(-W / 2, -H / 2, W, H, 16);
-        g.stroke();
+        const panel = modalSurface('panel', W, H, mask, true);
         const redraw = (t = tab) => this.showUpgrade(p, t, onBuy, onClose, guideWall);
         const tap = (n: Node, cb: () => void) => n.on(Node.EventType.TOUCH_END, (e: EventTouch) => {
             e.propagationStopped = true;
             cb();
         });
 
-        addLabel(panel, '养　成', 40, GOLD).node.setPosition(0, H / 2 - 50);
+        const heading = addLabel(panel, tab === 'star' ? '符 咒 升 星' : '道 士 养 成', 40, GOLD);
+        heading.fontFamily = 'serif';
+        heading.node.setPosition(0, H / 2 - 50);
         addLabel(panel, `铜钱 ${formatAmount(p.coin)}　　符纸 ${formatAmount(p.paper)}`, 28, CREAM).node.setPosition(0, H / 2 - 105);
 
         // 页签
         (['stat', 'star'] as const).forEach((t, i) => {
             const on = t === tab;
-            const b = rectNode('tab', 220, 56, on ? '#7A1F18' : '#2A2830', panel, 12);
+            const b = modalButton('tab', 240, 68, panel, on ? 'gold' : 'ink');
             b.setPosition(i === 0 ? -120 : 120, H / 2 - 170);
-            addLabel(b, t === 'stat' ? '道　士' : '符　咒', 28, on ? GOLD : DIM);
+            addLabel(b, t === 'stat' ? '道　士' : '符　咒', 28, on ? '#FFFFFF' : CREAM);
             const dot = t === 'stat' ? canAffordUpgrade(p) : canAffordStar(p);
             if (dot) rectNode('dot', 16, 16, '#E23B3B', b, 8).setPosition(96, 22);
             tap(b, () => {
@@ -548,9 +630,13 @@ export class HomeUI {
 
         const buyBtn = (parent: Node, cost: number | null, have: number, unit: string, x: number, y: number, w: number, cb: () => void) => {
             const ok = cost !== null && have >= cost;
-            const b = rectNode('buy', w, 56, cost === null ? '#2A2830' : ok ? '#8E2C2C' : '#3A3036', parent, 12);
+            const b = modalButton('buy', w, 64, parent, ok ? 'red' : 'ink');
             b.setPosition(x, y);
-            addLabel(b, cost === null ? '已满' : `${unit} ${cost}`, 26, cost === null ? DIM : ok ? GOLD : '#E07A6A');
+            addLabel(b, cost === null ? '已满级' : `${unit} ${cost}`, 28, cost === null ? DIM : ok ? '#FFFFFF' : '#7B8798');
+            if (cost !== null && !ok) {
+                const hint = addLabel(parent, `还差 ${cost - have}${unit}`, 24, '#AD5B4C');
+                hint.node.setPosition(x, y - 55);
+            }
             if (ok) tap(b, cb);
         };
         const buy = (kind: 'stat' | 'star', id: string) => {
@@ -559,27 +645,32 @@ export class HomeUI {
             redraw();
         };
 
-        const top = H / 2 - 250;
+        const top = H / 2 - 300;
         if (tab === 'stat') {
             const pct = (v: number) => `${Math.round(v * 100)}%`;
             const effect = (id: StatId, lv: number): string => {
-                if (id === 'wall') return `城墙 ${GAME.wallHp + STAT_EFFECT.wallPerLv * lv}`;
-                if (id === 'brush') return `镇妖符伤害 +${pct(STAT_EFFECT.brushPerLv * lv)}`;
-                if (id === 'spirit') return `灵气 +${pct(STAT_EFFECT.spiritPerLv * lv)}`;
-                return `开局选卡 +${STAT_EFFECT.altarPerLv * lv}`;
+                if (id === 'wall') return `${GAME.wallHp + STAT_EFFECT.wallPerLv * lv}`;
+                if (id === 'brush') return `+${pct(STAT_EFFECT.brushPerLv * lv)}`;
+                if (id === 'spirit') return `+${pct(STAT_EFFECT.spiritPerLv * lv)}`;
+                return `+${STAT_EFFECT.altarPerLv * lv}`;
             };
+            const effectName: Record<StatId, string> = { wall: '结界', brush: '伤害', spirit: '灵气', altar: '开局选卡' };
             (Object.keys(STAT_UPGRADES) as StatId[]).forEach((id, i) => {
                 const y = top - i * 170;
-                const card = rectNode('card', W - 60, 150, '#1E1A26', panel, 12);
+                const card = modalSurface('card', W - 60, 150, panel);
                 card.setPosition(0, y);
                 const max = STAT_UPGRADES[id].costs.length;
                 const lv = p.stats[id];
                 const name = addLabel(card, `${STAT_UPGRADES[id].name}  ${lv}/${max}`, 30, GOLD);
                 name.node.setPosition(-110, 30);
-                const next = lv < max ? `${effect(id, lv)} → ${effect(id, lv + 1)}` : effect(id, lv);
-                addLabel(card, next, 22, CREAM).node.setPosition(-110, -25);
+                const next = `${effectName[id]}  ${effect(id, lv)}${lv < max ? ` → ${effect(id, lv + 1)}` : ''}`;
+                const detail = addLabel(card, next, 28, CREAM);
+                detail.node.setPosition(-110, -25);
+                detail.enableWrapText = false;
+                detail.overflow = Label.Overflow.SHRINK;
+                detail.node.getComponent(UITransform).setContentSize(370, 40);
                 const cost = statCost(p, id);
-                buyBtn(card, cost, p.coin, '铜钱', 205, 0, 170, () => buy('stat', id));
+                buyBtn(card, cost, p.coin, '铜钱', 205, 12, 170, () => buy('stat', id));
                 // §4.7 首局引导：城墙卡
                 if (guideWall && id === 'wall' && cost !== null) {
                     if (p.coin >= cost) {
@@ -590,27 +681,24 @@ export class HomeUI {
                         gg.roundRect(-(W - 60) / 2 + 4, -75 + 4, W - 68, 142, 10);
                         gg.stroke();
                         breathe(glow, 0.04, 1.2);
-                    } else {
-                        const need = cost - p.coin;
-                        addLabel(card, `还差 ${need} 铜钱`, 20, '#E07A6A').node.setPosition(-110, -55);
                     }
                 }
             });
         } else {
             TALISMAN_IDS.forEach((id: TalismanId, i) => {
                 const x = i % 2 === 0 ? -150 : 150;
-                const y = top - 20 - Math.floor(i / 2) * 210;
-                const card = rectNode('card', 280, 190, '#1E1A26', panel, 12);
+                const y = top - 24 - Math.floor(i / 2) * 226;
+                const card = modalSurface('card', 280, 216, panel);
                 card.setPosition(x, y);
                 const st = p.stars[id];
-                addLabel(card, TALISMANS[id].name, 28, GOLD).node.setPosition(0, 62);
-                addLabel(card, '★'.repeat(st) + '☆'.repeat(STAR_COSTS.length - st), 30, '#FFD66E').node.setPosition(0, 18);
-                addLabel(card, `伤害 +${st * 5}%`, 20, CREAM).node.setPosition(0, -20);
-                buyBtn(card, starCost(p, id), p.paper, '符纸', 0, -62, 200, () => buy('star', id));
+                addLabel(card, TALISMANS[id].name, 30, GOLD).node.setPosition(0, 76);
+                addLabel(card, '★'.repeat(st) + '☆'.repeat(STAR_COSTS.length - st), 30, '#FFD66E').node.setPosition(0, 38);
+                addLabel(card, `伤害 +${st * 5}%`, 26, CREAM).node.setPosition(0, 2);
+                buyBtn(card, starCost(p, id), p.paper, '符纸', 0, -42, 200, () => buy('star', id));
             });
         }
 
-        const close = rectNode('close', 220, 60, '#3A3226', panel, 12);
+        const close = modalButton('close', 240, 72, panel);
         close.setPosition(0, -H / 2 + 55);
         addLabel(close, '返　回', 28, CREAM);
         tap(close, () => {

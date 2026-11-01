@@ -1,0 +1,74 @@
+# 美术规范（art bible）
+
+> 当前方向：2026-11-01 用户经 paris / Codex 五套对照选定 **⑤ 精致像素**（复古夜色、独立游戏气质）。
+> 唯一风格样板：`docs/art/ref/style_target.png`（来源 `codex-five/5-pixel.png`）。
+> **③ 清爽国漫已退役**（样板与主页底备份见 `generated-images/style-exploration-2026-11-01/retired-qingshuang-anime/`，旧 bible：`art-bible-qingshuang-retired-2026-11-01.md`）。
+> 当前仅主页底图与 HomeUI 控件配色跟像素风；**第一关 `bg_level1*`、角色、妖怪等局内旧素材仍为旧风格，待换**。不得把旧资源标记为新风格验收完成。
+
+## 1. 一句话
+
+复古夜色精致像素：深靛夜空、灯笼暖晕与石墙冷灰，金暖描边与朱砂出战点；独立游戏气质，硬边可读，忌糊成海报插画。
+
+## 2. 色板（现行）
+
+| 用途 | Hex | 说明 |
+|---|---|---|
+| 深靛夜底 | `#1A1C2C` | 主页垫底、弹窗暗面、石墙冷影 |
+| 金暖 | `#F4B41B` | 描边、标题、资源强调、符光 |
+| 朱砂 / 出战 | `#BC2525` | 出战钮、红点、困难强调 |
+| 石墙冷蓝灰 | `#5C6B7A` / `#8A90A0` | 次级文字、锁定态、面板描边 |
+| 暖纸字 | `#E8E4D9` | 关卡名、正文浅字 |
+
+## 3. 角色与妖怪
+
+- 符师按样板像素剪影：夜色下短发道士、灯笼/符纸暖点；轮廓硬边、少灰阶糊边。
+- 妖怪保持民俗辨识，改为像素可读剪影；**不沿用清爽国漫立绘直接缩小当新战斗素材**。
+- 局内现有 `player_taoist` / `enemy_*` / 动作图集：**待换**，仍属旧风格。
+
+## 4. 场景、色彩与特效
+
+- 主页：复古夜城垛 / 灯笼 bloom、抖动夜空（dithered sky）；UI 铬与插画分层，不把按钮烘焙进底图。
+- 战斗：近俯视地面；结界仍由代码绘制。`bg_level1_village.png` 等 **仍为旧风格，待换**。
+- 特效短促局部；像素风可用有限调色板闪白/金点，忌大面积高斯光斑。
+
+## 5. 主页与界面
+
+- 当前主页背景：`assets/resources/textures/ui_home_bg.png`（1080×2340，像素夜色 v1）。
+- HomeUI：Graphics 绘制；配色跟金暖 + 石墙冷 + 出战朱红；布局仍为顶栏资源 / 右侧养成·符咒·记录 / 底栏关卡牌→出战。
+- 玩法与交互唯一来源：`docs/gameplay-design.md` 第 4.4 节。
+
+## 6. 出图提示词
+
+使用内置 GPT Image / 像素管线时，只附当前样板。
+
+### 通用风格锁
+
+> exquisite detailed pixel art, retro night indie game, deep indigo sky `#1A1C2C`, warm lantern bloom, gold accent `#F4B41B`, cinnabar red `#BC2525`, stone-wall cool blue-gray, dithered sky, hard readable silhouette, no photoreal, no glossy anime cel, no paper-cut collage.
+
+### 当前主页构图
+
+> 9:16 pixel home illustration, no baked UI/text/watermark; night battlement / town silhouette, small weak-contrast hero optional in upper third; reserve space for level card and fight CTA; match `docs/art/ref/style_target.png`.
+
+### 战斗素材约束
+
+> top-down orthographic pixel ground; no baked wall/UI; characters separate transparent pixel sprites; old guoman atlases are not new-style assets.
+
+## 7. 历史记录
+
+- 2026-10-31 的 3D 暗黑国风：已撤销；旧图备份在 `generated-images/style-exploration-2026-11-01/style-target-previous.png`。
+- 2026-11-01「朱砂镇邪」：探索候选，未采用。
+- 2026-11-01「青绿鎏金 · 东方奇幻绘卷」：曾采用后撤销；备份 `retired-jade-gold/`。
+- 2026-11-01「③ 清爽国漫」：曾采用；**2026-11-01 退役**，改选 **⑤ 精致像素**；备份 `retired-qingshuang-anime/` + `art-bible-qingshuang-retired-2026-11-01.md`。
+- 2026-11-01 Codex 五套对照：用户选定⑤精致像素；其余未采用。
+
+## 8. 素材清单与验收
+
+| 素材 | 路径 | 规格 | 状态 |
+|---|---|---|---|
+| 风格样板 | `docs/art/ref/style_target.png` | 1374×1145 | **⑤ 精致像素（现行）** |
+| 主页静态插画 | `assets/resources/textures/ui_home_bg.png` | 1080×2340 RGBA | 已换像素 v1；需负责人 Cocos Preview |
+| 荒村战斗背景 | `assets/resources/textures/bg_level1_village.png` | — | **旧风格，待换** |
+| 符师 / 妖怪 / 动作图集 | `assets/resources/textures/player_*` `enemy_*` | — | **旧风格，待换** |
+| 旧 UI 图集 | `ui_home_kit.png` 等 | — | 停用 / 历史 |
+
+验收：主页需在 Cocos Creator 3.8.8 Preview 人工确认；本轮工程侧不声称局内素材已像素化。
