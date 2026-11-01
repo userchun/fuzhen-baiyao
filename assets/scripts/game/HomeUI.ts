@@ -1,9 +1,11 @@
-// 主界面：⑤精致像素夜色插画 + 金暖/石墙冷/朱砂控件。
-// 视觉规范见 docs/art/art-bible.md；交互规则见 docs/gameplay-design.md 第 4.4 节。
+// 主界面：⑤精致像素夜色插画 + CD 像素首页 IA（A 顶栏 / B 标题 / D 右三钮 / E 关卡牌+出战）。
+// 色板与分层见 docs/art/art-bible.md；交互见 docs/gameplay-design.md §4.4。
+// 右栏文案锁死：养成→符咒→记录。冻：每日/无尽/图鉴/商城/体力（不画）。
+// 底图只舞台；文字/出战/切关/右钮/设置/红点/锁/引导/最佳时间/困难竖符/Boss 槽由引擎画。
 // L1/局内旧素材仍为旧风格待换，勿标新风格完成。
 
 import { Node, Label, EventTouch, Graphics, tween, UIOpacity, UITransform } from 'cc';
-import { GAME, LevelDef, TALISMANS, TalismanId } from '../config/GameConfig';
+import { GAME, LevelDef, ENEMIES, TALISMANS, TalismanId } from '../config/GameConfig';
 import { Difficulty, FIRST_CLEAR_NORMAL, FIRST_CLEAR_HARD_PAPER, StatId, STAT_UPGRADES, STAT_EFFECT, STAR_COSTS, TALISMAN_IDS } from '../config/MetaConfig';
 import { makeNode, addLabel, rectNode, hex, setOpacity } from '../core/Draw';
 import { spriteNode } from '../core/Art';
@@ -18,11 +20,12 @@ import { popIn, breathe } from './Anim';
 const IMG = { w: 1080, h: 2340 };
 const SRC_K = 1;
 const POS = {
-    // 顶栏略下移，给刘海/状态栏留呼吸；关卡牌内铭牌→难度→奖励拉开间距。
+    // A 顶栏 / B 标题 / D 右竖三钮 / E 关卡牌（Boss 圆框+关名+难度）+出战。
     progress: [539, 428], coin: [281, 152], paper: [677, 152], gear: [981, 152],
     title: [539, 313],
     entries: [[930, 840], [930, 1092], [930, 1344]],
-    plaque: [539, 1658], ring: [539, 1755], arrowL: [195, 1658], arrowR: [884, 1658],
+    boss: [320, 1658], plaque: [600, 1658], ring: [539, 1755],
+    arrowL: [195, 1658], arrowR: [884, 1658], hardSeal: [790, 1658],
     bestTime: [539, 1718],
     fight: [539, 2113],
     diffNormal: [404, 1808], diffHard: [675, 1808],
@@ -201,9 +204,10 @@ export class HomeUI {
             g.roundRect(-width / 2, -height / 2 - 7 * this.u, width, height, radius); g.fill();
             g.fillColor = hex(primary ? CINNABAR : level ? '#242736' : '#2A2E3F', level ? 247 : 255);
             g.roundRect(-width / 2, -height / 2, width, height, radius); g.fill();
+            // CD：金描边 1–2 逻辑像素；出战朱砂底 + 金框。
             g.strokeColor = hex(primary || level ? GOLD : '#C9A84A');
-            g.lineWidth = (primary ? 4 : 3) * this.u;
-            g.roundRect(-width / 2 + 5 * this.u, -height / 2 + 5 * this.u, width - 10 * this.u, height - 10 * this.u, radius - 4 * this.u); g.stroke();
+            g.lineWidth = (primary ? 2 : 1.5) * this.u;
+            g.roundRect(-width / 2 + 4 * this.u, -height / 2 + 4 * this.u, width - 8 * this.u, height - 8 * this.u, radius - 3 * this.u); g.stroke();
             if (level) return n;
             const icon = makeNode('icon', n);
             icon.setPosition(entry || primary || name === 'settingsPanel' ? 0 : -width / 2 + 46 * this.u, 0);
@@ -276,7 +280,7 @@ export class HomeUI {
         }
         tg.moveTo(0, 6 * this.u); tg.lineTo(6 * this.u, 0); tg.lineTo(0, -6 * this.u); tg.lineTo(-6 * this.u, 0); tg.close(); tg.stroke();
 
-        // 右侧三个入口 + 红点
+        // D 右竖三钮文案锁死：养成→符咒→记录；红点仅前两项且买得起。冻入口不画。
         const entries: { id: 'upgrade' | 'talisman' | 'record'; name: string; dot: boolean }[] = [
             { id: 'upgrade', name: '养成', dot: canAffordUpgrade(p) },
             { id: 'talisman', name: '符咒', dot: canAffordStar(p) },
@@ -305,24 +309,61 @@ export class HomeUI {
             }
         });
 
-        // 关卡铭牌：名字、锁定状态、箭头
+        // E 关卡牌：Boss 圆框槽 + 关名 + 难度锁 + 切关；困难已印则画竖符金印（无新贴图）。
         const lv = this.level;
         const open = lv < p.unlockedLevels;
         const maxLv = maxBrowsableLevel(p, count);
         const best = p.bestTimes[lv]?.[this.diff] ?? null;
+        const bossWave = levels[lv].waves.find((w) => ENEMIES[w.enemy]?.boss);
+        const boss = bossWave ? ENEMIES[bossWave.enemy] : null;
+        const bossY = POS.boss[1] + (best === null ? 14 : 0);
+        {
+            const slot = makeNode('bossSlot', dyn);
+            slot.setPosition(...this.at([POS.boss[0], bossY]));
+            const bg = slot.addComponent(Graphics);
+            const r = 48 * this.u;
+            bg.fillColor = hex('#0A0C14', 200);
+            bg.circle(0, 0, r); bg.fill();
+            bg.fillColor = hex(open ? '#242736' : '#1A1C2C', 245);
+            bg.circle(0, 0, r - 3 * this.u); bg.fill();
+            bg.strokeColor = hex(open ? GOLD : STONE, open ? 230 : 140);
+            bg.lineWidth = 2 * this.u; // 1–2 逻辑像素金描边
+            bg.circle(0, 0, r - 1 * this.u); bg.stroke();
+            const glyph = addLabel(slot, boss?.char ?? '？', 40, open ? CREAM : DIM);
+            glyph.isBold = true;
+            glyph.enableOutline = true;
+            glyph.outlineColor = hex('#0C0A08');
+            glyph.outlineWidth = 1.5;
+            // 无 Boss 立绘资产时用字印占位；生图交付头像后再挂，不 invent 贴图。
+        }
         const titlePos = [POS.plaque[0], POS.plaque[1] + (best === null ? 14 : 0)];
-        const plaque = put(levels[lv].name, titlePos, 36, open ? CREAM : DIM);
+        const plaque = put(levels[lv].name, titlePos, 34, open ? CREAM : DIM);
         if (!open) plaque.string = `${levels[lv].name}（未解锁）`;
         plaque.enableWrapText = false;
         plaque.overflow = Label.Overflow.SHRINK;
-        plaque.node.getComponent(UITransform).setContentSize(510 * this.u, 60 * this.u);
+        plaque.node.getComponent(UITransform).setContentSize(420 * this.u, 60 * this.u);
+        if (p.cleared[lv]?.hard === true) {
+            // 困难首通竖符金印（引擎绘制，禁烘焙进底图）
+            const seal = makeNode('homeHardSeal', dyn);
+            seal.setPosition(...this.at([POS.hardSeal[0], bossY]));
+            const sg = seal.addComponent(Graphics);
+            sg.fillColor = hex('#C9A24A');
+            sg.roundRect(-16 * this.u, -40 * this.u, 32 * this.u, 80 * this.u, 3 * this.u); sg.fill();
+            sg.fillColor = hex('#E8C878');
+            sg.roundRect(-12 * this.u, -36 * this.u, 24 * this.u, 72 * this.u, 2 * this.u); sg.fill();
+            sg.fillColor = hex(CINNABAR);
+            sg.roundRect(-10 * this.u, -6 * this.u, 20 * this.u, 20 * this.u, 2 * this.u); sg.fill();
+            const mark = addLabel(seal, '印', 14, '#F2D6A0');
+            mark.isBold = true;
+            mark.node.setPosition(0, 4 * this.u);
+        }
         if (this.diff === 'hard' && open) {
-            // 困难：铭牌加一圈朱红描边
+            // 困难：关卡牌顶沿朱红细线
             const [x, y] = this.at(POS.ring);
             const ring = makeNode('hardRing', dyn);
             ring.setPosition(x, y);
             const g = ring.addComponent(Graphics);
-            g.lineWidth = 3;
+            g.lineWidth = 2 * this.u;
             g.strokeColor = hex(CINNABAR);
             g.moveTo(-180 * this.u, 32 * this.u);
             g.lineTo(180 * this.u, 32 * this.u);
