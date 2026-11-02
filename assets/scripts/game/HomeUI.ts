@@ -4,7 +4,7 @@
 
 import { HEROES, HeroId, heroDef } from '../config/HeroConfig';
 import { Node, Label, EventTouch, Graphics, tween, UIOpacity, UITransform } from 'cc';
-import { GAME, LevelDef, ENEMIES, TALISMANS, TalismanId } from '../config/GameConfig';
+import { GAME, LevelDef, ENEMIES, TALISMANS, TalismanId, levelAdvice, ELEMENT_NAME, ELEMENT_COLOR, HERO_WEAPONS } from '../config/GameConfig';
 import { Difficulty, FIRST_CLEAR_NORMAL, FIRST_CLEAR_HARD_PAPER, StatId, STAT_UPGRADES, STAT_EFFECT, STAR_COSTS, TALISMAN_IDS } from '../config/MetaConfig';
 import { makeNode, addLabel, rectNode, hex, setOpacity } from '../core/Draw';
 import { spriteNode, hasArt } from '../core/Art';
@@ -585,6 +585,16 @@ export class HomeUI {
             band.setPosition(...position(468,y));
         }
         label(levels[this.level].name,468,1320,40,'#FFF0D4');
+        // 建议属性：本关妖怪以哪种五行为主、宜用哪种属性，并点名对应人物；点一下直接换成推荐人物
+        const advice=levelAdvice(levels[this.level].waves);
+        if(advice){
+            const pick=HEROES.find((hero)=>HERO_WEAPONS[hero.id].element===advice.counter);
+            const band=rectNode('levelAdviceBand',470*scale,40*scale,'#070A14',layer,6*scale,200);
+            band.setPosition(...position(468,1369));
+            const text='妖多属'+ELEMENT_NAME[advice.enemy]+' · 宜用'+ELEMENT_NAME[advice.counter]+(pick?' · '+pick.name:'')+(pick&&pick.id===selected.id?' ✓':'');
+            label(text,468,1369,25,ELEMENT_COLOR[advice.counter]);
+            if(pick&&pick.id!==selected.id) touch('levelAdvicePick',[233,1349,703,1389],()=>choose(HEROES.indexOf(pick),1));
+        }
         const maximum = maxBrowsableLevel(profile,levels.length);
         for (const direction of [-1,1]) {
             const bounds=direction<0?[135,1310,219,1431]:[715,1310,801,1431];

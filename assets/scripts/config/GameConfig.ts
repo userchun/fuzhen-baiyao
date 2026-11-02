@@ -90,6 +90,17 @@ export const ELEMENT_COLOR: Record<Element, string> = {
 export const COUNTER: Partial<Record<Element, Element>> = {
     metal: 'wood', wood: 'earth', earth: 'water', water: 'fire', fire: 'metal',
 };
+/** 关卡建议属性：按本关妖怪总血量（数量 × 血量）算出主属性，再取克制它的属性。无五行的不计。 */
+export function levelAdvice(waves: { enemy: string; count: number }[]): { enemy: Element; counter: Element } | null {
+    const hp: Partial<Record<Element, number>> = {};
+    for (const w of waves) {
+        const e = ENEMIES[w.enemy];
+        if (e && e.element !== 'none') hp[e.element] = (hp[e.element] ?? 0) + e.hp * Math.max(1, w.count);
+    }
+    const main = (Object.keys(hp) as Element[]).sort((a, b) => (hp[b] ?? 0) - (hp[a] ?? 0))[0];
+    const counter = main && (Object.keys(COUNTER) as Element[]).find((k) => COUNTER[k] === main);
+    return main && counter ? { enemy: main, counter } : null;
+}
 export const COUNTER_MULT = 1.5;   // 克制
 export const RESIST_MULT = 0.7;    // 被克
 export const MIN_HIT_DAMAGE = 1;   // 护甲减免后的最低伤害，保证命中总有反馈
