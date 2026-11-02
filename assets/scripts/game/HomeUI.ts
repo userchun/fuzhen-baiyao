@@ -3,7 +3,7 @@
 // 局内旧素材与五行结界不在本次首页改造范围。
 
 import { HEROES, HeroId, heroDef } from '../config/HeroConfig';
-import { Node, Label, EventTouch, Graphics, tween, UIOpacity, UITransform, Vec3 } from 'cc';
+import { Node, Label, EventTouch, Graphics, tween, UIOpacity, UITransform } from 'cc';
 import { GAME, LevelDef, ENEMIES, TALISMANS, TalismanId, levelAdvice, ELEMENT_NAME, ELEMENT_COLOR, HERO_WEAPONS } from '../config/GameConfig';
 import { Difficulty, FIRST_CLEAR_NORMAL, FIRST_CLEAR_HARD_PAPER, StatId, STAT_UPGRADES, STAT_EFFECT, STAR_COSTS, TALISMAN_IDS } from '../config/MetaConfig';
 import { makeNode, addLabel, rectNode, hex, setOpacity } from '../core/Draw';
@@ -626,13 +626,17 @@ export class HomeUI {
             g.moveTo(-t,cy-dir*t*0.45);g.lineTo(t,cy-dir*t*0.45);g.lineTo(0,cy+dir*t*0.6);g.close();g.fill();
         }
         // 上下箭头共用一块触控区，按点在上半还是下半决定方向（分开两块会被最小触控尺寸撑大而互相盖住）
-        const arrowHit=makeNode('difficultyArrowHit',layer,84*scale,96*scale);
-        arrowHit.setPosition(...position(436,1418));
-        arrowHit.on(Node.EventType.TOUCH_END,(event: EventTouch)=>{
-            event.propagationStopped=true;this.audio?.playSfx('click',0.6);
-            const local=arrowHit.getComponent(UITransform)!.convertToNodeSpaceAR(new Vec3(event.getUILocation().x,event.getUILocation().y,0));
-            setDiff(local.y>=0?'normal':'hard');
-        });
+        // 上下箭头各一块独立点击区（不走 touch() 的 80 最小尺寸，免得互相盖住）；渲染完再提到最上层，免得被出战按钮挡
+        const arrowHits: Node[]=[];
+        for (const [dir,next] of [[1,'normal'],[-1,'hard']] as [number,'normal'|'hard'][]) {
+            const hit=makeNode(dir>0?'difficultyUp':'difficultyDown',layer,84*scale,48*scale);
+            hit.setPosition(...position(436,1418-dir*24));
+            hit.on(Node.EventType.TOUCH_END,(event: EventTouch)=>{
+                event.propagationStopped=true;this.audio?.playSfx('click',0.6);setDiff(next);
+            });
+            arrowHits.push(hit);
+        }
+        setTimeout(()=>arrowHits.forEach((hit)=>{if(hit.isValid)hit.setSiblingIndex(hit.parent!.children.length-1);}),0);
         const diffArea=makeNode('referenceDifficulty',layer,110*scale,70*scale);
         diffArea.setPosition(...position(360,1418));
         let diffStart=0;
