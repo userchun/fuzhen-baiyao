@@ -551,8 +551,18 @@ export class HomeUI {
             dot.setPosition(...position(dotX,dotTop+index*gap));
             touch('heroDotHit-'+hero.id,[dotX-30,dotTop+index*gap-28,dotX+30,dotTop+index*gap+28],()=>choose(index,index>order?1:-1));
         });
-        label('︿',dotX,dotTop-48,24,DIM);
-        label('﹀',dotX,dotTop+(HEROES.length-1)*gap+48,24,DIM);
+        // 上下切换箭头：金色三角加深色圆底，可直接点击
+        for (const direction of [-1,1]) {
+            const y=direction<0?dotTop-70:dotTop+(HEROES.length-1)*gap+70, r=30*scale;
+            const btn=makeNode('heroArrow'+direction,layer,r*2,r*2);
+            btn.setPosition(...position(dotX,y));
+            const g=btn.addComponent(Graphics);
+            g.fillColor=hex('#0B1020',200);g.circle(0,0,r);g.fill();
+            g.strokeColor=hex(GOLD,180);g.lineWidth=2*scale;g.circle(0,0,r);g.stroke();
+            const t=13*scale, d=direction<0?1:-1; // 屏幕坐标里上为正
+            g.fillColor=hex(GOLD);g.moveTo(-t,-d*t*0.55);g.lineTo(t,-d*t*0.55);g.lineTo(0,d*t*0.75);g.close();g.fill();
+            touch('heroArrowHit'+direction,[dotX-40,y-40,dotX+40,y+40],()=>choose(order+(direction<0?-1:1),direction<0?-1:1));
+        }
         image('ui_ref_coin',[197,32,452,106]);
         image('ui_ref_paper',[490,27,750,110]);
         image('ui_ref_gear',[811,28,905,116]);
@@ -568,7 +578,12 @@ export class HomeUI {
             touch('referenceEntry-'+entry.id,bounds,()=>actions.onEntry(entry.id));
         }
         image('ui_ref_level',[215,1278,721,1447]);
-        label(levels[this.level].name,468,1320,34);
+        // 关卡缩略图很花：在标题和难度两行后面各垫一条半透明深色带，文字放大
+        for (const [y,h] of [[1322,58],[1416,40]]) {
+            const band=rectNode('levelTextBand',470*scale,h*scale,'#070A14',layer,6*scale,185);
+            band.setPosition(...position(468,y));
+        }
+        label(levels[this.level].name,468,1320,40,'#FFF0D4');
         const maximum = maxBrowsableLevel(profile,levels.length);
         for (const direction of [-1,1]) {
             const bounds=direction<0?[135,1310,219,1431]:[715,1310,801,1431];
@@ -582,8 +597,8 @@ export class HomeUI {
                 this.renderReference(profile,levels,actions);
             });
         }
-        label(this.diff==='normal'?'普通':'困难',386,1417,24,this.diff==='normal'?CREAM:GOLD);
-        label(profile.cleared[this.level]?.normal?'已通关':'未通关',552,1417,22,DIM);
+        label(this.diff==='normal'?'普通':'困难',386,1417,28,this.diff==='normal'?CREAM:GOLD);
+        label(profile.cleared[this.level]?.normal?'已通关':'未通关',552,1417,26,profile.cleared[this.level]?.normal?GOLD:CREAM);
         touch('referenceDifficulty',[320,1390,450,1445],()=>{
             if (!profile.cleared[this.level]?.normal) {
                 this.showToast('普通难度通关后解锁困难');
