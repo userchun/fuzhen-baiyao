@@ -551,23 +551,24 @@ export class HomeUI {
             dot.setPosition(...position(dotX,dotTop+index*gap));
             touch('heroDotHit-'+hero.id,[dotX-30,dotTop+index*gap-28,dotX+30,dotTop+index*gap+28],()=>choose(index,index>order?1:-1));
         });
-        // 上下切换箭头：金色三角加深色圆底，可直接点击
+        // 上下切换箭头：放在人物中轴的头顶和名牌下方，金色三角加深色圆底，可直接点击
         for (const direction of [-1,1]) {
-            const y=direction<0?dotTop-70:dotTop+(HEROES.length-1)*gap+70, r=30*scale;
+            const ax=470, y=direction<0?452:1240, r=34*scale; // 人物正上方 / 名牌正下方
             const btn=makeNode('heroArrow'+direction,layer,r*2,r*2);
-            btn.setPosition(...position(dotX,y));
+            btn.setPosition(...position(ax,y));
             const g=btn.addComponent(Graphics);
             g.fillColor=hex('#0B1020',200);g.circle(0,0,r);g.fill();
             g.strokeColor=hex(GOLD,180);g.lineWidth=2*scale;g.circle(0,0,r);g.stroke();
-            const t=13*scale, d=direction<0?1:-1; // 屏幕坐标里上为正
+            const t=15*scale, d=direction<0?1:-1; // 屏幕坐标里上为正
             g.fillColor=hex(GOLD);g.moveTo(-t,-d*t*0.55);g.lineTo(t,-d*t*0.55);g.lineTo(0,d*t*0.75);g.close();g.fill();
-            touch('heroArrowHit'+direction,[dotX-40,y-40,dotX+40,y+40],()=>choose(order+(direction<0?-1:1),direction<0?-1:1));
+            touch('heroArrowHit'+direction,[ax-45,y-45,ax+45,y+45],()=>choose(order+(direction<0?-1:1),direction<0?-1:1));
         }
-        image('ui_ref_coin',[197,32,452,106]);
-        image('ui_ref_paper',[490,27,750,110]);
+        // 顶栏三项左右留边 36、间距相等：金币靠左、符纸居中、设置靠右
+        image('ui_ref_coin',[36,32,291,106]);
+        image('ui_ref_paper',[421,27,681,110]);
         image('ui_ref_gear',[811,28,905,116]);
-        label(formatAmount(profile.coin),351,69,36);
-        label(formatAmount(profile.paper),651,69,36);
+        label(formatAmount(profile.coin),190,69,36);
+        label(formatAmount(profile.paper),582,69,36);
         touch('referenceSettings',[811,28,905,116],actions.onSettings);
         const entries: {id:'upgrade'|'talisman'|'record'; top:number}[] = [
             {id:'upgrade',top:381}, {id:'talisman',top:580}, {id:'record',top:780},
