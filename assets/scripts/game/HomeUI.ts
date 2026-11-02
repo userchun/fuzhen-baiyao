@@ -6,7 +6,7 @@ import { Node, Label, EventTouch, Graphics, tween, UIOpacity, UITransform } from
 import { GAME, LevelDef, ENEMIES, TALISMANS, TalismanId } from '../config/GameConfig';
 import { Difficulty, FIRST_CLEAR_NORMAL, FIRST_CLEAR_HARD_PAPER, StatId, STAT_UPGRADES, STAT_EFFECT, STAR_COSTS, TALISMAN_IDS } from '../config/MetaConfig';
 import { makeNode, addLabel, rectNode, hex, setOpacity } from '../core/Draw';
-import { spriteNode } from '../core/Art';
+import { spriteNode, hasArt } from '../core/Art';
 import { AudioManager } from '../core/AudioManager';
 import {
     Profile, canPlay, maxBrowsableLevel, canAffordUpgrade, canAffordStar, formatAmount, statCost, starCost,
@@ -115,6 +115,12 @@ export class HomeUI {
         const root = makeNode('home', this.root, GAME.width, GAME.height);
         this.node = root;
         rectNode('homeBase', GAME.width, GAME.height, INDIGO, root);
+        if (hasArt('ui_ref_background')) {
+            const scale = Math.min(GAME.width / 941, GAME.height / 1672);
+            spriteNode('ui_ref_background', 941 * scale, 1672 * scale, root);
+            this.renderReference(p, levels, act);
+            return;
+        }
         // 插画等比铺满；交互独立于背景，适配长屏时底部控件仍然靠下。
         const cover = Math.max(GAME.width / IMG.w, GAME.height / (IMG.w * 1846 / 852));
         spriteNode('ui_home_bg', IMG.w * cover, IMG.w * (1846 / 852) * cover, root);
@@ -212,6 +218,10 @@ export class HomeUI {
 
     /** 仅重建控件，背景与符师独立保留。 */
     private render(p: Profile, levels: LevelDef[], act: HomeActions): void {
+        if (hasArt('ui_ref_background')) {
+            this.renderReference(p, levels, act);
+            return;
+        }
         const root = this.node;
         root.getChildByName('dyn')?.destroy();
         const dyn = makeNode('dyn', root, GAME.width, GAME.height);
@@ -262,6 +272,48 @@ export class HomeUI {
                 if (c === '#') g.rect((x-row.length/2)*cell*this.u, (rows.length/2-y-1)*cell*this.u, cell*this.u, cell*this.u);
             })); g.fill();
         };
+        const illustratedIcon = (id: string, pos: readonly number[]) => {
+            const patterns: Record<string, string[]> = {
+                upgrade: [
+                    '..........ooo...', '.........owwo...', '........owwwo...', '.......owwwo....',
+                    '......owwwo.....', '......owwo......', '.....orrro......', '....orggo.......',
+                    '....oggo........', '...oggo.........', '..oggo..........', '..ogho..........',
+                    '.ohho...........', '.oho............', '.oo.............', '................',
+                ],
+                talisman: [
+                    '...oooooooooo...', '...ohhhhhhhho...', '...owwwwwwWho...', '...owwrrwwWho...',
+                    '...owrrrwwWho...', '...owwrrwwWho...', '...owrrrrwWho...', '...owwrrwwWho...',
+                    '...owrrrwwWho...', '...owwrrwwWho...', '...owwwwwwWho...', '...owrrrwwWho...',
+                    '...owwrrwwWho...', '...owwwwwwWho...', '....ohhhhooo....', '.....oooo.......',
+                ],
+                record: [
+                    '..oooo....oooo..', '.ohhhhoooohhhho.', '.owwwhwwwWhwwwo.', '.owwwhwwwWhwwwo.',
+                    '.owgghgggWhggwo.', '.owwwhwwwWhwwwo.', '.owgghgggWhggwo.', '.owwwhwwwWhwwwo.',
+                    '.owgghgggWhggwo.', '.owwwhwwwWhwwwo.', '.owwwhwwwWhwwwo.', '.ohhhhrrrhhhho..',
+                    '..oooorrrroooo..', '......orrro.....', '......oooo......', '................',
+                ],
+                chest: [
+                    '................', '................', '...oooooooooo...', '..ohhhhhhhhhho..',
+                    '.ohWWWWWWWWWWho.', '.ohWWWWWWWWWWho.', '.ohhhhhhhhhhho..', '.ogggghhhggggo..',
+                    '.ogggghwhggggo..', '.ogggghhhggggo..', '.ogggggggggggo..', '.ohhhhhhhhhhho..',
+                    '..oooooooooo....', '................', '................', '................',
+                ],
+            };
+            const palette: Record<string, string> = {
+                o: '#101423', h: '#B28748', w: '#EAD8A5', W: '#FFF0C2',
+                r: '#B64343', g: '#617F86',
+            };
+            const node = makeNode('illustratedIcon-' + id, dyn);
+            node.setPosition(...this.at(pos));
+            const graphics = node.addComponent(Graphics);
+            const cell = (id === 'chest' ? 5 : 8) * this.u;
+            patterns[id].forEach((row, rowIndex) => [...row].forEach((pixel, column) => {
+                if (!palette[pixel]) return;
+                graphics.fillColor = hex(palette[pixel]);
+                graphics.rect((column - 8) * cell, (7 - rowIndex) * cell, cell, cell);
+                graphics.fill();
+            }));
+        };
         frame('coinPanel', POS.coin, 370, 100);
         frame('paperPanel', POS.paper, 370, 100);
         frame('settingsPanel', POS.gear, 110, 100);
@@ -279,8 +331,8 @@ export class HomeUI {
         ];
         entries.forEach((e,i) => {
             const pos = POS.entries[i];
-            frame('entry-'+e.id, pos, 160, 146);
-            icon(e.id, [pos[0],pos[1]-7], 9);
+            frame('entry-'+e.id, pos, 160, 146, '#20283A', '#8E7957');
+            illustratedIcon(e.id, [pos[0],pos[1]-7]);
             put(e.name, [pos[0],pos[1]+105], 38);
             hit('entryHit-'+e.id, [pos[0],pos[1]+20], 190, 190, () => act.onEntry(e.id));
             if (e.dot) {
@@ -292,14 +344,14 @@ export class HomeUI {
         const playable = canPlay(p,lv,this.diff), hardOpen = open && p.cleared[lv]?.normal === true;
         const maxLv = maxBrowsableLevel(p,levels.length);
         const redraw = () => this.render(p,levels,act);
-        frame('levelPanel',POS.ring,920,280,'#1B2237',this.diff==='hard'?CINNABAR:'#AC8A47');
-        const name = put(levels[lv].name,[540,1665],48,open?CREAM:DIM);
+        frame('levelPanel',POS.ring,920,280,'#171E30',this.diff==='hard'?CINNABAR:'#8E7957');
+        const name = put(levels[lv].name,[540,1650],52,open?CREAM:DIM);
         name.isBold=true; name.enableWrapText=false; name.overflow=Label.Overflow.SHRINK;
-        if (p.cleared[lv]?.hard) put('印', [800,1665], 30, GOLD);
+        if (p.cleared[lv]?.hard) put('印', [800,1650], 30, GOLD);
         name.node.getComponent(UITransform).setContentSize(600*this.u,65*this.u);
         for (const delta of [-1,1]) {
             const enabled = delta<0?lv>0:lv<maxLv;
-            const pos=[delta<0?150:930,1665];
+            const pos=[delta<0?150:930,1650];
             icon(delta<0?'left':'right',pos,7,enabled?GOLD:'#50596C');
             hit('levelArrow'+delta,pos,130,120,()=>{
                 if (!enabled) return;
@@ -322,9 +374,19 @@ export class HomeUI {
         const done=p.cleared[lv]?.[this.diff]===true;
         const reward=FIRST_CLEAR_NORMAL[lv];
         const rewardText=!open?'通关上一关后解锁':done?'首通奖励已领取':this.diff==='normal'
-            ?(reward?`首通 ${reward.coin}铜钱 · ${reward.paper}符纸 · ${reward.chest}`:'暂无首通奖励')
+            ?(reward?'':'暂无首通奖励')
             :`首通 铜钱×2 · 符纸+${FIRST_CLEAR_HARD_PAPER[lv]??0} · 宝箱×2`;
-        put(rewardText,[540,1845],32,open? '#BDC5D2':DIM);
+        if (open && !done && this.diff === 'normal' && reward) {
+            put('首通', [190,1845], 29, DIM);
+            icon('coin', [303,1845], 5);
+            put(String(reward.coin), [392,1845], 33);
+            icon('paper', [508,1845], 5);
+            put(String(reward.paper), [579,1845], 33);
+            illustratedIcon('chest', [696,1845]);
+            put(reward.chest, [798,1845], 31, '#D6BB7E');
+        } else {
+            put(rewardText,[540,1845],32,open? '#BDC5D2':DIM);
+        }
         const best=p.bestTimes[lv]?.[this.diff]??null;
         if(open&&best!==null) put(`最短 ${formatBestTime(best)}`,[540,1585],26,DIM);
         put('结界', [165,1970], 32, DIM);
@@ -335,14 +397,133 @@ export class HomeUI {
             put(style.name,pos,38,chosen?style.light:DIM);
             hit('barrierHit-'+el,pos,128,100,()=>{this.barrierElement=el;redraw();});
         });
-        frame('fightPanel',POS.fight,920,170,playable?'#A52B35':'#303748',playable?'#E6B868':'#596278');
-        const fight=put(playable?'出　战':'尚 未 解 锁',POS.fight,62,playable?'#FFF0D4':DIM);
+        const fightPanel = frame('fightPanel',POS.fight,920,170,playable?'#8E2E38':'#303748',playable?'#D9AD69':'#596278');
+        const decoration = fightPanel.getComponent(Graphics);
+        const unit = this.u;
+        decoration.fillColor = hex(playable ? '#C45A4C' : '#596278', 180);
+        decoration.rect(-438*unit, 61*unit, 876*unit, 6*unit); decoration.fill();
+        decoration.fillColor = hex('#361B2A', 145);
+        decoration.rect(-438*unit, -67*unit, 876*unit, 10*unit); decoration.fill();
+        for (const side of [-1, 1]) {
+            decoration.fillColor = hex(playable ? '#E4BE7D' : DIM);
+            for (const [offset, width] of [[0, 12], [12, 24], [24, 36], [36, 24], [48, 12]]) {
+                decoration.rect((side * 365 - width / 2)*unit, (24-offset)*unit, width*unit, 6*unit);
+            }
+            decoration.fill();
+            decoration.fillColor = hex('#F0C88E', 35);
+            for (let step = 0; step < 7; step++) {
+                decoration.rect((side * (190 + step*22))*unit, (step%2 ? 30 : -28)*unit, 7*unit, 7*unit);
+            }
+            decoration.fill();
+        }
+        const fight=put(playable?'出 战':'尚 未 解 锁',POS.fight,62,playable?'#FFF0D4':DIM);
         fight.isBold=true; fight.fontFamily='serif';
         if(!playable) icon('lock',[240,POS.fight[1]],6,DIM);
-        hit('fightHit',POS.fight,920,180,()=>{
+        const fightHit = hit('fightHit',POS.fight,920,180,()=>{
             if(playable)act.onFight(lv,this.diff);else this.showToast('通关上一关后解锁');
         });
+        const fightPosition = this.at(POS.fight);
+        const pressFight = (pressed: boolean) => {
+            fightPanel.setPosition(fightPosition[0], fightPosition[1] - (pressed ? 5*unit : 0));
+            fight.node.setPosition(fightPosition[0], fightPosition[1] - (pressed ? 5*unit : 0));
+            setOpacity(fightPanel, pressed ? 210 : 255);
+        };
+        fightHit.on(Node.EventType.TOUCH_START, () => pressFight(true));
+        fightHit.on(Node.EventType.TOUCH_CANCEL, () => pressFight(false));
+        fightHit.on(Node.EventType.TOUCH_END, () => pressFight(false));
         if(this.metaGuide)this.paintMetaGuide();
+    }
+
+    private renderReference(profile: Profile, levels: LevelDef[], actions: HomeActions): void {
+        this.node.getChildByName('dyn')?.destroy();
+        const layer = makeNode('dyn', this.node, GAME.width, GAME.height);
+        const scale = Math.min(GAME.width / 941, GAME.height / 1672);
+        const position = (x: number, y: number): [number, number] => [(x-470.5)*scale, (836-y)*scale];
+        const label = (text: string, x: number, y: number, size: number, color = CREAM) => {
+            const textLabel = addLabel(layer, text, size*scale, color);
+            textLabel.node.setPosition(...position(x,y));
+            textLabel.fontFamily = 'serif';
+            textLabel.isBold = true;
+            textLabel.enableOutline = true;
+            textLabel.outlineColor = hex('#090D17');
+            textLabel.outlineWidth = 3*scale;
+            return textLabel;
+        };
+        const image = (key: string, bounds: number[]) => {
+            const [left,top,right,bottom] = bounds;
+            const node = spriteNode(key,(right-left)*scale,(bottom-top)*scale,layer);
+            node?.setPosition(...position((left+right)/2,(top+bottom)/2));
+            return node;
+        };
+        const touch = (name: string, bounds: number[], callback: () => void) => {
+            const [left,top,right,bottom] = bounds;
+            const node = makeNode(name,layer,Math.max((right-left)*scale,80),Math.max((bottom-top)*scale,80));
+            node.setPosition(...position((left+right)/2,(top+bottom)/2));
+            node.on(Node.EventType.TOUCH_END,(event: EventTouch) => {
+                event.propagationStopped=true;
+                this.audio?.playSfx('click',0.6);
+                callback();
+            });
+            return node;
+        };
+        image('ui_ref_coin',[197,32,452,106]);
+        image('ui_ref_paper',[490,27,750,110]);
+        image('ui_ref_gear',[811,28,905,116]);
+        label(formatAmount(profile.coin),351,69,36);
+        label(formatAmount(profile.paper),651,69,36);
+        touch('referenceSettings',[811,28,905,116],actions.onSettings);
+        const entries: {id:'upgrade'|'talisman'|'record'; top:number}[] = [
+            {id:'upgrade',top:381}, {id:'talisman',top:580}, {id:'record',top:780},
+        ];
+        for (const entry of entries) {
+            const bounds=[762,entry.top,901,entry.top+180];
+            image('ui_ref_'+entry.id,bounds);
+            touch('referenceEntry-'+entry.id,bounds,()=>actions.onEntry(entry.id));
+        }
+        image('ui_ref_level',[215,1278,721,1447]);
+        label(levels[this.level].name,468,1320,34);
+        const maximum = maxBrowsableLevel(profile,levels.length);
+        for (const direction of [-1,1]) {
+            const bounds=direction<0?[135,1310,219,1431]:[715,1310,801,1431];
+            const arrow=image(direction<0?'ui_ref_left':'ui_ref_right',bounds);
+            const enabled=direction<0?this.level>0:this.level<maximum;
+            if (arrow) setOpacity(arrow,enabled?255:95);
+            touch('referenceLevel'+direction,bounds,()=>{
+                if (!enabled) return;
+                this.level+=direction;
+                if (!canPlay(profile,this.level,this.diff)) this.diff='normal';
+                this.renderReference(profile,levels,actions);
+            });
+        }
+        label(this.diff==='normal'?'普通':'困难',386,1417,24,this.diff==='normal'?CREAM:GOLD);
+        label(profile.cleared[this.level]?.normal?'已通关':'未通关',552,1417,22,DIM);
+        touch('referenceDifficulty',[320,1390,450,1445],()=>{
+            if (!profile.cleared[this.level]?.normal) {
+                this.showToast('普通难度通关后解锁困难');
+                return;
+            }
+            this.diff=this.diff==='normal'?'hard':'normal';
+            this.renderReference(profile,levels,actions);
+        });
+        const fight=image('ui_ref_fight',[227,1452,673,1603]);
+        const playable=canPlay(profile,this.level,this.diff);
+        if (fight) setOpacity(fight,playable?255:110);
+        const fightTouch=touch('referenceFight',[227,1452,673,1603],()=>{
+            if (playable) actions.onFight(this.level,this.diff);
+            else this.showToast('通关上一关后解锁');
+        });
+        fightTouch.on(Node.EventType.TOUCH_START,()=>{ if(fight)setOpacity(fight,190); });
+        fightTouch.on(Node.EventType.TOUCH_CANCEL,()=>{ if(fight)setOpacity(fight,playable?255:110); });
+        label('结界外观',190,1635,18,DIM);
+        (Object.keys(BARRIER_STYLES) as BarrierElement[]).forEach((element,index)=>{
+            const x=305+index*115;
+            const chosen=this.barrierElement===element;
+            label((chosen?'◆ ':'')+BARRIER_STYLES[element].name,x,1635,22,chosen?GOLD:DIM);
+            touch('referenceBarrier-'+element,[x-50,1610,x+50,1660],()=>{
+                this.barrierElement=element;
+                this.renderReference(profile,levels,actions);
+            });
+        });
     }
 
     /** 养成入口暖金光圈 + 旁白（禁霓虹箭头） */

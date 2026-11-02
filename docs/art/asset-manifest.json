@@ -1,0 +1,125 @@
+{
+  "assets": [
+    {
+      "id": "ui_ref_background",
+      "path": "assets/resources/textures/ui_ref_background.png",
+      "width": 941,
+      "height": 1672,
+      "frames": 1,
+      "source": "ChatGPT Image 首页候选图；UI 轮廓切分，背景遮挡处由 ChatGPT Image 补全",
+      "license": "AI 生成",
+      "status": "已接入；393×852 预览与出战进入选卡已验证，待用户美术验收",
+      "alpha": false
+    },
+    {
+      "id": "ui_ref_coin",
+      "path": "assets/resources/textures/ui_ref_coin.png",
+      "width": 255,
+      "height": 74,
+      "frames": 1,
+      "source": "ChatGPT Image 首页候选图；UI 轮廓切分，背景遮挡处由 ChatGPT Image 补全",
+      "license": "AI 生成",
+      "status": "已接入；393×852 预览与出战进入选卡已验证，待用户美术验收",
+      "alpha": true
+    },
+    {
+      "id": "ui_ref_fight",
+      "path": "assets/resources/textures/ui_ref_fight.png",
+      "width": 446,
+      "height": 151,
+      "frames": 1,
+      "source": "ChatGPT Image 首页候选图；UI 轮廓切分，背景遮挡处由 ChatGPT Image 补全",
+      "license": "AI 生成",
+      "status": "已接入；393×852 预览与出战进入选卡已验证，待用户美术验收",
+      "alpha": true
+    },
+    {
+      "id": "ui_ref_left",
+      "path": "assets/resources/textures/ui_ref_left.png",
+      "width": 84,
+      "height": 121,
+      "frames": 1,
+      "source": "ChatGPT Image 首页候选图；UI 轮廓切分，背景遮挡处由 ChatGPT Image 补全",
+      "license": "AI 生成",
+      "status": "已接入；393×852 预览与出战进入选卡已验证，待用户美术验收",
+      "alpha": true
+    },
+    {
+      "id": "ui_ref_level",
+      "path": "assets/resources/textures/ui_ref_level.png",
+      "width": 506,
+      "height": 169,
+      "frames": 1,
+      "source": "ChatGPT Image 首页候选图；UI 轮廓切分，背景遮挡处由 ChatGPT Image 补全",
+      "license": "AI 生成",
+      "status": "已接入；393×852 预览与出战进入选卡已验证，待用户美术验收",
+      "alpha": true
+    },
+    {
+      "id": "ui_ref_paper",
+      "path": "assets/resources/textures/ui_ref_paper.png",
+      "width": 260,
+      "height": 83,
+      "frames": 1,
+      "source": "ChatGPT Image 首页候选图；UI 轮廓切分，背景遮挡处由 ChatGPT Image 补全",
+      "license": "AI 生成",
+      "status": "已接入；393×852 预览与出战进入选卡已验证，待用户美术验收",
+      "alpha": true
+    },
+    {
+      "id": "ui_ref_record",
+      "path": "assets/resources/textures/ui_ref_record.png",
+      "width": 139,
+      "height": 180,
+      "frames": 1,
+      "source": "ChatGPT Image 首页候选图；UI 轮廓切分，背景遮挡处由 ChatGPT Image 补全",
+      "license": "AI 生成",
+      "status": "已接入；393×852 预览与出战进入选卡已验证，待用户美术验收",
+      "alpha": true
+    },
+    {
+      "id": "ui_ref_right",
+      "path": "assets/resources/textures/ui_ref_right.png",
+      "width": 86,
+      "height": 121,
+      "frames": 1,
+      "source": "ChatGPT Image 首页候选图；UI 轮廓切分，背景遮挡处由 ChatGPT Image 补全",
+      "license": "AI 生成",
+      "status": "已接入；393×852 预览与出战进入选卡已验证，待用户美术验收",
+      "alpha": true
+    },
+    {
+      "id": "ui_ref_talisman",
+      "path": "assets/resources/textures/ui_ref_talisman.png",
+      "width": 139,
+      "height": 180,
+      "frames": 1,
+      "source": "ChatGPT Image 首页候选图；UI 轮廓切分，背景遮挡处由 ChatGPT Image 补全",
+      "license": "AI 生成",
+      "status": "已接入；393×852 预览与出战进入选卡已验证，待用户美术验收",
+      "alpha": true
+    },
+    {
+      "id": "ui_ref_upgrade",
+      "path": "assets/resources/textures/ui_ref_upgrade.png",
+      "width": 139,
+      "height": 179,
+      "frames": 1,
+      "source": "ChatGPT Image 首页候选图；UI 轮廓切分，背景遮挡处由 ChatGPT Image 补全",
+      "license": "AI 生成",
+      "status": "已接入；393×852 预览与出战进入选卡已验证，待用户美术验收",
+      "alpha": true
+    },
+    {
+      "id": "ui_ref_gear",
+      "path": "assets/resources/textures/ui_ref_gear.png",
+      "frames": 1,
+      "alpha": true,
+      "width": 94,
+      "height": 88,
+      "source": "ChatGPT Image 首页候选图；UI 轮廓切分，背景遮挡处由 ChatGPT Image 补全",
+      "license": "AI 生成",
+      "status": "已接入；393×852 预览与出战进入选卡已验证，待用户美术验收"
+    }
+  ]
+}
