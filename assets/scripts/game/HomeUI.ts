@@ -574,7 +574,8 @@ export class HomeUI {
             {id:'upgrade',top:381}, {id:'talisman',top:580}, {id:'record',top:780},
         ];
         for (const entry of entries) {
-            const bounds=[762,entry.top,901,entry.top+180];
+            // 侧栏入口缩到约 0.8 倍，右缘不动、纵向居中
+            const bounds=[790,entry.top+18,901,entry.top+162];
             image('ui_ref_'+entry.id,bounds);
             touch('referenceEntry-'+entry.id,bounds,()=>actions.onEntry(entry.id));
         }
