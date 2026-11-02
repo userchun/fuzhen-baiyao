@@ -11,7 +11,7 @@ export const GAME = {
     moveZoneY: -350,  // 此线以下拖动移动，以上点按瞄准/攻击
     horizonY: 520,    // 地平线 y（2.5D 纵深最远点，由 applyScreen 按屏幕高度重算）
     wallHp: 100,
-    xpBase: 5,        // 第一次升级所需灵气
+    xpBase: 9,        // 第一次升级所需灵气（2026-11-02 5→9 🧪：开局选卡太密）
     xpGrow: 1.3,      // 每级所需灵气倍率
     maxTalismans: 4,  // 最多持有符咒数
     maxSkills: 4,     // 符咒 + 心法合计最多几种（2026-10-31）
