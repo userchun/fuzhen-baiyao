@@ -1161,8 +1161,7 @@ export class Combat {
     }
 
     private explode(b: Bullet): void {
-        // 烈焰符的爆炸画面由像素特效 fire_burst 负责（施法时已在目标脚下排好）；旧序列帧/色块仅留给其他来源
-        if (b.kind !== 'fire') this.addFx(b.x, b.y, b.explodeR);
+        // 爆炸画面由像素特效负责；旧的占位色块圆盘已移除
         // 烈焰暖橙红爆（跟色相表；与朱砂纯朱红脉冲区分）
         const boom = b.kind === 'fire' ? ELEMENT_COLOR.fire : (ELEMENT_COLOR[b.kind as Element] ?? ELEMENT_COLOR.fire);
         burst(this.fxLayer, b.x, b.y, FX.explode(b.x, b.y, b.explodeR, boom));
@@ -1432,7 +1431,6 @@ export class Combat {
             burst(this.fxLayer, e.x, e.y, FX.death(e.x, e.y, ELEMENT_COLOR[e.element]));
             this.fb.hitStop(0.3);
             this.fb.shake(20, 0.5);
-            this.addFx(e.x, e.y, e.def.radius * 1.2);
             this.onKill(e);
             return;
         }
@@ -1472,17 +1470,7 @@ export class Combat {
                 this.spawnEnemy(e.def.splitInto, e.x + (i - 1) * 40, e.depth);
             }
         }
-        this.addFx(e.x, e.y, e.def.radius * 1.2);
         this.onKill(e);
-    }
-
-    private addFx(x: number, y: number, r: number, key = 'fx'): void {
-        const node = this.pool.get(key, this.fxLayer);
-        node.setPosition(x, y);
-        const scale = r / 50;
-        node.setScale(scale, scale, 1);
-        setOpacity(node, 200);
-        this.fx.push({ key, node, life: 0.25, maxLife: 0.25, scale, alive: true });
     }
 
     private updateFx(dt: number): void {
