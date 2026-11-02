@@ -18,3 +18,11 @@ generated-images/
 # Python 运行缓存
 __pycache__/
 *.py[cod]
+# 临时占位素材（第三方拆包，不进仓库，发布前替换）
+assets/resources/placeholder/
+assets/resources/placeholder.meta
+
+# Agent Sprite Forge 中间产物（保留 README；成品拷到 assets/resources/textures 再进正式资源）
+art/asf/**
+!art/asf/README.md
+

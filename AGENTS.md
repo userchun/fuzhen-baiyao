@@ -10,7 +10,12 @@ Cocos Creator 3.8.8 竖屏结界防守割草游戏。代码在 `assets/scripts/`
 |---|---|---|
 | 玩法：定位、局内战斗、局外养成、奖励经济、关卡推进、验收标准、开发顺序 | `docs/gameplay-design.md` | 玩法的唯一来源。第 0 节是简纲，末尾有改动记录 |
 | 美术方向和素材规格 | `docs/art/art-bible.md` | 只管视觉，玩法规则写进 gameplay-design 再在这里引用 |
+| 出图提示词 | `docs/art/prompts-dark-qban.md` | |
 | 风格样板图 | `docs/art/ref/style_target.png` | 2026-11-01 当前选定：⑤精致像素 |
+| 界面（UI）样板图 | `docs/art/ref/ui_mainmenu_v14.png` | 主界面定稿效果图；出其他界面时和 style_target 一起作参考 |
+| 素材清单（尺寸、帧数、来源、授权） | `docs/art/asset-manifest.json` | JSON，indent 2 |
+| Agent Sprite Forge 输出 | `art/asf/README.md` + `tools/asf/` | master 静帧用 imagegen→Agnes（跳过 Magpie）；动作集 ASF video2dsprite；成品进 textures |
+| 每关素材重做进度 | `docs/art/level<N>-polish.md` | 现有 `level1-polish.md`；做新关卡时按同样格式新建 |
 | 构建、运行、发布 | `docs/build-run.md` | |
 | 验收截图、录屏 | `docs/evidence/` | 命名规则见目录里的 README |
 | 素材授权汇总 | `LICENSES.md`（根目录） | |
