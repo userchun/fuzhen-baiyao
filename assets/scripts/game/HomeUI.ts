@@ -3,7 +3,7 @@
 // 局内旧素材与五行结界不在本次首页改造范围。
 
 import { HEROES, HeroId, heroDef } from '../config/HeroConfig';
-import { Node, Label, EventTouch, Graphics, tween, UIOpacity, UITransform } from 'cc';
+import { Node, Label, EventTouch, Graphics, tween, UIOpacity, UITransform, Vec3 } from 'cc';
 import { GAME, LevelDef, ENEMIES, TALISMANS, TalismanId, levelAdvice, ELEMENT_NAME, ELEMENT_COLOR, HERO_WEAPONS } from '../config/GameConfig';
 import { Difficulty, FIRST_CLEAR_NORMAL, FIRST_CLEAR_HARD_PAPER, StatId, STAT_UPGRADES, STAT_EFFECT, STAR_COSTS, TALISMAN_IDS } from '../config/MetaConfig';
 import { makeNode, addLabel, rectNode, hex, setOpacity } from '../core/Draw';
@@ -580,7 +580,7 @@ export class HomeUI {
         }
         image('ui_ref_level',[215,1278,721,1447]);
         // 关卡缩略图很花：在标题和难度两行后面各垫一条半透明深色带，文字放大
-        for (const [y,h] of [[1322,58],[1416,40]]) {
+        for (const [y,h] of [[1322,58],[1418,54]]) {
             const band=rectNode('levelTextBand',470*scale,h*scale,'#070A14',layer,6*scale,185);
             band.setPosition(...position(468,y));
         }
@@ -608,15 +608,39 @@ export class HomeUI {
                 this.renderReference(profile,levels,actions);
             });
         }
-        label(this.diff==='normal'?'普通':'困难',386,1417,28,this.diff==='normal'?CREAM:GOLD);
-        label(profile.cleared[this.level]?.normal?'已通关':'未通关',552,1417,26,profile.cleared[this.level]?.normal?GOLD:CREAM);
-        touch('referenceDifficulty',[320,1390,450,1445],()=>{
-            if (!profile.cleared[this.level]?.normal) {
-                this.showToast('普通难度通关后解锁困难');
-                return;
-            }
-            this.diff=this.diff==='normal'?'hard':'normal';
-            this.renderReference(profile,levels,actions);
+        // 难度：文字右侧一对上下箭头（上=普通、下=困难），也可在难度上上下滑动或直接点击切换
+        label(this.diff==='normal'?'普通':'困难',360,1418,34,this.diff==='normal'?CREAM:GOLD);
+        label(profile.cleared[this.level]?.normal?'已通关':'未通关',570,1418,28,profile.cleared[this.level]?.normal?GOLD:CREAM);
+        const hardOpen=!!profile.cleared[this.level]?.normal;
+        const setDiff=(next: 'normal'|'hard')=>{
+            if(next===this.diff)return;
+            if(next==='hard'&&!hardOpen){this.showToast('普通难度通关后解锁困难');return;}
+            this.diff=next;this.renderReference(profile,levels,actions);
+        };
+        const arrows=makeNode('difficultyArrows',layer);arrows.setPosition(...position(436,1418));
+        const g=arrows.addComponent(Graphics), t=17*scale;
+        for (const [dir,on] of [[1,this.diff==='hard'],[-1,this.diff==='normal'&&hardOpen]] as [number,boolean][]) {
+            const cy=dir*15*scale; // 屏幕坐标上为正：1 是上箭头
+            g.fillColor=hex(GOLD,on?255:90);
+            g.moveTo(-t,cy-dir*t*0.45);g.lineTo(t,cy-dir*t*0.45);g.lineTo(0,cy+dir*t*0.6);g.close();g.fill();
+        }
+        // 上下箭头共用一块触控区，按点在上半还是下半决定方向（分开两块会被最小触控尺寸撑大而互相盖住）
+        const arrowHit=makeNode('difficultyArrowHit',layer,84*scale,96*scale);
+        arrowHit.setPosition(...position(436,1418));
+        arrowHit.on(Node.EventType.TOUCH_END,(event: EventTouch)=>{
+            event.propagationStopped=true;this.audio?.playSfx('click',0.6);
+            const local=arrowHit.getComponent(UITransform)!.convertToNodeSpaceAR(new Vec3(event.getUILocation().x,event.getUILocation().y,0));
+            setDiff(local.y>=0?'normal':'hard');
+        });
+        const diffArea=makeNode('referenceDifficulty',layer,110*scale,70*scale);
+        diffArea.setPosition(...position(360,1418));
+        let diffStart=0;
+        diffArea.on(Node.EventType.TOUCH_START,(event: EventTouch)=>{diffStart=event.getUILocation().y;});
+        diffArea.on(Node.EventType.TOUCH_END,(event: EventTouch)=>{
+            event.propagationStopped=true;this.audio?.playSfx('click',0.6);
+            const dy=event.getUILocation().y-diffStart;
+            if(Math.abs(dy)<20*scale)setDiff(this.diff==='normal'?'hard':'normal');
+            else setDiff(dy>0?'normal':'hard');
         });
         const fight=image('ui_ref_fight',[227,1452,673,1603]);
         const playable=canPlay(profile,this.level,this.diff);
