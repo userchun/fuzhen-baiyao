@@ -1,6 +1,7 @@
+import { HeroId, heroDef } from '../config/HeroConfig';
 import { Node, Graphics, Label, UITransform } from 'cc';
 import {
-    ENEMIES, EnemyDef, GAME, BASE_ATTACK, TalismanId, ELEMENT_COLOR, ELEMENT_NAME, Element, elementTier, TIER_MULT,
+    ENEMIES, EnemyDef, GAME, BASE_ATTACK, HERO_WEAPONS, TalismanId, ELEMENT_COLOR, ELEMENT_NAME, Element, elementTier, TIER_MULT,
     MIN_HIT_DAMAGE, RIVER_INTERVAL, SIEGE, depthY, depthScale, lanePixels, travelPixels, LAYOUT,
     ULT, ULT_NAMES, GROWTH,
 } from '../config/GameConfig';
@@ -165,15 +166,15 @@ export class Combat {
     private splitFx: { node: Node; anim: FrameAnim; life: number; follow?: Enemy }[] = [];
     private fxTimers: { t: number; fn: () => void }[] = [];
 
-    constructor(layer: Node, private skills: SkillSystem, private fb: Feedback, private onKill: (e: Enemy) => void, private audio?: AudioManager) {
+    constructor(layer: Node, private skills: SkillSystem, private fb: Feedback, private onKill: (e: Enemy) => void, private audio?: AudioManager, private selectedHero: HeroId = 'taoist') {
         this.pool = new Pool((key) => this.create(key));
         this.barrier = new BarrierView(layer, GAME.width, GAME.wallY);
         this.updateBarrier(0);
         this.zoneLayer = makeNode('zones', layer);
         this.enemyLayer = makeNode('enemies', layer);
-        this.player = spriteNode('player_taoist', PLAYER_ART_SIZE, PLAYER_ART_SIZE, layer) ?? circleNode('player', 32, '#F2E3B3', '师', layer);
+        this.player = spriteNode(heroDef(this.selectedHero).battle, PLAYER_ART_SIZE, PLAYER_ART_SIZE, layer) ?? circleNode('player', 32, '#F2E3B3', '师', layer);
         // 图集统一脚心在 x=200；锚点与实际玩家 X / 出弹位置对齐。
-        if (hasArt('player_actions')) this.player.getComponent(UITransform).setAnchorPoint(200 / 362, 0.5);
+        if (this.selectedHero==='taoist' && hasArt('player_actions')) this.player.getComponent(UITransform).setAnchorPoint(200 / 362, 0.5);
         this.player.setPosition(0, GAME.playerY);
         this.bulletLayer = makeNode('bullets', layer);
         this.fxLayer = makeNode('fx', layer);
@@ -368,11 +369,12 @@ export class Combat {
     }
 
     private setupPlayerAnim(): void {
-        this.playerIdle = this.makeClip('anim/player_taoist/idle', 4, true); // 4 帧背面呼吸与飘带，1 秒循环
-        this.playerCast = this.makeClip('anim/player_taoist/cast', 12, false); // 4 帧抬手 / 送符 / 收势，约 0.33 秒
-        this.playerHit = this.makeClip('anim/player_taoist/hit', 12, false); // 4 帧受击回正，约 0.33 秒
+        const prefix=heroDef(this.selectedHero).prefix;
+        this.playerIdle = this.makeClip(prefix+'/idle', 4, true); // 4 帧背面呼吸与飘带，1 秒循环
+        this.playerCast = this.makeClip(prefix+'/cast', 12, false); // 4 帧抬手 / 送符 / 收势，约 0.33 秒
+        this.playerHit = this.makeClip(prefix+'/hit', 12, false); // 4 帧受击回正，约 0.33 秒
         // 仅当贴图玩家（spriteNode 成功）且至少有 idle 帧时启用
-        if (!hasArt('player_taoist') || !this.playerIdle) return;
+        if (!hasArt(heroDef(this.selectedHero).battle) || !this.playerIdle) return;
         this.playerAnim = new FrameAnim(this.player);
         this.playPlayerIdle();
     }
@@ -479,7 +481,7 @@ export class Combat {
         const dist = Math.hypot(dx, dy);
         const dmg = BASE_ATTACK.damage * this.brushMult * (1 + 0.2 * this.skills.passive('power'));
         this.shoot('manual', ox, oy, dx / dist * BASE_ATTACK.speed, dy / dist * BASE_ATTACK.speed, dmg, { radius: 14, pierce: 1 });
-        this.playPlayerCast();
+        this.playPlayerCast(heroDef(this.selectedHero).color);
     }
 
     update(dt: number): void {
@@ -553,7 +555,7 @@ export class Combat {
         if (kind === 'bullet') {
             // 金光束：白金光矛贴图，缺图回退细方块
             if (id === 'metal') return spriteNode('fx_metal_bolt', 18, 72) ?? rectNode(key, 10, 40, ELEMENT_COLOR.metal, undefined, 4);
-            if (id === 'manual') return circleNode(key, 14, '#FFE9A8', '符');
+            if (id === 'manual') return this.createWeaponProjectile(key);
             if (id === 'river') return rectNode(key, GAME.width, 60, '#5AB4F0', undefined, 0, 170);
             // 寒冰符：冰锥贴图，缺图回退圆点
             if (id === 'fire') return spriteNode('fx_fire_ball', 30, 40) ?? circleNode(key, 14, ELEMENT_COLOR.fire);
@@ -566,6 +568,23 @@ export class Combat {
     }
 
     // ---------- 施法 ----------
+
+    private createWeaponProjectile(key: string): Node {
+        if(this.selectedHero==='taoist') return circleNode(key,14,'#FFE9A8','符');
+        const n=makeNode(key,undefined,32,44),g=n.addComponent(Graphics);
+        const color=heroDef(this.selectedHero).color;
+        if(this.selectedHero==='sword') {
+            g.fillColor=hex('#FFF3CC');g.moveTo(0,24);g.lineTo(-5,-5);g.lineTo(0,-13);g.lineTo(5,-5);g.close();g.fill();
+            g.fillColor=hex(color);g.rect(-2,-20,4,28);g.fill();
+        } else if(this.selectedHero==='medium') {
+            g.lineWidth=3;g.strokeColor=hex(color,220);
+            for(let i=0;i<3;i++){g.ellipse(0,10-i*8,12-i*3,5-i);g.stroke();}
+        } else {
+            g.fillColor=hex('#D84423');g.moveTo(0,22);g.lineTo(-11,-4);g.lineTo(-5,-18);g.lineTo(7,-13);g.lineTo(11,0);g.close();g.fill();
+            g.fillColor=hex('#FFCE65');g.moveTo(0,12);g.lineTo(-5,-6);g.lineTo(0,-12);g.lineTo(5,-4);g.close();g.fill();
+        }
+        return n;
+    }
 
     private castAll(dt: number): void {
         const s = this.skills;
@@ -709,7 +728,7 @@ export class Combat {
         opt: { pierce?: number; bounces?: number; explodeR?: number; radius?: number; life?: number }): void {
         const node = this.pool.get('bullet:' + kind, this.bulletLayer);
         node.setPosition(x, y);
-        if (kind === 'metal' || kind === 'water' || kind === 'fire') node.angle = -Math.atan2(vx, vy) * 180 / Math.PI;
+        if (kind === 'metal' || kind === 'water' || kind === 'fire' || kind==='manual') node.angle = -Math.atan2(vx, vy) * 180 / Math.PI;
         if (kind === 'manual') this.audio?.playSfx('shoot', 0.6);
         this.bullets.push({
             kind, node, x, y, vx, vy, damage,
@@ -1114,8 +1133,11 @@ export class Combat {
     private onHit(b: Bullet, e: Enemy): void {
         b.hit.add(e);
         if (b.kind === 'metal' || b.kind === 'manual') {
-            this.hurt(e, b.damage, b.kind === 'metal' ? 'metal' : 'none');
-            if (b.kind === 'manual') this.playSheet('seal_bolt', e.x, this.footY(e), this.fxScale(e) * 0.75);
+            this.hurt(e, b.damage, b.kind === 'metal' ? 'metal' : HERO_WEAPONS[this.selectedHero].element);
+            if (b.kind === 'manual') {
+                if(this.selectedHero==='taoist') this.playSheet('seal_bolt', e.x, this.footY(e), this.fxScale(e) * 0.75);
+                else burst(this.fxLayer,e.x,e.y,FX.hit(e.x,e.y,heroDef(this.selectedHero).color));
+            }
             if (b.kind === 'metal') flash(this.fxLayer, 'fx_metal_hit', e.x, e.y, 0.22, { size: 64, startScale: 0.6, endScale: 1.2, startAlpha: 230 });
             if (--b.pierce < 0) b.alive = false;
         } else if (b.kind === 'water') {

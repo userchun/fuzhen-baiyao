@@ -2,6 +2,7 @@
 // 视觉见 docs/art/art-bible.md；交互与解锁规则见 docs/gameplay-design.md §4.4。
 // 局内旧素材与五行结界不在本次首页改造范围。
 
+import { HEROES, HeroId, heroDef } from '../config/HeroConfig';
 import { Node, Label, EventTouch, Graphics, tween, UIOpacity, UITransform } from 'cc';
 import { GAME, LevelDef, ENEMIES, TALISMANS, TalismanId } from '../config/GameConfig';
 import { Difficulty, FIRST_CLEAR_NORMAL, FIRST_CLEAR_HARD_PAPER, StatId, STAT_UPGRADES, STAT_EFFECT, STAR_COSTS, TALISMAN_IDS } from '../config/MetaConfig';
@@ -68,6 +69,8 @@ function modalButton(name: string, w: number, h: number, parent: Node, tone: 'in
 }
 
 export interface HomeActions {
+    hero?: HeroId;
+    onHero?: (id: HeroId) => boolean;
     onFight: (level: number, diff: Difficulty) => void;
     onEntry: (id: 'upgrade' | 'talisman' | 'record') => void;
     onSettings: () => void;
@@ -84,6 +87,10 @@ export class HomeUI {
     private toastT = 0;
     private heroIdle: Node | null = null;
     private heroClock = 0;
+    private heroFx: Graphics | null = null;
+    private heroFxColor = GOLD;
+    private heroFxKind: HeroId = 'taoist';
+    private heroFxScale = 1;
     private talismanGlow: UIOpacity | null = null;
     private heroSparks: { node: Node; opacity: UIOpacity; phase: number; x: number; y: number }[] = [];
     /** 本帧主界面是否画首局养成暖光引导（仅当次 show 生命周期） */
@@ -165,6 +172,7 @@ export class HomeUI {
         this.node?.destroy();
         this.node = null;
         this.heroIdle = null;
+        this.heroFx = null;
         this.talismanGlow = null;
         this.heroSparks = [];
         this.heroClock = 0;
@@ -195,6 +203,25 @@ export class HomeUI {
                 spark.node.setPosition(spark.x + Math.round(Math.sin(t * Math.PI * 2 + spark.phase * 6) * 5 * this.u),
                     spark.y + Math.round(t * 70 * this.u));
                 spark.opacity.opacity = Math.round(Math.sin(t * Math.PI) * 210);
+            }
+        }
+        if (this.heroFx) {
+            const g = this.heroFx, u = this.heroFxScale, t = this.heroClock;
+            g.clear();
+            g.strokeColor = hex(this.heroFxColor, 80); g.lineWidth = 2*u;
+            g.ellipse(0, -275*u, 155*u, 30*u); g.stroke();
+            for (let i=0;i<16;i++) {
+                const phase=(t*0.16+i/16)%1, angle=t*0.8+i*2.399;
+                const x=Math.cos(angle)*(95+35*Math.sin(i))*u;
+                const y=(-260+phase*570)*u;
+                g.fillColor=hex(this.heroFxColor,Math.round(Math.sin(phase*Math.PI)*160));
+                if (this.heroFxKind==='medium') { g.circle(x,y,(2+i%3)*u); g.fill(); }
+                else if (this.heroFxKind==='sword') { g.rect(x,y,2*u,(5+i%4)*u); g.fill(); }
+                else { g.rect(x,y,(3+i%3)*u,(3+i%4)*u); g.fill(); }
+            }
+            if(this.heroFxKind==='medium') {
+                g.strokeColor=hex(this.heroFxColor,100);g.lineWidth=2*u;
+                g.ellipse(0,-270*u,(100+Math.sin(t*2)*20)*u,20*u);g.stroke();
             }
         }
         if (this.toast && this.toastT > 0) {
@@ -471,6 +498,28 @@ export class HomeUI {
             });
             return node;
         };
+        // 可替换立绘与属性粒子分层；人物比例保持统一。
+        const selected = heroDef(actions.hero ?? 'taoist');
+        const portrait=image(selected.portrait,[20,470,720,1170]);
+        this.heroIdle=portrait;this.heroClock=0;
+        const fx=makeNode('heroElementFX',layer);fx.setPosition(...position(370,790));
+        this.heroFx=fx.addComponent(Graphics);this.heroFxColor=selected.color;
+        this.heroFxKind=selected.id;this.heroFxScale=scale;
+        label(selected.name,470,1125,37,selected.color);
+        label(selected.affinity+' · '+selected.weapon,470,1165,23,DIM);
+        HEROES.forEach((hero,index)=>{
+            const x=135+index*220,chosen=hero.id===selected.id;
+            const tile=rectNode('selectHero-'+hero.id,198*scale,68*scale,chosen?'#55412B':'#172136',layer,5*scale,235);
+            tile.setPosition(...position(x,1230));
+            const outline=tile.getComponent(Graphics);outline.lineWidth=2*scale;outline.strokeColor=hex(chosen?hero.color:'#4B5671');
+            outline.rect(-99*scale,-34*scale,198*scale,68*scale);outline.stroke();
+            label(hero.name,x,1230,25,chosen?hero.color:CREAM);
+            touch('heroChoice-'+hero.id,[x-99,1196,x+99,1264],()=>{
+                if(chosen)return;
+                if(!actions.onHero?.(hero.id)){this.showToast('人物选择保存失败，请重试');return;}
+                actions.hero=hero.id;this.renderReference(profile,levels,actions);
+            });
+        });
         image('ui_ref_coin',[197,32,452,106]);
         image('ui_ref_paper',[490,27,750,110]);
         image('ui_ref_gear',[811,28,905,116]);

@@ -1,3 +1,4 @@
+import { HERO_SELECTION_KEY, heroId, HeroId } from './config/HeroConfig';
 import { _decorator, Component, Node, UITransform, EventTouch, view, ResolutionPolicy, input, Input, sys, screen } from 'cc';
 import { GAME, LEVELS, COMBOS, ENEMIES, applyScreen } from './config/GameConfig';
 import { Difficulty, HARD_HP_MULT } from './config/MetaConfig';
@@ -37,6 +38,7 @@ export class GameRoot extends Component {
     private relayout: (() => void) | null = null;
     private levelIndex = 0;
     private difficulty: Difficulty = 'normal';
+    private selectedHero: HeroId = (() => { try { return heroId(sys.localStorage.getItem(HERO_SELECTION_KEY)); } catch { return 'taoist'; } })();
     private profile: Profile = loadProfile(sys.localStorage, LEVELS.length);
     private home: HomeUI;
     private bg: Node;
@@ -179,6 +181,14 @@ export class GameRoot extends Component {
         this.state = 'menu';
         this.syncBgm();
         this.home.show(this.profile, LEVELS, level, {
+            hero: this.selectedHero,
+            onHero: id => {
+                try {
+                    sys.localStorage.setItem(HERO_SELECTION_KEY, id);
+                    if (sys.localStorage.getItem(HERO_SELECTION_KEY)!==id) return false;
+                    this.selectedHero=id;return true;
+                } catch { return false; }
+            },
             onFight: (i, diff) => this.startLevel(i, diff),
             onEntry: (id) => {
                 if (id === 'record') this.openRecords();
@@ -261,7 +271,7 @@ export class GameRoot extends Component {
         this.combat = new Combat(combatLayer, this.skills, this.fb, (e) => {
             if (e.def.elite) this.eliteKills++;
             this.skills.addXp(e.def.xp * this.meta.spiritMult);
-        }, this.audio);
+        }, this.audio, this.selectedHero);
         this.combat.bossSkillDamageMult = diff === 'hard' ? 1.5 : 1;
         this.combat.hpMult = level.hpMult * (diff === 'hard' ? HARD_HP_MULT : 1);
         // 开局冻结养成快照，本局中途不再变化

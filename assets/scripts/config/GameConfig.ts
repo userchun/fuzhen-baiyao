@@ -72,6 +72,14 @@ export function travelPixels(): number {
 // 基础攻击（镇妖符）：按住瞄准时射速更快，鼓励手动操作
 // 2026-10-31 改为全自动攻击（🧪）：自动打最近妖怪，操作只剩拖动走位；试玩觉得 0.25 太快，放慢到 0.45
 export const BASE_ATTACK = { damage: 12, holdCd: 0.25, autoCd: 0.45, speed: 1100 };
+/** 已确认专属武器：普攻共用BASE_ATTACK数值；属性参与现有相克。专精被动另行设计。 */
+export const HERO_WEAPONS = {
+    taoist: { name: '镇妖符箓', element: 'none' as Element },
+    sword: { name: '桃木剑', element: 'metal' as Element },
+    medium: { name: '引魂铃', element: 'water' as Element },
+    flame: { name: '朱砂葫芦', element: 'fire' as Element },
+};
+
 
 export const ELEMENT_COLOR: Record<Element, string> = {
     metal: '#F5D76E', wood: '#5FBF6A', water: '#5AB4F0',
