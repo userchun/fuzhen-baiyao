@@ -1,0 +1,42 @@
+// 由 art/fx/index.json 生成（tools/fx-bake/bake.mjs），勿手改。
+// 每项：[帧宽, 帧高, 帧数, 锚点x, 锚点y(从帧顶算), 是否循环]；每行 8 帧，24 fps
+export const FX_COLS = 8;
+export const FX_FPS = 24;
+export const FX_SHEETS: Record<string, number[]> = {
+ "seal_bolt": [ 128, 256, 14, 64, 168, 0 ],
+ "gold_pillar_lv1": [ 128, 192, 38, 64, 168, 0 ],
+ "gold_pillar_lv2": [ 128, 192, 38, 64, 168, 0 ],
+ "gold_pillar_lv3": [ 128, 192, 38, 64, 168, 0 ],
+ "gold_pillar_lv4": [ 128, 192, 38, 64, 168, 0 ],
+ "gold_pillar_lv5": [ 128, 192, 38, 64, 168, 0 ],
+ "vine_zone_lv1": [ 128, 192, 77, 64, 168, 0 ],
+ "vine_zone_lv2": [ 128, 192, 77, 64, 168, 0 ],
+ "vine_zone_lv3": [ 128, 192, 77, 64, 168, 0 ],
+ "vine_zone_lv4": [ 128, 192, 77, 64, 168, 0 ],
+ "vine_zone_lv5": [ 128, 192, 77, 64, 168, 0 ],
+ "ice_burst_lv1": [ 128, 256, 53, 64, 168, 0 ],
+ "ice_burst_lv2": [ 128, 256, 53, 64, 168, 0 ],
+ "ice_burst_lv3": [ 128, 256, 53, 64, 168, 0 ],
+ "ice_burst_lv4": [ 128, 256, 53, 64, 168, 0 ],
+ "ice_burst_lv5": [ 128, 256, 53, 64, 168, 0 ],
+ "fire_burst_lv1": [ 128, 256, 53, 64, 168, 0 ],
+ "fire_burst_lv2": [ 128, 256, 53, 64, 168, 0 ],
+ "fire_burst_lv3": [ 128, 256, 53, 64, 168, 0 ],
+ "fire_burst_lv4": [ 128, 256, 53, 64, 168, 0 ],
+ "fire_burst_lv5": [ 128, 256, 53, 64, 168, 0 ],
+ "stone_spike_lv1": [ 128, 192, 58, 64, 168, 0 ],
+ "stone_spike_lv2": [ 128, 192, 58, 64, 168, 0 ],
+ "stone_spike_lv3": [ 128, 192, 58, 64, 168, 0 ],
+ "stone_spike_lv4": [ 128, 192, 58, 64, 168, 0 ],
+ "stone_spike_lv5": [ 128, 192, 58, 64, 168, 0 ],
+ "thunder_chain_lv1": [ 128, 192, 48, 64, 168, 0 ],
+ "thunder_chain_lv2": [ 128, 192, 48, 64, 168, 0 ],
+ "thunder_chain_lv3": [ 128, 192, 48, 64, 168, 0 ],
+ "thunder_chain_lv4": [ 128, 192, 48, 64, 168, 0 ],
+ "thunder_chain_lv5": [ 128, 192, 48, 64, 168, 0 ],
+ "status_hit": [ 96, 96, 29, 48, 80, 1 ],
+ "status_freeze": [ 96, 96, 29, 48, 80, 1 ],
+ "status_burn": [ 96, 96, 29, 48, 80, 1 ],
+ "status_stun": [ 96, 96, 29, 48, 80, 1 ],
+ "status_slow": [ 96, 96, 29, 48, 80, 1 ]
+};

@@ -15,6 +15,7 @@ import { AudioManager } from '../core/AudioManager';
 import { FX, burst, flash, flashCombat, flashCastGlow, flashHasteTrail, flashMotionHit } from './ParticleFX';
 import { hitPulse } from './Anim';
 import { FrameAnim, FrameClip } from './FrameAnim';
+import { FX_SHEETS, FX_FPS } from '../config/FxSheets';
 import { BarrierView } from './BarrierView';
 import type { BarrierElement } from './BarrierArt';
 import { hasMotionRef, MotionRefId, MOTION_REF_TINT } from './MotionRef';
@@ -62,6 +63,8 @@ interface Fx { key: string; node: Node; life: number; maxLife: number; scale: nu
 const HALF_W = LAYOUT.roadHalfW; // 出怪与妖怪横向活动范围：收在路面以内
 const top = (): number => GAME.horizonY; // 纵深最远点（地平线/出怪线）
 const PLAYER_ART_SIZE = 160; // 当前符师动作帧显示边长，完整轮廓位于结界后方。
+const fxLv = (lv: number): number => Math.max(1, Math.min(5, lv));
+const FX_PIXEL_SCALE = 2; // 符咒像素特效放大倍数：特效里妖怪身高约 44 像素，对应场上妖怪约 90 像素
 
 // 战斗世界：施法、敌人移动、子弹碰撞、区域伤害、特效
 export class Combat {
@@ -160,6 +163,7 @@ export class Combat {
     private fireExplodeClip: FrameClip | null = null;
     private lanternDeathClip: FrameClip | null = null;
     private splitFx: { node: Node; anim: FrameAnim; life: number }[] = [];
+    private fxTimers: { t: number; fn: () => void }[] = [];
 
     constructor(layer: Node, private skills: SkillSystem, private fb: Feedback, private onKill: (e: Enemy) => void, private audio?: AudioManager) {
         this.pool = new Pool((key) => this.create(key));
@@ -627,6 +631,7 @@ export class Combat {
                 if (!t) return;
                 used.add(t);
                 this.shoot('metal', t.x, skyY, 0, -1600, dmg, { pierce: lv, radius: 16, life: 2 });
+                this.playSheet(`gold_pillar_lv${fxLv(lv)}`, t.x, this.footY(t), this.fxScale(t));
             }
             this.audio?.playSfx('shoot', 0.45);
         } else if (id === 'water' || id === 'fire') {
@@ -636,12 +641,15 @@ export class Combat {
                 const t = this.randomTarget(used);
                 if (!t) return;
                 used.add(t);
-                const sx = t.x + (Math.random() * 2 - 1) * 60;
+                // 2026-11-02：冰火改为正面攻击，从符师一侧射出；命中前 0.2 秒接上像素特效的飞行段和爆炸
+                const sx = ox, sy = oy;
                 const speed = 1300;
                 const dx = t.x - sx;
-                const dy = t.y - skyY;
+                const dy = t.y - sy;
                 const dist = Math.max(1, Math.hypot(dx, dy));
-                this.shoot(id, sx, skyY, dx / dist * speed, dy / dist * speed, dmg, id === 'water'
+                this.playSheet(`${id === 'water' ? 'ice_burst' : 'fire_burst'}_lv${fxLv(lv)}`, t.x, this.footY(t),
+                    this.fxScale(t), Math.max(0, dist / speed - 0.2));
+                this.shoot(id, sx, sy, dx / dist * speed, dy / dist * speed, dmg, id === 'water'
                     ? { bounces: lv, radius: 11 }
                     : { explodeR: 70 + 15 * lv, radius: 14, life: dist / speed });
             }
@@ -653,6 +661,7 @@ export class Combat {
                 if (!t) return;
                 used.add(t);
                 this.addZone(t.x, t.y, 60 + 10 * lv, dmg, 3);
+                this.playSheet(`vine_zone_lv${fxLv(lv)}`, t.x, this.footY(t), this.fxScale(t));
             }
         } else if (id === 'earth') {
             const used = new Set<Enemy>();
@@ -663,7 +672,7 @@ export class Combat {
                 used.add(t);
                 const cx = t.x;
                 const cy = t.y;
-                this.addFx(cx, cy, r, 'fx:earth');
+                this.playSheet(`stone_spike_lv${fxLv(lv)}`, cx, this.footY(t), this.fxScale(t));
                 burst(this.fxLayer, cx, cy, FX.earth(cx, cy));
                 this.audio?.playSfx('thunder', 0.5);
                 this.fb.shake(3, 0.08);
@@ -683,9 +692,9 @@ export class Combat {
                 if (targets.length === 0) return;
                 let cur: Enemy | null = targets[Math.floor(Math.random() * targets.length)];
                 const hit = new Set<Enemy>();
+                if (cur) this.playSheet(`thunder_chain_lv${fxLv(lv)}`, cur.x, this.footY(cur), this.fxScale(cur));
                 for (let j = 0; j <= lv && cur; j++) {
                     hit.add(cur);
-                    this.addFx(cur.x, cur.y, 35, 'fx:thunder');
                     burst(this.fxLayer, cur.x, cur.y, FX.thunder(cur.x, cur.y));
                     this.hurt(cur, dmg, 'none', true, 'thunder_hit'); // U10 天雷挂点（伤不变）
                     cur = this.nearest(cur.x, cur.y, hit, 250);
@@ -762,6 +771,40 @@ export class Combat {
             e.visualAction = 'move';
             this.ensureEnemyAnim(e.node, e.def.id, e.element);
         });
+    }
+
+    /**
+     * 播放一次符咒像素特效（tools/fx-bake 烘焙的精灵表）。(x, y) 是特效的地面锚点（妖怪脚下），
+     * 按锚点在帧内的位置摆放节点；scale 为像素放大倍数。素材缺失时静默跳过。
+     */
+    private playSheet(name: string, x: number, y: number, scale = FX_PIXEL_SCALE, delay = 0): void {
+        const meta = FX_SHEETS[name];
+        const frames = meta ? getFrames('fx/' + name) : [];
+        if (!meta || !frames.length) return;
+        const [fw, fh, , ox, oy] = meta;
+        const node = spriteNode(`fx/${name}_00`, fw * scale, fh * scale, this.fxLayer);
+        if (!node) return;
+        node.getComponent(UITransform)!.setAnchorPoint(ox / fw, 1 - oy / fh);
+        node.setPosition(x, y);
+        const anim = new FrameAnim(node);
+        const clip: FrameClip = { frames, fps: FX_FPS, loop: false };
+        const start = () => anim.play(clip);
+        if (delay > 0) { node.active = false; this.scheduleFx(delay, () => { node.active = true; start(); }); } else start();
+        this.splitFx.push({ node, anim, life: delay + frames.length / FX_FPS + 0.05 });
+    }
+
+    /** 特效跟妖怪一样按纵深缩放 */
+    private fxScale(e: Enemy): number {
+        return FX_PIXEL_SCALE * depthScale(e.depth);
+    }
+
+    /** 妖怪脚底的屏幕 y（e.y 是图片中心） */
+    private footY(e: Enemy): number {
+        return e.y - e.def.radius * (ENEMY_ART[e.def.id]?.scale ?? 2) * depthScale(e.depth) * 0.44;
+    }
+
+    private scheduleFx(delay: number, fn: () => void): void {
+        this.fxTimers.push({ t: delay, fn });
     }
 
     /** 死亡表现脱离战斗实体，立即释放攻城槽与结算奖励，不重复伤害。 */
@@ -1065,11 +1108,13 @@ export class Combat {
         b.hit.add(e);
         if (b.kind === 'metal' || b.kind === 'manual') {
             this.hurt(e, b.damage, b.kind === 'metal' ? 'metal' : 'none');
+            if (b.kind === 'manual') this.playSheet('seal_bolt', e.x, this.footY(e), this.fxScale(e) * 0.75);
             if (b.kind === 'metal') flash(this.fxLayer, 'fx_metal_hit', e.x, e.y, 0.22, { size: 64, startScale: 0.6, endScale: 1.2, startAlpha: 230 });
             if (--b.pierce < 0) b.alive = false;
         } else if (b.kind === 'water') {
             this.hurt(e, b.damage, 'water', true, 'ice_hit'); // U10 寒冰挂点
             e.freezeT = Math.max(e.freezeT, 0.6);
+            this.playSheet('status_freeze', e.x, this.footY(e), this.fxScale(e));
             const next = b.bounces > 0 ? this.nearest(b.x, b.y, b.hit, 350) : null;
             if (!next) { b.alive = false; return; }
             b.bounces--;
@@ -1421,6 +1466,11 @@ export class Combat {
     }
 
     private updateFx(dt: number): void {
+        if (this.fxTimers.length) {
+            const due = this.fxTimers.filter((f) => (f.t -= dt) <= 0);
+            this.fxTimers = this.fxTimers.filter((f) => f.t > 0);
+            for (const f of due) f.fn();
+        }
         if (this.splitFx.length) {
             const next: { node: Node; anim: FrameAnim; life: number }[] = [];
             for (const f of this.splitFx) {

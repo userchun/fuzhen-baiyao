@@ -1,5 +1,6 @@
 import { resources, Texture2D, SpriteFrame, Sprite, Node, UITransform, Rect, Size } from 'cc';
 import { makeNode } from './Draw';
+import { FX_SHEETS, FX_COLS } from '../config/FxSheets';
 
 // 美术素材：启动时加载 resources/textures 下全部图片，按相对路径取 SpriteFrame。
 // 素材缺失时各处退回代码色块绘制（story-007 验收标准）。
@@ -45,6 +46,19 @@ export function loadArt(): Promise<void> {
                     sf.texture = tex;
                     const key = artKeyFromPath(info.path);
                     frames.set(key, sf);
+                    const sheet = key.startsWith('fx/') ? FX_SHEETS[key.slice(3)] : undefined;
+                    if (sheet) {
+                        // 符咒像素特效精灵表：按帧切成 fx/<名>_NN，像素图用最近邻取样保持锐利
+                        tex.setFilters(Texture2D.Filter.NEAREST, Texture2D.Filter.NEAREST);
+                        const [fw, fh, n] = sheet;
+                        for (let i = 0; i < n; i++) {
+                            const f = new SpriteFrame();
+                            f.texture = tex;
+                            f.rect = new Rect((i % FX_COLS) * fw, Math.floor(i / FX_COLS) * fh, fw, fh);
+                            f.originalSize = new Size(fw, fh);
+                            frames.set(`${key}_${String(i).padStart(2, '0')}`, f);
+                        }
+                    }
                     if (key === 'player_actions') {
                         // 像素符师 4×3 原图；仅引擎取样，不改写生成图片。
                         // 各帧以双脚中心 / 脚底校准，避免换帧左右跳位或浮起。
