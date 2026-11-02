@@ -163,7 +163,7 @@ export class Combat {
     private lanternSplitClip: FrameClip | null = null;
     private fireExplodeClip: FrameClip | null = null;
     private lanternDeathClip: FrameClip | null = null;
-    private splitFx: { node: Node; anim: FrameAnim; life: number }[] = [];
+    private splitFx: { node: Node; anim: FrameAnim; life: number; follow?: Enemy }[] = [];
     private fxTimers: { t: number; fn: () => void }[] = [];
 
     constructor(layer: Node, private skills: SkillSystem, private fb: Feedback, private onKill: (e: Enemy) => void, private audio?: AudioManager) {
@@ -754,7 +754,7 @@ export class Combat {
                     // 青藤命中：妖怪第一次踩进藤网时，在它脚下缠上藤蔓
                     if (z.el === 'wood' && z.bound && !z.bound.has(e)) {
                         z.bound.add(e);
-                        this.playSheet('status_slow', e.x, this.footY(e), this.fxScale(e));
+                        this.playSheet('status_slow', e.x, this.footY(e), this.fxScale(e), 0, { life: z.life, follow: e });
                     }
                     // E T3：焚林区 tick 节流 ≤2Hz（不改 ×3）
                     if (z.key === 'zone:burn' && this.burnShengT <= 0) {
@@ -785,7 +785,8 @@ export class Combat {
      * 播放一次符咒像素特效（tools/fx-bake 烘焙的精灵表）。(x, y) 是特效的地面锚点（妖怪脚下），
      * 按锚点在帧内的位置摆放节点；scale 为像素放大倍数。素材缺失时静默跳过。
      */
-    private playSheet(name: string, x: number, y: number, scale = FX_PIXEL_SCALE, delay = 0): void {
+    private playSheet(name: string, x: number, y: number, scale = FX_PIXEL_SCALE, delay = 0,
+        loop?: { life: number; follow: Enemy }): void {
         const meta = FX_SHEETS[name];
         const frames = meta ? getFrames('fx/' + name) : [];
         if (!meta || !frames.length) return;
@@ -795,10 +796,10 @@ export class Combat {
         node.getComponent(UITransform)!.setAnchorPoint(ox / fw, 1 - oy / fh);
         node.setPosition(x, y);
         const anim = new FrameAnim(node);
-        const clip: FrameClip = { frames, fps: FX_FPS, loop: false };
+        const clip: FrameClip = { frames, fps: FX_FPS, loop: !!loop };
         const start = () => anim.play(clip);
         if (delay > 0) { node.active = false; this.scheduleFx(delay, () => { node.active = true; start(); }); } else start();
-        this.splitFx.push({ node, anim, life: delay + frames.length / FX_FPS + 0.05 });
+        this.splitFx.push({ node, anim, life: loop ? loop.life : delay + frames.length / FX_FPS + 0.05, follow: loop?.follow });
     }
 
     /** 特效跟妖怪一样按纵深缩放 */
@@ -1480,10 +1481,15 @@ export class Combat {
             for (const f of due) f.fn();
         }
         if (this.splitFx.length) {
-            const next: { node: Node; anim: FrameAnim; life: number }[] = [];
+            const next: { node: Node; anim: FrameAnim; life: number; follow?: Enemy }[] = [];
             for (const f of this.splitFx) {
                 f.anim.update(dt);
                 f.life -= dt;
+                if (f.follow) {
+                    // 缠绕跟着妖怪走；妖怪死了或挣脱减速就收掉
+                    if (!f.follow.alive || f.follow.dying || f.follow.slow <= 0) f.life = 0;
+                    else f.node.setPosition(f.follow.x, this.footY(f.follow));
+                }
                 if (f.life > 0) next.push(f);
                 else f.node.destroy();
             }

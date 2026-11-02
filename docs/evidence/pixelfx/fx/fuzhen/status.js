@@ -68,21 +68,34 @@ function stun(p, t, B) {
 }
 
 function slow(p, t, B, S) {
-  const C = fit(VINE, 6);
-  // 脚边绿色藤印 + 两圈藤绕在小腿 + 往下飘的叶片，表示“被拖住”
-  groundMark(p, 16, C[2], 0.45);
-  for (let i = 0; i < 2; i++) {
+  const C = fit(VINE, 6), H = B * 0.7, k0 = Math.min(1, t / 0.25);
+  // 被藤缠住：脚下发亮的藤印 + 地里钻出的几根根须 + 三股粗藤螺旋缠到腰，勒紧时一跳一跳
+  groundMark(p, 20, C[3], 0.6);
+  p.glow(0, -2, 22, C[4], 0.35);
+  for (let i = 0; i < 6; i++) {
+    const r = rng(S, 20 + i), a = (i / 6) * Math.PI * 2 + r.range(-0.3, 0.3), L = r.range(10, 16) * k0;
+    const x0 = Math.cos(a) * 6, y0 = Math.sin(a) * 2, x1 = Math.cos(a) * (6 + L), y1 = Math.sin(a) * 3 - 3;
+    p.line(x0, y0, x1, y1, C[2], 1); p.line(x0, y0 - 1, x1, y1 - 1, C[4], 0.8);
+  }
+  const beat = 1 - 0.12 * Math.max(0, Math.sin(t * 9));
+  for (let i = 0; i < 3; i++) {
     let px = null, py = null;
-    for (let j = 0; j <= 30; j++) {
-      const q = j / 30, a = q * Math.PI * 2 + i * 2 + t, x = Math.cos(a) * 9, y = -2 - i * 6 - q * 4;
-      if (px !== null && Math.sin(a) > 0) p.line(px, py, x, y, C[4], 1);
+    const top = H * k0;
+    for (let j = 0; j <= 40; j++) {
+      const q = j / 40, a = q * Math.PI * 4 + i * 2.1 + t * 1.5, w = (11 - q * 3) * beat;
+      const x = Math.cos(a) * w, y = -q * top, front = Math.sin(a) > 0;
+      if (px !== null) {
+        p.line(px, py, x, y, front ? C[3] : C[1], front ? 1 : 0.7);
+        if (front) { p.line(px, py - 1, x, y - 1, C[5], 1); p.line(px, py + 1, x, y + 1, C[2], 1); }
+      }
+      if (front && j % 10 === 5) { p.tri(x, y, x + 4, y - 3, x + 1, y - 5, C[4], 1); p.dot(x + 2, y - 3, C[5], 1); }
       px = x; py = y;
     }
   }
-  for (let i = 0; i < 3; i++) { const r = rng(S, 80 + i), q = ((t * 0.8 + r.next()) % 1); p.dot(r.range(-12, 12), -B * 0.7 + q * B * 0.6, C[5], 1 - q); }
-  // 向下的小箭头：速度变慢
+  // 往上飘的叶屑 + 头顶向下小箭头（减速）
+  for (let i = 0; i < 5; i++) { const r = rng(S, 80 + i), q = ((t * 0.8 + r.next()) % 1); p.dot(r.range(-14, 14), -q * B * 0.9, C[5], 1 - q); }
   const k = 0.5 + 0.5 * Math.sin(t * 6);
-  p.line(-4, -B - 8, 0, -B - 4, C[5], k); p.line(4, -B - 8, 0, -B - 4, C[5], k);
+  for (const d of [0, 4]) { p.line(-5, -B - 10 + d, 0, -B - 5 + d, C[5], k); p.line(5, -B - 10 + d, 0, -B - 5 + d, C[5], k); }
 }
 
 export function draw(p, t, o) {
