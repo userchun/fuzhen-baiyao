@@ -33,7 +33,7 @@ description: 符阵白妖（fuzhen-baiyao）按关卡做美术素材的流程：
 - 配色：妖怪和背景不能撞色；五行靠外形和配色一眼可读（金 暗金/白、木 青绿、水 靛蓝/黑、火 朱红、土 黄褐），见 art-bible 第 3 节。
 - 怪物胸口要留一块空白符牌，游戏把字印画在上面。
 
-## 2. 出图
+## 2. 出图（Agnes，跳过 Magpie）
 
 - 模型：`agnes-image-2.5-flash`。不擅自换模型；`codex/gpt-image-2` 已移除，不用。
 - **带参考图一律用 `scripts/agnes-image.py`**（直连 Agnes，不经过 Magpie）：
@@ -41,10 +41,15 @@ description: 符阵白妖（fuzhen-baiyao）按关卡做美术素材的流程：
   python3 scripts/agnes-image.py --prompt-file p.txt --ref ref.png --size 2K --ratio 3:2 --out out.png
   ```
   - Magpie MCP 的 `reference_images` 会把请求发到 Agnes 不支持的 `/images/edits`，固定返回 503，不要用。
-  - imagegen 的 `magpie.py -r` 也直连 Agnes，但不传比例，出来总是正方形；要指定比例时用上面的脚本。
-  - 密钥在 imagegen skill 目录：先用收费 key，用完再用免费 key。每张图都花钱，**一次只出一张**，出完给用户看再决定下一步。
-- `size` 用 `1K / 2K / 3K / 4K`，比例用 `ratio`（可选 `1:1 3:4 4:3 16:9 9:16 2:3 3:2 21:9`），给精确像素会被改成最近的档位。
+  - imagegen 的 `magpie.py -r` 也勿作默认；本流程跳过 Magpie。
+  - 密钥用环境变量 `AGNES_API_KEY`（不要写进仓库）。也可用 imagegen skill 目录约定，但不要把 key 贴进聊天。每张图都花钱，**一次只出一张**，出完给用户看再决定下一步。
+- 无参考图 / ASF master 候选可用 imagegen skill：
+  `python3 ~/.claude/skills/imagegen/scripts/agnes.py -o out.png --size 1024x1024 "prompt"`
+  （默认 base `https://apihub.agnes-ai.com/v1`，模型 `agnes-image-2.5-flash`）。`tools/asf/imagegen-take.sh` 走这条。
+- `scripts/agnes-image.py` 的 `size` 用 `1K / 2K / 3K / 4K`，比例用 `ratio`（可选 `1:1 3:4 4:3 16:9 9:16 2:3 3:2 21:9`），给精确像素会被改成最近的档位。
 - Agnes 不支持透明背景：提示词写"纯洋红 #FF00FF 背景"，出图后自己抠图并检查 alpha。实际背景常是偏暗的紫红，抠图按四角取色、容差放宽。
+- **跳过 Magpie**（不要用 `magpie.py` / Magpie MCP，除非用户明确要求）。
+- **只出一张**，不要并行出多个候选。先说明选了哪个方向，出完给用户看，不满意再改。
 - 出图分两步：
   1. 先出**定稿造型**单张（1:1），用户确认后再继续。
   2. 用定稿图作参考，出**等网格序列图**。12 帧走路的做法：出一张 3:2 的 3×2 图，只画半个周期（一条腿迈步的 6 帧），再左右翻转得到另一半，拼成 12 帧。prompt 里写明：每格同一角色、同大小、脚底同高、全身完整、**只画正面**，以及每一帧的动作分解。
@@ -54,14 +59,14 @@ description: 符阵白妖（fuzhen-baiyao）按关卡做美术素材的流程：
 
 ## 2.5 可选：ASF 整套动作（图生视频）
 
-若要一次性出 idle/walk/run/attack 等动作集（而不是网格序列图切帧），在 Magpie 定稿造型确认后：
+若要一次性出 idle/walk/run/attack 等动作集（而不是网格序列图切帧），在 **Agnes/imagegen** 定稿造型确认后：
 
-1. 定稿图放到 `art/asf/<id>-takes/`（仍用上面的 `/imagegen` / `magpie.py`）。
+1. `tools/asf/imagegen-take.sh`（或 `agnes.py`）把定稿图放到 `art/asf/<id>-takes/`。
 2. `tools/asf/approve-from-imagegen.sh` 收成 `art/asf/<id>-master/`（ASF `master.json`）。
 3. 用 ASF `$video2dsprite` / `sprite_set.py` 出到 `art/asf/<id>-set/`（见 `art/asf/README.md`）。
 4. 挑帧后再按 §3–§4 切齐、进 `textures/anim/`。
 
-**静帧禁止改走 Codex CLI image_gen / ASF route_media**；本项目静帧入口只有 `/imagegen`（Magpie）。
+**静帧走 imagegen→Agnes；跳过 Magpie；不要用 Codex CLI image_gen / ASF route_media 生静帧。**
 
 ## 3. 切帧与像素化
 

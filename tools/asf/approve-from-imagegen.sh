@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# 把 Magpie /imagegen 产出的定稿 PNG 收成 ASF master（master.png + master.json）。
+# 把 imagegen/Agnes 产出的定稿 PNG 收成 ASF master（master.png + master.json）。
 # 真实 CLI：master_still.py approve --still ... --route external（默认 external = 外部工具出图）
 set -euo pipefail
 ASF_ROOT="${ASF_ROOT:-$HOME/Tools/agent-sprite-forge}"
