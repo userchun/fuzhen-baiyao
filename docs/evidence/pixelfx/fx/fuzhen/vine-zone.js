@@ -10,6 +10,7 @@ export const meta = {
   desc: "符种落地、藤网蔓延、藤须缠绕、持续伤害，随等级变强。",
   tags: ["fuzhen", "wood"], ...FRAME, duration: 3.2, loop: true, fps: 30, bg: "dark",
   options: {
+    bind: 1, // 预览时画束缚；游戏里束缚是命中特效（status_slow），烘焙时关掉
     palette: ["#08140a", "#123018", "#1e5024", "#2e7a30", "#4ea83a", "#86d050", "#c4ec7a", "#f0ffc0"],
     bloom: ["#7a2a4a", "#d0608a", "#f8b0c8", "#fff0f4"], // 5 级花色
     level: 1, // 符咒等级 1–5
@@ -139,7 +140,7 @@ export function draw(p, t, o) {
   }
   // 束缚：正中目标必缠，3 级起再缠两侧各一只，5 级缠五只
   const holds = [[0, 1]].concat(o.lv >= 3 ? [[-R * 0.6, 0.85], [R * 0.6, 0.85]] : [], o.lv >= 5 ? [[-R * 0.3, 0.7], [R * 0.32, 0.7]] : []);
-  holds.forEach(([hx, sc], i) => {
+  if (o.bind >= 0.5) holds.forEach(([hx, sc], i) => {
     const b0 = 0.12 + i * 0.07, g = clamp((u - b0) / 0.3), snap = clamp((u - o.life + 0.15) / 0.3);
     if (g <= 0 || snap >= 1) return;
     bind(p, hx, 36 * sc * (1 + o.lv * 0.04), 10 * sc, g, beat, snap, C, live * (1 - snap), o.lv >= 3, i * 1.3);

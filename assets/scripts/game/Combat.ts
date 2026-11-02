@@ -56,6 +56,7 @@ interface Bullet {
 interface Zone {
     key: string; node: Node; x: number; y: number; r: number;
     dps: number; slow: number; el: Element; life: number; alive: boolean;
+    bound?: Set<Enemy>; // 已播过缠绕特效的妖怪
 }
 
 interface Fx { key: string; node: Node; life: number; maxLife: number; scale: number; alive: boolean; }
@@ -723,10 +724,10 @@ export class Combat {
         const node = this.pool.get(key, this.zoneLayer);
         node.setPosition(x, y);
         node.setScale(r / 50, r / 50, 1);
-        setOpacity(node, 110);
+        setOpacity(node, burn ? 110 : 0); // 青藤的地面由像素特效画，旧绿圈隐藏
         this.zones.push({
             key, node, x, y, r, life, alive: true,
-            dps: burn ? dps * 3 : dps, slow: burn ? 0.3 : 0.5, el: burn ? 'fire' : 'wood',
+            dps: burn ? dps * 3 : dps, slow: burn ? 0.3 : 0.5, el: burn ? 'fire' : 'wood', bound: new Set(),
         });
         // T5 漏挂：焚林落区时若节流空闲立刻闪一次（不改 ×3）
         if (burn && this.burnShengT <= 0) {
@@ -748,6 +749,11 @@ export class Combat {
                 if (Math.hypot(e.x - z.x, e.y - z.y) < z.r + e.def.radius * 0.5 * depthScale(e.depth)) {
                     e.slow = Math.max(e.slow, z.slow);
                     this.hurt(e, z.dps * dt, z.el, false);
+                    // 青藤命中：妖怪第一次踩进藤网时，在它脚下缠上藤蔓
+                    if (z.el === 'wood' && z.bound && !z.bound.has(e)) {
+                        z.bound.add(e);
+                        this.playSheet('status_slow', e.x, this.footY(e), this.fxScale(e));
+                    }
                     // E T3：焚林区 tick 节流 ≤2Hz（不改 ×3）
                     if (z.key === 'zone:burn' && this.burnShengT <= 0) {
                         this.burnShengT = 0.5;

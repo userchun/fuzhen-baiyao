@@ -15,7 +15,7 @@ const core = await import(join(FX, "core/index.js"));
 const JOBS = [
   ["seal_bolt", "seal-bolt", [{}]],
   ["gold_pillar", "gold-pillar", null],
-  ["vine_zone", "vine-zone", null],
+  ["vine_zone", "vine-zone", null, { bind: 0 }], // 束缚走命中特效 status_slow，不混进技能特效
   ["ice_burst", "ice-drop", null],
   ["fire_burst", "meteor", null],
   ["stone_spike", "stone-pillar", null],
@@ -40,14 +40,14 @@ function png(w, h, rgba) {
 
 mkdirSync(OUT, { recursive: true });
 const index = { fps: FPS, cols: COLS, note: "origin 为锚点（地面中心）在单帧内的像素坐标；由 tools/fx-bake/bake.mjs 生成，勿手改", sheets: {} };
-for (const [id, file, variants] of JOBS) {
+for (const [id, file, variants, extra = {}] of JOBS) {
   const mod = await import(join(FX, "fx/fuzhen", file + ".js"));
   const [w, h] = mod.meta.size, [ox, oy] = mod.meta.origin, n = Math.round(mod.meta.duration * FPS);
   const vs = variants ?? [1, 2, 3, 4, 5].map((l) => ({ level: l, _name: "lv" + l }));
   for (const v of vs) {
     const name = v._name ? `${id}_${v._name}` : id, rows = Math.ceil(n / COLS);
     const sheet = new Uint8ClampedArray(w * COLS * h * rows * 4), frame = core.createFrame(w, h), img = new Uint8ClampedArray(w * h * 4);
-    const fx = core.createFx(mod, { ...mod.meta.options, ...v, x: ox, y: oy });
+    const fx = core.createFx(mod, { ...mod.meta.options, ...extra, ...v, x: ox, y: oy });
     for (let i = 0; i < n; i++) {
       core.clearFrame(frame); fx.draw(frame); core.composite(frame, img, null);
       const cx = (i % COLS) * w, cy = Math.floor(i / COLS) * h;
