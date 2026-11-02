@@ -52,6 +52,17 @@ description: 符阵白妖（fuzhen-baiyao）按关卡做美术素材的流程：
 - AI 序列图连续失败时（槐树精试了 4 张都凑不齐），改用**部件合成**（2026-11-01 用户选定）：把定稿图按髋线、肩膀拆成身子 / 两臂 / 两腿，按走路节奏（抬腿、反向摆臂、身子起伏和轻晃）合成 12 帧，再按第 3 节像素化。不对称的腿可用另一条腿镜像补齐；腿的上沿要藏在身子后面，起伏时才不露缝。范例脚本：走路用 `scripts/puppet-walk.py`（槐树精），并脚跳用 `scripts/puppet-hop.py`（泥尸），四足奔跑加摆尾用 `scripts/puppet-fox.py`（火狐），漂浮加水纹用 `scripts/puppet-float.py`（井鬼），圆身短腿摇摆用 `scripts/puppet-waddle.py`（铜钱精）；后四个会打印每帧字印高度 `sealYFrames`。切分线和参数写在文件开头，换怪要重新量：`python3 scripts/puppet-<walk|hop>.py <定稿512方图> <输出目录>`。部件之间在关节处留 10 像素左右重叠，转动时才不会露出描边或缝隙；袖子切分不要带进袍子下摆。
 - 原图和中间产物放到 `generated-images/<主题>-<日期>/`（不进版本库）。替换游戏里的旧图之前，先把旧图备份到这里。
 
+## 2.5 可选：ASF 整套动作（图生视频）
+
+若要一次性出 idle/walk/run/attack 等动作集（而不是网格序列图切帧），在 Magpie 定稿造型确认后：
+
+1. 定稿图放到 `art/asf/<id>-takes/`（仍用上面的 `/imagegen` / `magpie.py`）。
+2. `tools/asf/approve-from-imagegen.sh` 收成 `art/asf/<id>-master/`（ASF `master.json`）。
+3. 用 ASF `$video2dsprite` / `sprite_set.py` 出到 `art/asf/<id>-set/`（见 `art/asf/README.md`）。
+4. 挑帧后再按 §3–§4 切齐、进 `textures/anim/`。
+
+**静帧禁止改走 Codex CLI image_gen / ASF route_media**；本项目静帧入口只有 `/imagegen`（Magpie）。
+
 ## 3. 切帧与像素化
 
 切帧工具 `tools/asset-pipeline` 已在 `dde5c84` 删除，目前按下面的步骤用 Python + PIL 处理：
