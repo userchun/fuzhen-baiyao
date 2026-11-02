@@ -11,7 +11,7 @@
 | 进引擎 | 人工拷贝 | `assets/resources/textures/`（动画 `textures/anim/`） |
 
 - Agnes base（文档默认）：`https://apihub.agnes-ai.com/v1`
-- 默认模型：`agnes-image-2.0-flash`
+- 默认模型：`agnes-image-2.5-flash`
 - 鉴权：环境变量 `AGNES_API_KEY`（不要写入仓库或聊天）
 - ASF 克隆：`~/Tools/agent-sprite-forge`（不进本仓库）
 - 引擎：**Cocos Creator 3.8.8**

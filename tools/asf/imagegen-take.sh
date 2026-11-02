@@ -10,7 +10,7 @@ usage() {
   tools/asf/imagegen-take.sh --char <id> --out-name take.png [--size WxH] [--model MODEL] [--dry-run] -- "<prompt>"
 
 需要环境变量 AGNES_API_KEY（勿把密钥写进仓库）。
-可选：AGNES_BASE_URL（默认 https://apihub.agnes-ai.com/v1）、AGNES_IMAGE_MODEL（默认 agnes-image-2.0-flash）。
+可选：AGNES_BASE_URL（默认 https://apihub.agnes-ai.com/v1）、AGNES_IMAGE_MODEL（默认 agnes-image-2.5-flash）。
 
 示例:
   export AGNES_API_KEY=...   # 本机已有密钥时自行 export，不要贴进聊天

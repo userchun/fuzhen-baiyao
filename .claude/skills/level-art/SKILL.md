@@ -1,61 +1,46 @@
 ---
 name: level-art
-description: 符阵白妖（fuzhen-baiyao）按关卡做美术素材的流程：定稿造型 → 序列图出帧 → 切帧对齐 → 换进游戏 → 用户在游戏里确认 → hold push 提交。用户说"做第 N 关素材 / 重做某个怪 / 换背景 / /level-art"时使用。
+description: 符阵白妖（fuzhen-baiyao）按关卡做美术素材的流程：定稿造型 → 序列图出帧 → 切帧对齐 → 换进游戏 → 用户在游戏里确认 → hold push 提交。用户说"做第 N 关素材 / 重做某个怪 / 换背景城墙 / /level-art"时使用。
 ---
-
-> 当前风格是 ⑤ 精致像素（2026-11-01 选定），定稿和确认状态以 `docs/art/art-bible.md` 为准；出图只附当前样板 `docs/art/ref/style_target.png` 或已定稿的素材，不附历史样板、不沿用旧提示词。
-> 下面的流程（含第 1 节帧数规格）**全部有效**。做不到规格时先停下来问用户，不要自己降低帧数或省步骤。
 
 # /level-art：一关的美术素材流程
 
+第一关（荒村）就是按这个流程做完的，后面的关卡照着做。
+
 ## 0. 先定范围
 
-- 读 `docs/art/art-bible.md`（风格、配色、妖怪尺寸、素材状态表）和 `docs/gameplay-design.md` 第 2.4 节（妖怪名单、五行、机制）。
-- 从 `assets/scripts/config/GameConfig.ts` 的 `ENEMIES` 和这一关的 `LEVELn_WAVES` 列出要做的素材：小怪、精英、Boss、背景。主角一般沿用；结界是代码绘制，不出图。
+- 读 `docs/art/art-bible.md`（美术总纲）、`docs/art/asset-manifest.json`（顶层是 `{"assets":[...]}`）、`docs/art/level1-polish.md`（第一关的完整记录，可当范本）。
+- 从 `assets/scripts/config/GameConfig.ts` 的 `ENEMIES` 和这一关的 `LEVELn_WAVES` 列出要做的素材：小怪、Boss、背景、城墙，主角一般沿用。
 - 先把清单和顺序发给用户确认，然后**一个素材一个素材做**。每做完一个都要等用户在游戏里看过、确认，再做下一个。
 
 ## 1. 硬规格
 
-| 类型 | 动画 | 帧数 |
-|---|---|---|
-| 小怪 | idle / move / attack / death / hurt | 6 / **12** / 10 / 6 / 1 |
-| Boss | appear / idle / move / skill1 / skill2 / death | 12 / 12 / 12 / 12 / 16 / 12 |
-| 主角 | idle / cast / hit | 12 / 8 / 6 |
+| 类型 | 动画 | 帧数 | 单帧尺寸 |
+|---|---|---|---|
+| 小怪 | idle / move / attack / death / hurt | 6 / **12** / 10 / 6 / 1 | 256（精英 384） |
+| Boss | appear / idle / move / skill1 / skill2 / death | 12 / 12 / 12 / 12 / 16 / 12 | 512 |
+| 主角 | idle / cast / hit | 12 / 8 / 6 | 256 |
 
-- 现状（2026-11-01）：符师动作图集每个动作只有 4 帧，低于规格，待补齐。槐树精走路、泥尸跳跃、火狐奔跑、井鬼漂浮、铜钱精摇摆已是 12 帧（部件合成，见第 2 节）。
-- 尺寸与像素颗粒（2026-11-01 用户定，见 art-bible 第 3 节）：
-  - 普通小怪可见高度约为符师的 0.6（符师约 141，小怪约 85）；精英、Boss 的倍数另定。
-  - 像素颗粒和背景、结界一致：每格 3 个设计单位。小怪做成 33×33 格，整数放大成 495 方图，游戏里显示 99。
-  - 脚底统一在图高 0.94 处（代码按这个位置做压扁和对齐）。
-- 动作结构参照同类割草游戏，只照搬结构，造型自己设计。Boss 受击由代码闪白和顿帧表现，不出图；skill1/skill2 要和 Boss 的机制绑定。
-- 视角统一是**俯视**。妖怪正面朝下、朝玩家走来，所有帧都必须是正面，不能出现背面或侧面。
-- 背景是 1080×2340（9:19.5）的俯视地面：路面占约 80–85% 宽、两侧窄边，低对比、上下可拼接。路面宽度要和 `LAYOUT.roadHalfW` 对上。
-- 配色：妖怪和背景不能撞色；五行靠外形和配色一眼可读（金 暗金/白、木 青绿、水 靛蓝/黑、火 朱红、土 黄褐），见 art-bible 第 3 节。
-- 怪物胸口要留一块空白符牌，游戏把字印画在上面。
+- 动作结构参照同类割草游戏（见 art-bible「Boss 与小怪的动作和机制」），只照搬结构，造型自己设计。Boss 受击由代码闪白和顿帧表现，不出图；skill1/skill2 要和 Boss 的机制绑定。
+- 风格是 **暗黑国风 Q 版**（见 `docs/art/art-bible.md`，样板图 `docs/art/ref/style_target.png`）：厚涂、轮廓光、青蓝妖气对朱红金黑、造型狰狞、大头比例。提示词一律从 `docs/art/prompts-dark-qban.md` 拼（风格锁 + 主体 + 构图 + 约束 + 负面词），出图时附上样板图。每张新图都要检查四项：画风一致、轮廓清楚、没有文字、俯视朝向正确。
+- 视角统一是**俯视**（可读性参考休闲俯视射击，不照搬任何游戏画面）。背景是 1080×2340（9:19.5）的俯视地面，结构参考向僵尸开炮战斗地图：路面占约 85% 宽、两侧只留约 7% 窄边，低对比、上下可拼接。出图用 `--size 9:19.5`，再缩放到 1080×2340。城墙是正面略俯视、左右对称的一段（参考向僵尸开炮），正中留法坛给主角站，出图 3:1 后裁掉顶部空白，存 1290×363，显示 860 宽两端被屏幕裁掉。
+- 配色：妖怪和背景不能撞色。背景里的暖红灯光要压暗或改冷，把暖色留给怪物和主角的符光。
+- 怪物胸口要留封印（字印）的位置。
 
-## 2. 出图（Agnes，跳过 Magpie）
+## 2. 出图（`/imagegen` → Agnes，跳过 Magpie）
 
-- 模型：`agnes-image-2.5-flash`。不擅自换模型；`codex/gpt-image-2` 已移除，不用。
-- **带参考图一律用 `scripts/agnes-image.py`**（直连 Agnes，不经过 Magpie）：
-  ```bash
-  python3 scripts/agnes-image.py --prompt-file p.txt --ref ref.png --size 2K --ratio 3:2 --out out.png
-  ```
-  - Magpie MCP 的 `reference_images` 会把请求发到 Agnes 不支持的 `/images/edits`，固定返回 503，不要用。
-  - imagegen 的 `magpie.py -r` 也勿作默认；本流程跳过 Magpie。
-  - 密钥用环境变量 `AGNES_API_KEY`（不要写进仓库）。也可用 imagegen skill 目录约定，但不要把 key 贴进聊天。每张图都花钱，**一次只出一张**，出完给用户看再决定下一步。
-- 无参考图 / ASF master 候选可用 imagegen skill：
+- 默认调用 `~/.claude/skills/imagegen/scripts/agnes.py`（OpenAI 兼容 `POST /v1/images/generations`，模型 `agnes-image-2.5-flash`）：
   `python3 ~/.claude/skills/imagegen/scripts/agnes.py -o out.png --size 1024x1024 "prompt"`
-  （默认 base `https://apihub.agnes-ai.com/v1`，模型 `agnes-image-2.5-flash`）。`tools/asf/imagegen-take.sh` 走这条。
-- `scripts/agnes-image.py` 的 `size` 用 `1K / 2K / 3K / 4K`，比例用 `ratio`（可选 `1:1 3:4 4:3 16:9 9:16 2:3 3:2 21:9`），给精确像素会被改成最近的档位。
-- Agnes 不支持透明背景：提示词写"纯洋红 #FF00FF 背景"，出图后自己抠图并检查 alpha。实际背景常是偏暗的紫红，抠图按四角取色、容差放宽。
+- 需要环境变量 `AGNES_API_KEY`（不要写进仓库）。可选 `AGNES_BASE_URL`（默认 `https://apihub.agnes-ai.com/v1`）。
 - **跳过 Magpie**（不要用 `magpie.py` / Magpie MCP，除非用户明确要求）。
 - **只出一张**，不要并行出多个候选。先说明选了哪个方向，出完给用户看，不满意再改。
 - 出图分两步：
-  1. 先出**定稿造型**单张（1:1），用户确认后再继续。
-  2. 用定稿图作参考，出**等网格序列图**。12 帧走路的做法：出一张 3:2 的 3×2 图，只画半个周期（一条腿迈步的 6 帧），再左右翻转得到另一半，拼成 12 帧。prompt 里写明：每格同一角色、同大小、脚底同高、全身完整、**只画正面**，以及每一帧的动作分解。
-- 每帧都要检查：是不是正面、腿有没有画全、细节有没有走样（例如挂件变成尾巴）。不合格的帧单独重出，不凑数。
-- AI 序列图连续失败时（槐树精试了 4 张都凑不齐），改用**部件合成**（2026-11-01 用户选定）：把定稿图按髋线、肩膀拆成身子 / 两臂 / 两腿，按走路节奏（抬腿、反向摆臂、身子起伏和轻晃）合成 12 帧，再按第 3 节像素化。不对称的腿可用另一条腿镜像补齐；腿的上沿要藏在身子后面，起伏时才不露缝。范例脚本：走路用 `scripts/puppet-walk.py`（槐树精），并脚跳用 `scripts/puppet-hop.py`（泥尸），四足奔跑加摆尾用 `scripts/puppet-fox.py`（火狐），漂浮加水纹用 `scripts/puppet-float.py`（井鬼），圆身短腿摇摆用 `scripts/puppet-waddle.py`（铜钱精）；后四个会打印每帧字印高度 `sealYFrames`。切分线和参数写在文件开头，换怪要重新量：`python3 scripts/puppet-<walk|hop>.py <定稿512方图> <输出目录>`。部件之间在关节处留 10 像素左右重叠，转动时才不会露出描边或缝隙；袖子切分不要带进袍子下摆。
-- 原图和中间产物放到 `generated-images/<主题>-<日期>/`（不进版本库）。替换游戏里的旧图之前，先把旧图备份到这里。
+  1. 先出**定稿造型**单张，用户确认后再继续。
+  2. 用定稿图作参考（`-r`），出**等网格序列图**：
+     - 12 帧用 6×2 网格；
+     - 20 帧可以出 6×2 + 4×2 两张，或 5×4 一张；
+     - prompt 里写明"每格同一角色、同大小、脚底同高、格间留空、透明背景"，以及动作的分解。
+- 原图和中间产物都放到 `generated-images/<关卡>-<主题>-<日期>/`。替换游戏里的旧图之前，先把旧图备份到这里。
 
 ## 2.5 可选：ASF 整套动作（图生视频）
 
@@ -68,48 +53,49 @@ description: 符阵白妖（fuzhen-baiyao）按关卡做美术素材的流程：
 
 **静帧走 imagegen→Agnes；跳过 Magpie；不要用 Codex CLI image_gen / ASF route_media 生静帧。**
 
-## 3. 切帧与像素化
+## 3. 切帧
 
-切帧工具 `tools/asset-pipeline` 已在 `dde5c84` 删除，目前按下面的步骤用 Python + PIL 处理：
+```bash
+python3 tools/asset-pipeline/slice_sheet.py sheet.png outdir --cols 6 --rows 2 --size 256 --name move --count 12 --strip strip.png --gif preview.gif --fps 12
+```
 
-1. 按网格切格；每格按四角取背景色抠成透明。
-2. 统一缩放：以最高的一帧为准，所有帧同一比例。
-3. 对齐：脚底（不透明区域最下沿）对到 0.94 高度，横向按躯干中线对齐，不按整体包围盒对齐（手臂摆动会带偏）。
-4. 像素化：把方图按不透明度加权平均缩到 33×33 格（半透明格子二值化，避免混进透明区的黑色），再整数放大成 495 方图。**不要直接缩小高清图**。
-5. 左右翻转补帧时，检查不对称的细节（挂件、符牌）会不会左右跳。
-6. 做一张按游戏大小拼在背景上的动图和对照图，确认没有抖动、没有残边，再发给用户。
+- 脚本会做这几件事：
+  - 用连通域只保留主体，去掉混进来的邻格碎块；
+  - 去掉透明区残留的背景色；
+  - 统一缩放，以最高的一帧为准；
+  - 横向按上半身质心对齐，脚底对到 0.94 高度。
+- 封印会发光的怪，加 `--seal-band y0,y1`，按封印位置横向对齐。
+- 同一个角色有好几套动画时，要检查各套之间的身体高度是否一致。不一致就调 `--fill` 重切。
+- 切完先看 gif 和 strip，确认没有抖动、没有残边，再发给用户。
 
 ## 4. 换进游戏
 
-- 静态图放 `assets/resources/textures/enemy_<id>.png`，动画帧放 `assets/resources/textures/anim/enemy_<id>/move_00..11.png`（代码按 `anim/enemy_<id>/move` 前缀自动加载，`attack` 同理）。
-- 新文件要等 Cocos Creator 编辑器导入后才会生成 `.meta`，`.meta` 要一起提交。编辑器窗口不在前台时不会导入和编译，可以用下面的命令把它切到前台：
-  ```bash
-  osascript -e 'tell application "System Events" to set frontmost of process "CocosCreator" to true'
-  ```
+- 帧放到 `assets/resources/textures/anim/<id>/`，命名为 `move_00..11`、`idle_00..`、`hit_..`、`death_..`。单张立绘放到 `assets/resources/textures/<id>.png`。
+- 新文件要等 Cocos Creator 编辑器导入后才会生成 `.meta`。提醒用户在编辑器里刷新，`.meta` 要一起提交。
 - 代码里要对应调整的参数：
-  - `assets/scripts/core/Art.ts` 的 `ENEMY_ART`：`scale` = 显示边长 ÷ 碰撞直径（小怪显示 99、碰撞直径 50 时为 1.98）；字印位置 `sealY / sealX / sealR`，逐帧跟随时用 `sealYFrames`。
-  - `assets/scripts/game/Combat.ts` 的 `ENEMY_MOVE`：有帧动画时调 `fps / bobPx / swayDeg`；只有单张图时用 `still: true` 加 `stepHz / bobPx / swayDeg / squash` 做代码走路。
-  - 主角：`PLAYER_ART_SIZE`，以及 cast 的 fps。
-  - 背景：`GameRoot.ts` 的 `BG_ART` 和 `BG_ART_RATIO`（高宽比）；路面宽度对应 `GameConfig.ts` 的 `LAYOUT.roadHalfW`，改了要同步玩法文档并跑平衡模拟。
-- 改完代码后跑 `bash scripts/balance-sim/run.sh`（攻城、结算测试和数值模拟）。
+  - `assets/scripts/core/Art.ts` 的 `ENEMY_ART`：调字印位置 `sealY / sealX / sealR`。字印逐帧跟随时用 `sealYFrames`（每帧一个值）。
+  - `assets/scripts/game/Combat.ts` 的 `ENEMY_MOVE`：调 `fps / bobPx / swayDeg`。生成怪物时已经会随机起始帧，并加上轻微摇摆。
+  - 主角：调 `PLAYER_ART_SIZE`，以及 cast 的 fps。
+  - 背景：调 `GameRoot.ts` 的 `BG_ART` 和 `BG_ART_RATIO`（高宽比）。
+  - 城墙和布局：调 `GameConfig.ts` 的 `LAYOUT`，包括 `wallArtH / wallArtTopAbove / roadHalfW`。
+- 改完代码后跑类型检查：
+  `tsc --noEmit -p . --ignoreDeprecations 6.0 2>&1 | grep '^assets/'`。
+  引擎声明文件的报错可以忽略；`AudioManager.ts` 里 `Object.values` 的报错是之前就有的。
 
 ## 5. 记录与提交
 
-- 在 `docs/art/art-bible.md` 的素材状态表里写路径、尺寸、帧数、状态；新定的视觉规则写进 art-bible 对应章节。名字、数值改动写进 `docs/gameplay-design.md`。
-- **用户在游戏里看过、确认之后才提交**。只 commit，不 push。
-- 提交信息按 `AGENTS.md`：中文，结尾带 `(hold push)`。不加 Co-Authored-By。
-- 工作区里常有其他会话未提交的改动：提交时只暂存本次相关的内容。
+- 同步更新两个文件：
+  - `docs/art/asset-manifest.json`：写尺寸、帧数、状态（JSON 用 indent 2）；
+  - `docs/art/level<N>-polish.md`：写做了什么、为什么这样做。
+- **用户在游戏里看过、确认之后才提交**。提交方式是 hold push：只 commit，不 push。
+- commit message 用中文，格式是 `feat(art): …（hold push）`，末尾加 Co-Authored-By 行。
+- `generated-images/` 不纳入版本管理。
 
-## 踩过的坑
+## 第一关踩过的坑
 
 - 8 帧走路太僵，所以小怪统一用 12 帧。另外要随机起始帧、加轻微摇摆，同屏的怪才不会同步动作。
-- 透视背景会让怪物看起来像从天上掉下来，所以统一改成俯视。
+- 透视背景会让怪物看起来像从天上掉下来，城墙也会被压扁，所以统一改成俯视。
 - 出怪的横向范围要收在路面以内（`roadHalfW`），不然怪会从房顶冒出来。
-- 主角用背面、深色道袍、红围巾、暖金符光，这样在深色背景上才看得清。
-- 带风格样板出背景时，模型会把样板里的妖怪也画进去，出图后要检查并去掉。
-- 一次让 AI 画多帧时，常把最后一列画成背面，帧数和网格也会画错（要 3×2 出成 3×3）。要指定比例并逐帧检查。
-- 细线条、高亮配色的造型（稻草人、毒菇精）缩到游戏大小后很难看，用户否决过。造型要压暗、轮廓粗壮，先缩到实际大小看过再定。
-- 本地预览进关后常停在选卡界面、计时停在 0:00，怪不会走；验证外观可以在控制台里直接摆放怪物，验证动作要看帧数据或自己拼的动图。
-- 内置浏览器的控制台记录在页面刷新后不会清空：看到报错先打一个标记（`console.error('MARKER')`）再刷新，排在标记之前的都是旧记录。
-- 中文字体用 `/System/Library/Fonts/STHeiti Medium.ttc` 或 `Hiragino Sans GB.ttc`，PingFang 打不开。
+- 主角用 3/4 背面、浅色道袍、暖金符光，这样在深色背景上才看得清。
+- 中文字体用 `/System/Library/Fonts/Hiragino Sans GB.ttc`，PingFang 打不开。
 - zsh 不会自动拆分 `$REF`。要传多个参考图时，用数组。
