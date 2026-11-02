@@ -33,15 +33,16 @@ function hit(p, t, B, S) {
 
 function freeze(p, t, B) {
   const C = fit(ICE, 7);
-  // 冰壳：包住身体的半透明多边形，边缘有几根冰棱，表面一道高光慢慢扫过
-  const pts = [[-12, 1], [-15, -B * 0.4], [-11, -B * 0.85], [-3, -B - 4], [6, -B * 0.92], [14, -B * 0.5], [13, 1]];
-  p.poly(pts, C[4], 0.35);
-  for (let i = 0; i < pts.length; i++) { const [a, b] = pts[i], [c, d] = pts[(i + 1) % pts.length]; p.line(a, b, c, d, C[5], 0.9); }
-  for (const [x, y, dx, dy] of [[-15, -B * 0.4, -5, -3], [-3, -B - 4, -1, -7], [14, -B * 0.5, 6, -2], [6, -B * 0.92, 4, -5]]) p.tri(x - 1.5, y, x + 1.5, y, x + dx, y + dy, C[6], 0.9);
-  const sy = -((t * 30) % (B + 10));
-  p.line(-12, sy, 12, sy - 6, C[6], 0.6);
-  groundMark(p, 18, C[4], 0.5);
-  if (Math.floor(t * 8) % 5 === 0) p.dot(((t * 37) % 20) - 10, -((t * 53) % B), C[6], 1);
+  // 只冻住脚：脚下一圈冰面 + 小腿高的一圈冰棱，不挡身体和技能爆炸
+  groundMark(p, 16, C[4], 0.5);
+  p.poly([[-13, 1], [-12, -7], [-6, -10], [3, -9], [11, -6], [13, 1]], C[4], 0.35);
+  for (const [x, h] of [[-12, 8], [-7, 12], [-2, 9], [3, 13], [8, 10], [12, 7]]) {
+    p.tri(x - 2, 1, x + 2, 1, x, -h, C[5], 0.9);
+    p.line(x, 0, x, -h, C[6], 0.9);
+  }
+  const sx = ((t * 24) % 30) - 15;
+  p.line(sx, -2, sx + 3, -8, C[6], 0.7);
+  if (Math.floor(t * 8) % 5 === 0) p.dot(((t * 37) % 24) - 12, -4, C[6], 1);
 }
 
 function burn(p, t, B, S) {
