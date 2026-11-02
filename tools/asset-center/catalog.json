@@ -2463,6 +2463,18 @@
       "alpha": true
     },
     {
+      "id": "candidate-four-heroes-specializations",
+      "name": "four-heroes-specializations",
+      "category": "候选",
+      "status": "审图候选 / 历史样板 · 非当前运行资源",
+      "kind": "static",
+      "clips": [],
+      "src": "/docs/art/deliver/heroes/four-heroes-specializations.png",
+      "width": 1915,
+      "height": 821,
+      "alpha": false
+    },
+    {
       "id": "candidate-ghostflame-move-strip",
       "name": "ghostflame-move-strip",
       "category": "候选",
