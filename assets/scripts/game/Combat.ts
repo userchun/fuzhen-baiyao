@@ -693,9 +693,11 @@ export class Combat {
                 if (targets.length === 0) return;
                 let cur: Enemy | null = targets[Math.floor(Math.random() * targets.length)];
                 const hit = new Set<Enemy>();
-                if (cur) this.playSheet(`thunder_chain_lv${fxLv(lv)}`, cur.x, this.footY(cur), this.fxScale(cur));
                 for (let j = 0; j <= lv && cur; j++) {
                     hit.add(cur);
+                    // 第一道雷带乌云蓄雷；之后每跳到一只实际妖怪，就在它身上补劈一道
+                    if (j === 0) this.playSheet(`thunder_chain_lv${fxLv(lv)}`, cur.x, this.footY(cur), this.fxScale(cur));
+                    else this.playSheet(`thunder_hop_lv${fxLv(lv)}`, cur.x, this.footY(cur), this.fxScale(cur), 0.25 + j * 0.1);
                     burst(this.fxLayer, cur.x, cur.y, FX.thunder(cur.x, cur.y));
                     this.hurt(cur, dmg, 'none', true, 'thunder_hit'); // U10 天雷挂点（伤不变）
                     cur = this.nearest(cur.x, cur.y, hit, 250);

@@ -16,10 +16,11 @@ const JOBS = [
   ["seal_bolt", "seal-bolt", [{}]],
   ["gold_pillar", "gold-pillar", null],
   ["vine_zone", "vine-zone", null, { bind: 0 }], // 束缚走命中特效 status_slow，不混进技能特效
-  ["ice_burst", "ice-drop", null],
+  ["ice_burst", "ice-drop", null, { bounce: 0 }], // 弹射由游戏按实际目标飞，命中各自播冻结
   ["fire_burst", "meteor", null],
   ["stone_spike", "stone-pillar", null],
-  ["thunder_chain", "thunder", null],
+  ["thunder_chain", "thunder", null, { solo: 1 }], // 第一道雷带乌云；连锁由游戏逐个目标播放 thunder_hop
+  ["thunder_hop", "thunder", null, { solo: 1, cloud: 0, charge: 0 }],
   ["status", "status", ["hit", "freeze", "burn", "stun", "slow"].map((n, i) => ({ state: i, _name: n }))],
 ];
 

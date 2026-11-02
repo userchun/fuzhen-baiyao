@@ -344,6 +344,61 @@
       ],
       "loop": false
     },
+    "thunder_hop_lv1": {
+      "file": "thunder_hop_lv1.png",
+      "frameWidth": 128,
+      "frameHeight": 192,
+      "frames": 48,
+      "origin": [
+        64,
+        168
+      ],
+      "loop": false
+    },
+    "thunder_hop_lv2": {
+      "file": "thunder_hop_lv2.png",
+      "frameWidth": 128,
+      "frameHeight": 192,
+      "frames": 48,
+      "origin": [
+        64,
+        168
+      ],
+      "loop": false
+    },
+    "thunder_hop_lv3": {
+      "file": "thunder_hop_lv3.png",
+      "frameWidth": 128,
+      "frameHeight": 192,
+      "frames": 48,
+      "origin": [
+        64,
+        168
+      ],
+      "loop": false
+    },
+    "thunder_hop_lv4": {
+      "file": "thunder_hop_lv4.png",
+      "frameWidth": 128,
+      "frameHeight": 192,
+      "frames": 48,
+      "origin": [
+        64,
+        168
+      ],
+      "loop": false
+    },
+    "thunder_hop_lv5": {
+      "file": "thunder_hop_lv5.png",
+      "frameWidth": 128,
+      "frameHeight": 192,
+      "frames": 48,
+      "origin": [
+        64,
+        168
+      ],
+      "loop": false
+    },
     "status_hit": {
       "file": "status_hit.png",
       "frameWidth": 96,

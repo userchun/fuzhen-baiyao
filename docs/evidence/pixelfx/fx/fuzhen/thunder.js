@@ -19,6 +19,8 @@ export const meta = {
     width: 3, // 雷的粗细
     sparks: 10, // 每个落点电火花数量
     flash: 0.4,
+    solo: 0, // 1：只劈一道（游戏里连锁按实际妖怪逐个播放）
+    cloud: 1, // 0：不画乌云，用于连锁的后续落雷
     seed: 5,
   },
 };
@@ -68,10 +70,10 @@ function arc(p, a, b, C, k, seed) {
 export function draw(p, t, o) {
   o = levelUp(o, { width: 0.12, sparks: 0.3, flash: 0.1 });
   const C0 = fit(o.palette, 7), G = fit([o.gold], 1)[0], S = o.seed, A = o.charge;
-  const n = Math.min(SPOTS.length, Math.round(o.chain) + o.lv - 1), frame = Math.floor(t * 30);
+  const n = o.solo >= 0.5 ? 1 : Math.min(SPOTS.length, Math.round(o.chain) + o.lv - 1), frame = Math.floor(t * 30);
   // 乌云：天顶一排翻涌的暗团，蓄雷时内部闪亮
   const cloudK = clamp(t / 0.15) * clamp(1 - (t - A - n * o.gap - 0.4) / 0.4);
-  for (let i = 0; i < 9; i++) {
+  if (o.cloud >= 0.5) for (let i = 0; i < 9; i++) {
     const x = (i - 4) * 14 + Math.sin(t * 2 + i) * 3, y = TOP + 6 + (i % 2) * 4;
     p.disc(x, y, 9 + (i % 3) * 2, () => C0[1], 0.85 * cloudK);
     p.disc(x - 2, y - 2, 5, () => C0[2], 0.7 * cloudK);
@@ -107,7 +109,7 @@ export function draw(p, t, o) {
     p.place(p.tx - x, p.ty - y);
   }
   // 5 级：连锁结束后一道紫金巨雷劈在正中
-  if (o.lv >= 5) {
+  if (o.lv >= 5 && o.cloud >= 0.5) {
     const v = u - n * o.gap - 0.05;
     if (v >= 0 && v < 0.45) {
       const k = clamp(1 - (v - 0.15) / 0.3), CG = [C0[0], C0[1], C0[2], G, C0[4], G, C0[6]];
