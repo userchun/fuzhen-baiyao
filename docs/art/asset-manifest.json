@@ -325,6 +325,162 @@
       "source": "ChatGPT Image，已确认荒村七怪为参考；切帧、动作顺序整理及必要姿势保持，前三只保留已确认移动帧",
       "license": "AI 生成",
       "status": "帧素材已接入；自动验证通过，完整实战与用户美术验收待完成"
+    },
+    {
+      "id": "fx_seal_bolt",
+      "name": "镇妖符 · 普通攻击",
+      "path": "art/fx/",
+      "files": [
+        "seal_bolt.png"
+      ],
+      "width": 128,
+      "height": 256,
+      "frames": 14,
+      "fps": 24,
+      "alpha": true,
+      "source": "代码生成：docs/evidence/pixelfx/fx/fuzhen/ 配方经 tools/fx-bake/bake.mjs 烘焙；底层画法参考 PixelFX（MIT）",
+      "license": "MIT（PixelFX 衍生）+ 项目自有",
+      "status": "精灵表已导出，暂存 art/fx/；尚未接入 Cocos 战斗，待用户美术验收"
+    },
+    {
+      "id": "fx_gold_pillar",
+      "name": "金光符 · 光柱",
+      "path": "art/fx/",
+      "files": [
+        "gold_pillar_lv1.png",
+        "gold_pillar_lv2.png",
+        "gold_pillar_lv3.png",
+        "gold_pillar_lv4.png",
+        "gold_pillar_lv5.png"
+      ],
+      "width": 128,
+      "height": 192,
+      "frames": 38,
+      "fps": 24,
+      "alpha": true,
+      "source": "代码生成：docs/evidence/pixelfx/fx/fuzhen/ 配方经 tools/fx-bake/bake.mjs 烘焙；底层画法参考 PixelFX（MIT）",
+      "license": "MIT（PixelFX 衍生）+ 项目自有",
+      "status": "精灵表已导出，暂存 art/fx/；尚未接入 Cocos 战斗，待用户美术验收"
+    },
+    {
+      "id": "fx_vine_zone",
+      "name": "青藤符 · 破土藤网与束缚",
+      "path": "art/fx/",
+      "files": [
+        "vine_zone_lv1.png",
+        "vine_zone_lv2.png",
+        "vine_zone_lv3.png",
+        "vine_zone_lv4.png",
+        "vine_zone_lv5.png"
+      ],
+      "width": 128,
+      "height": 192,
+      "frames": 77,
+      "fps": 24,
+      "alpha": true,
+      "source": "代码生成：docs/evidence/pixelfx/fx/fuzhen/ 配方经 tools/fx-bake/bake.mjs 烘焙；底层画法参考 PixelFX（MIT）",
+      "license": "MIT（PixelFX 衍生）+ 项目自有",
+      "status": "精灵表已导出，暂存 art/fx/；尚未接入 Cocos 战斗，待用户美术验收"
+    },
+    {
+      "id": "fx_ice_burst",
+      "name": "寒冰符 · 正面冰锥冰爆",
+      "path": "art/fx/",
+      "files": [
+        "ice_burst_lv1.png",
+        "ice_burst_lv2.png",
+        "ice_burst_lv3.png",
+        "ice_burst_lv4.png",
+        "ice_burst_lv5.png"
+      ],
+      "width": 128,
+      "height": 256,
+      "frames": 53,
+      "fps": 24,
+      "alpha": true,
+      "source": "代码生成：docs/evidence/pixelfx/fx/fuzhen/ 配方经 tools/fx-bake/bake.mjs 烘焙；底层画法参考 PixelFX（MIT）",
+      "license": "MIT（PixelFX 衍生）+ 项目自有",
+      "status": "精灵表已导出，暂存 art/fx/；尚未接入 Cocos 战斗，待用户美术验收"
+    },
+    {
+      "id": "fx_fire_burst",
+      "name": "烈焰符 · 正面火球爆炸",
+      "path": "art/fx/",
+      "files": [
+        "fire_burst_lv1.png",
+        "fire_burst_lv2.png",
+        "fire_burst_lv3.png",
+        "fire_burst_lv4.png",
+        "fire_burst_lv5.png"
+      ],
+      "width": 128,
+      "height": 256,
+      "frames": 53,
+      "fps": 24,
+      "alpha": true,
+      "source": "代码生成：docs/evidence/pixelfx/fx/fuzhen/ 配方经 tools/fx-bake/bake.mjs 烘焙；底层画法参考 PixelFX（MIT）",
+      "license": "MIT（PixelFX 衍生）+ 项目自有",
+      "status": "精灵表已导出，暂存 art/fx/；尚未接入 Cocos 战斗，待用户美术验收"
+    },
+    {
+      "id": "fx_stone_spike",
+      "name": "镇山符 · 地底尖石锥",
+      "path": "art/fx/",
+      "files": [
+        "stone_spike_lv1.png",
+        "stone_spike_lv2.png",
+        "stone_spike_lv3.png",
+        "stone_spike_lv4.png",
+        "stone_spike_lv5.png"
+      ],
+      "width": 128,
+      "height": 192,
+      "frames": 58,
+      "fps": 24,
+      "alpha": true,
+      "source": "代码生成：docs/evidence/pixelfx/fx/fuzhen/ 配方经 tools/fx-bake/bake.mjs 烘焙；底层画法参考 PixelFX（MIT）",
+      "license": "MIT（PixelFX 衍生）+ 项目自有",
+      "status": "精灵表已导出，暂存 art/fx/；尚未接入 Cocos 战斗，待用户美术验收"
+    },
+    {
+      "id": "fx_thunder_chain",
+      "name": "天雷符 · 连锁落雷",
+      "path": "art/fx/",
+      "files": [
+        "thunder_chain_lv1.png",
+        "thunder_chain_lv2.png",
+        "thunder_chain_lv3.png",
+        "thunder_chain_lv4.png",
+        "thunder_chain_lv5.png"
+      ],
+      "width": 128,
+      "height": 192,
+      "frames": 48,
+      "fps": 24,
+      "alpha": true,
+      "source": "代码生成：docs/evidence/pixelfx/fx/fuzhen/ 配方经 tools/fx-bake/bake.mjs 烘焙；底层画法参考 PixelFX（MIT）",
+      "license": "MIT（PixelFX 衍生）+ 项目自有",
+      "status": "精灵表已导出，暂存 art/fx/；尚未接入 Cocos 战斗，待用户美术验收"
+    },
+    {
+      "id": "fx_status",
+      "name": "妖怪受击与状态叠加",
+      "path": "art/fx/",
+      "files": [
+        "status_hit.png",
+        "status_freeze.png",
+        "status_burn.png",
+        "status_stun.png",
+        "status_slow.png"
+      ],
+      "width": 96,
+      "height": 96,
+      "frames": 29,
+      "fps": 24,
+      "alpha": true,
+      "source": "代码生成：docs/evidence/pixelfx/fx/fuzhen/ 配方经 tools/fx-bake/bake.mjs 烘焙；底层画法参考 PixelFX（MIT）",
+      "license": "MIT（PixelFX 衍生）+ 项目自有",
+      "status": "精灵表已导出，暂存 art/fx/；尚未接入 Cocos 战斗，待用户美术验收"
     }
   ]
 }

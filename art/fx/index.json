@@ -1,0 +1,403 @@
+{
+  "fps": 24,
+  "cols": 8,
+  "note": "origin 为锚点（地面中心）在单帧内的像素坐标；由 tools/fx-bake/bake.mjs 生成，勿手改",
+  "sheets": {
+    "seal_bolt": {
+      "file": "seal_bolt.png",
+      "frameWidth": 128,
+      "frameHeight": 256,
+      "frames": 14,
+      "origin": [
+        64,
+        168
+      ],
+      "loop": false
+    },
+    "gold_pillar_lv1": {
+      "file": "gold_pillar_lv1.png",
+      "frameWidth": 128,
+      "frameHeight": 192,
+      "frames": 38,
+      "origin": [
+        64,
+        168
+      ],
+      "loop": false
+    },
+    "gold_pillar_lv2": {
+      "file": "gold_pillar_lv2.png",
+      "frameWidth": 128,
+      "frameHeight": 192,
+      "frames": 38,
+      "origin": [
+        64,
+        168
+      ],
+      "loop": false
+    },
+    "gold_pillar_lv3": {
+      "file": "gold_pillar_lv3.png",
+      "frameWidth": 128,
+      "frameHeight": 192,
+      "frames": 38,
+      "origin": [
+        64,
+        168
+      ],
+      "loop": false
+    },
+    "gold_pillar_lv4": {
+      "file": "gold_pillar_lv4.png",
+      "frameWidth": 128,
+      "frameHeight": 192,
+      "frames": 38,
+      "origin": [
+        64,
+        168
+      ],
+      "loop": false
+    },
+    "gold_pillar_lv5": {
+      "file": "gold_pillar_lv5.png",
+      "frameWidth": 128,
+      "frameHeight": 192,
+      "frames": 38,
+      "origin": [
+        64,
+        168
+      ],
+      "loop": false
+    },
+    "vine_zone_lv1": {
+      "file": "vine_zone_lv1.png",
+      "frameWidth": 128,
+      "frameHeight": 192,
+      "frames": 77,
+      "origin": [
+        64,
+        168
+      ],
+      "loop": false
+    },
+    "vine_zone_lv2": {
+      "file": "vine_zone_lv2.png",
+      "frameWidth": 128,
+      "frameHeight": 192,
+      "frames": 77,
+      "origin": [
+        64,
+        168
+      ],
+      "loop": false
+    },
+    "vine_zone_lv3": {
+      "file": "vine_zone_lv3.png",
+      "frameWidth": 128,
+      "frameHeight": 192,
+      "frames": 77,
+      "origin": [
+        64,
+        168
+      ],
+      "loop": false
+    },
+    "vine_zone_lv4": {
+      "file": "vine_zone_lv4.png",
+      "frameWidth": 128,
+      "frameHeight": 192,
+      "frames": 77,
+      "origin": [
+        64,
+        168
+      ],
+      "loop": false
+    },
+    "vine_zone_lv5": {
+      "file": "vine_zone_lv5.png",
+      "frameWidth": 128,
+      "frameHeight": 192,
+      "frames": 77,
+      "origin": [
+        64,
+        168
+      ],
+      "loop": false
+    },
+    "ice_burst_lv1": {
+      "file": "ice_burst_lv1.png",
+      "frameWidth": 128,
+      "frameHeight": 256,
+      "frames": 53,
+      "origin": [
+        64,
+        168
+      ],
+      "loop": false
+    },
+    "ice_burst_lv2": {
+      "file": "ice_burst_lv2.png",
+      "frameWidth": 128,
+      "frameHeight": 256,
+      "frames": 53,
+      "origin": [
+        64,
+        168
+      ],
+      "loop": false
+    },
+    "ice_burst_lv3": {
+      "file": "ice_burst_lv3.png",
+      "frameWidth": 128,
+      "frameHeight": 256,
+      "frames": 53,
+      "origin": [
+        64,
+        168
+      ],
+      "loop": false
+    },
+    "ice_burst_lv4": {
+      "file": "ice_burst_lv4.png",
+      "frameWidth": 128,
+      "frameHeight": 256,
+      "frames": 53,
+      "origin": [
+        64,
+        168
+      ],
+      "loop": false
+    },
+    "ice_burst_lv5": {
+      "file": "ice_burst_lv5.png",
+      "frameWidth": 128,
+      "frameHeight": 256,
+      "frames": 53,
+      "origin": [
+        64,
+        168
+      ],
+      "loop": false
+    },
+    "fire_burst_lv1": {
+      "file": "fire_burst_lv1.png",
+      "frameWidth": 128,
+      "frameHeight": 256,
+      "frames": 53,
+      "origin": [
+        64,
+        168
+      ],
+      "loop": false
+    },
+    "fire_burst_lv2": {
+      "file": "fire_burst_lv2.png",
+      "frameWidth": 128,
+      "frameHeight": 256,
+      "frames": 53,
+      "origin": [
+        64,
+        168
+      ],
+      "loop": false
+    },
+    "fire_burst_lv3": {
+      "file": "fire_burst_lv3.png",
+      "frameWidth": 128,
+      "frameHeight": 256,
+      "frames": 53,
+      "origin": [
+        64,
+        168
+      ],
+      "loop": false
+    },
+    "fire_burst_lv4": {
+      "file": "fire_burst_lv4.png",
+      "frameWidth": 128,
+      "frameHeight": 256,
+      "frames": 53,
+      "origin": [
+        64,
+        168
+      ],
+      "loop": false
+    },
+    "fire_burst_lv5": {
+      "file": "fire_burst_lv5.png",
+      "frameWidth": 128,
+      "frameHeight": 256,
+      "frames": 53,
+      "origin": [
+        64,
+        168
+      ],
+      "loop": false
+    },
+    "stone_spike_lv1": {
+      "file": "stone_spike_lv1.png",
+      "frameWidth": 128,
+      "frameHeight": 192,
+      "frames": 58,
+      "origin": [
+        64,
+        168
+      ],
+      "loop": false
+    },
+    "stone_spike_lv2": {
+      "file": "stone_spike_lv2.png",
+      "frameWidth": 128,
+      "frameHeight": 192,
+      "frames": 58,
+      "origin": [
+        64,
+        168
+      ],
+      "loop": false
+    },
+    "stone_spike_lv3": {
+      "file": "stone_spike_lv3.png",
+      "frameWidth": 128,
+      "frameHeight": 192,
+      "frames": 58,
+      "origin": [
+        64,
+        168
+      ],
+      "loop": false
+    },
+    "stone_spike_lv4": {
+      "file": "stone_spike_lv4.png",
+      "frameWidth": 128,
+      "frameHeight": 192,
+      "frames": 58,
+      "origin": [
+        64,
+        168
+      ],
+      "loop": false
+    },
+    "stone_spike_lv5": {
+      "file": "stone_spike_lv5.png",
+      "frameWidth": 128,
+      "frameHeight": 192,
+      "frames": 58,
+      "origin": [
+        64,
+        168
+      ],
+      "loop": false
+    },
+    "thunder_chain_lv1": {
+      "file": "thunder_chain_lv1.png",
+      "frameWidth": 128,
+      "frameHeight": 192,
+      "frames": 48,
+      "origin": [
+        64,
+        168
+      ],
+      "loop": false
+    },
+    "thunder_chain_lv2": {
+      "file": "thunder_chain_lv2.png",
+      "frameWidth": 128,
+      "frameHeight": 192,
+      "frames": 48,
+      "origin": [
+        64,
+        168
+      ],
+      "loop": false
+    },
+    "thunder_chain_lv3": {
+      "file": "thunder_chain_lv3.png",
+      "frameWidth": 128,
+      "frameHeight": 192,
+      "frames": 48,
+      "origin": [
+        64,
+        168
+      ],
+      "loop": false
+    },
+    "thunder_chain_lv4": {
+      "file": "thunder_chain_lv4.png",
+      "frameWidth": 128,
+      "frameHeight": 192,
+      "frames": 48,
+      "origin": [
+        64,
+        168
+      ],
+      "loop": false
+    },
+    "thunder_chain_lv5": {
+      "file": "thunder_chain_lv5.png",
+      "frameWidth": 128,
+      "frameHeight": 192,
+      "frames": 48,
+      "origin": [
+        64,
+        168
+      ],
+      "loop": false
+    },
+    "status_hit": {
+      "file": "status_hit.png",
+      "frameWidth": 96,
+      "frameHeight": 96,
+      "frames": 29,
+      "origin": [
+        48,
+        80
+      ],
+      "loop": true
+    },
+    "status_freeze": {
+      "file": "status_freeze.png",
+      "frameWidth": 96,
+      "frameHeight": 96,
+      "frames": 29,
+      "origin": [
+        48,
+        80
+      ],
+      "loop": true
+    },
+    "status_burn": {
+      "file": "status_burn.png",
+      "frameWidth": 96,
+      "frameHeight": 96,
+      "frames": 29,
+      "origin": [
+        48,
+        80
+      ],
+      "loop": true
+    },
+    "status_stun": {
+      "file": "status_stun.png",
+      "frameWidth": 96,
+      "frameHeight": 96,
+      "frames": 29,
+      "origin": [
+        48,
+        80
+      ],
+      "loop": true
+    },
+    "status_slow": {
+      "file": "status_slow.png",
+      "frameWidth": 96,
+      "frameHeight": 96,
+      "frames": 29,
+      "origin": [
+        48,
+        80
+      ],
+      "loop": true
+    }
+  }
+}

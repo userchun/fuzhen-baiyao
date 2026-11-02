@@ -3038,6 +3038,116 @@
       "alpha": false
     },
     {
+      "id": "fx-gold",
+      "name": "金 · 金光符 · 光柱",
+      "category": "特效",
+      "status": "PixelFX 改制 · 1–5 级可调 · 尚未接入 Cocos",
+      "kind": "embed",
+      "src": "/tools/asset-center/fx-lab.html?fx=gold&embed=1",
+      "width": 128,
+      "height": 192,
+      "clips": []
+    },
+    {
+      "id": "fx-vine",
+      "name": "木 · 青藤符 · 藤网",
+      "category": "特效",
+      "status": "PixelFX 改制 · 1–5 级可调 · 尚未接入 Cocos",
+      "kind": "embed",
+      "src": "/tools/asset-center/fx-lab.html?fx=vine&embed=1",
+      "width": 128,
+      "height": 192,
+      "clips": []
+    },
+    {
+      "id": "fx-ice",
+      "name": "水 · 寒冰符 · 冰锥",
+      "category": "特效",
+      "status": "PixelFX 改制 · 1–5 级可调 · 尚未接入 Cocos",
+      "kind": "embed",
+      "src": "/tools/asset-center/fx-lab.html?fx=ice&embed=1",
+      "width": 128,
+      "height": 192,
+      "clips": []
+    },
+    {
+      "id": "fx-meteor",
+      "name": "火 · 烈焰符 · 火流星",
+      "category": "特效",
+      "status": "PixelFX 改制 · 1–5 级可调 · 尚未接入 Cocos",
+      "kind": "embed",
+      "src": "/tools/asset-center/fx-lab.html?fx=meteor&embed=1",
+      "width": 128,
+      "height": 192,
+      "clips": []
+    },
+    {
+      "id": "fx-stone",
+      "name": "土 · 镇山符 · 石柱",
+      "category": "特效",
+      "status": "PixelFX 改制 · 1–5 级可调 · 尚未接入 Cocos",
+      "kind": "embed",
+      "src": "/tools/asset-center/fx-lab.html?fx=stone&embed=1",
+      "width": 128,
+      "height": 192,
+      "clips": []
+    },
+    {
+      "id": "fx-thunder",
+      "name": "雷 · 天雷符 · 连锁落雷",
+      "category": "特效",
+      "status": "PixelFX 改制 · 1–5 级可调 · 尚未接入 Cocos",
+      "kind": "embed",
+      "src": "/tools/asset-center/fx-lab.html?fx=thunder&embed=1",
+      "width": 128,
+      "height": 192,
+      "clips": []
+    },
+    {
+      "id": "fx-soul",
+      "name": "怪 · 引魂灯笼 · 加速光环",
+      "category": "特效",
+      "status": "PixelFX 改制 · 1–5 级可调 · 尚未接入 Cocos",
+      "kind": "embed",
+      "src": "/tools/asset-center/fx-lab.html?fx=soul&embed=1",
+      "width": 128,
+      "height": 192,
+      "clips": []
+    },
+    {
+      "id": "fx-all",
+      "name": "符咒特效总览 · 6 符 × 1–5 级",
+      "category": "特效",
+      "status": "全部符咒、全部等级同屏同步播放",
+      "kind": "embed",
+      "src": "/tools/asset-center/fx-all.html",
+      "width": 720,
+      "height": 900,
+      "clips": []
+    },
+    {
+      "id": "fx-levels",
+      "name": "符咒特效 · 1–5 级同屏",
+      "category": "特效",
+      "status": "同一特效五个等级并排同步播放",
+      "kind": "embed",
+      "src": "/tools/asset-center/fx-lab.html?levels=1",
+      "width": 720,
+      "height": 620,
+      "clips": []
+    },
+    {
+      "id": "fx-lab",
+      "name": "特效调参台 · 参考对照",
+      "category": "特效",
+      "status": "全部符咒特效与 PixelFX 原配方对照",
+      "kind": "embed",
+      "src": "/tools/asset-center/fx-lab.html",
+      "width": 720,
+      "height": 620,
+      "clips": []
+    },
+    {
       "id": "barrier-live",
       "name": "五行结界 · 交互预览",
       "category": "特效",

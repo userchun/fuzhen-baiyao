@@ -46,6 +46,11 @@ for folder in sorted((ROOT/'docs/art/deliver/level1').glob('*-frames')):
 for name,title in [('2026-11-01-barrier-pixel-gold.gif','金系结界 · 像素受击与破碎'),('2026-11-01-pixelfx-gold-ward.gif','金系结界 · PixelFX 历史样板')]:
     p=ROOT/'docs/evidence'/name
     if p.exists():items.append({'id':p.stem,'name':title,'category':'特效','status':'录制预览 · 非实时引擎','kind':'gif','clips':[],**file_info(p)})
+for k,n in [('gold','金 · 金光符 · 光柱'),('vine','木 · 青藤符 · 藤网'),('ice','水 · 寒冰符 · 冰锥'),('meteor','火 · 烈焰符 · 火流星'),('stone','土 · 镇山符 · 石柱'),('thunder','雷 · 天雷符 · 连锁落雷'),('soul','怪 · 引魂灯笼 · 加速光环')]:
+    items.append({'id':'fx-'+k,'name':n,'category':'特效','status':'PixelFX 改制 · 1–5 级可调 · 尚未接入 Cocos','kind':'embed','src':f'/tools/asset-center/fx-lab.html?fx={k}&embed=1','width':128,'height':192,'clips':[]})
+items.append({'id':'fx-all','name':'符咒特效总览 · 6 符 × 1–5 级','category':'特效','status':'全部符咒、全部等级同屏同步播放','kind':'embed','src':'/tools/asset-center/fx-all.html','width':720,'height':900,'clips':[]})
+items.append({'id':'fx-levels','name':'符咒特效 · 1–5 级同屏','category':'特效','status':'同一特效五个等级并排同步播放','kind':'embed','src':'/tools/asset-center/fx-lab.html?levels=1','width':720,'height':620,'clips':[]})
+items.append({'id':'fx-lab','name':'特效调参台 · 参考对照','category':'特效','status':'全部符咒特效与 PixelFX 原配方对照','kind':'embed','src':'/tools/asset-center/fx-lab.html','width':720,'height':620,'clips':[]})
 items.append({'id':'barrier-live','name':'五行结界 · 交互预览','category':'特效','status':'历史独立预览 · 非当前 Cocos 运行版','kind':'embed','src':'/docs/evidence/2026-11-01-barrier-animation-preview.html','width':720,'height':200,'clips':[]})
 for k,name in [('lantern','精英 · 灯笼鬼'),('heishan','Boss · 荒坟老妖')]:
     if (TEX/('enemy_lantern.png' if k=='lantern' else 'boss_heishan.png')).exists(): continue

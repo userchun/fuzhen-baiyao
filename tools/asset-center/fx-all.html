@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>符咒特效总览</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#101321;color:#eee4ce;font:13px system-ui,sans-serif;padding:14px}
+h1{font-size:17px;margin:0 0 4px}p.sub{color:#a3a8b9;margin:0 0 10px;font-size:12px}
+.bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:10px}
+.bar button,.bar select{font:inherit;color:#edddb7;background:#272638;border:1px solid #786447;border-radius:5px;padding:5px 10px;cursor:pointer}
+.bar label{display:flex;gap:6px;align-items:center;color:#c9c3b2;font-size:12px}
+table{border-collapse:separate;border-spacing:4px;width:100%;table-layout:fixed}
+th{color:#dbb65c;font-weight:500;font-size:12px;padding:2px}
+th.row{width:64px;text-align:right;padding-right:6px;line-height:1.4}
+th.row small{display:block;color:#858b9f;font-size:10px}
+td{padding:0}canvas{display:block;width:100%;height:auto;image-rendering:pixelated;border:1px solid #2c2a3a;border-radius:3px}
+footer{font-size:11px;color:#858b9f;margin-top:8px}
+@media(max-width:700px){th.row{width:44px;font-size:10px}th.row small{display:none}}
+</style><script>
+// 直接用文件方式打开时，浏览器不允许加载特效脚本，自动跳到素材中心本地服务
+if(location.protocol==='file:')location.replace('http://127.0.0.1:8770/tools/asset-center/'+location.pathname.split('/').pop()+location.search);
+addEventListener('error',e=>{const m=document.createElement('p');m.style='color:#ff8a6a;font-size:13px';m.textContent='特效加载失败：'+(e.message||e.target?.src||'未知错误')+'。请确认素材中心服务已启动：python3 tools/asset-center/serve.py';document.body.prepend(m)},true);
+addEventListener('unhandledrejection',e=>{const m=document.createElement('p');m.style='color:#ff8a6a;font-size:13px';m.textContent='特效加载失败：'+e.reason;document.body.prepend(m)});
+</script>
+</head><body>
+<h1>符咒特效总览 · 1–5 级</h1>
+<p class="sub">6 种符咒 × 5 个等级，同步循环播放。每格就是游戏里一次施法的完整过程，地面在格子下方。</p>
+<div class="bar"><select id="bg"><option value="scene">战场底</option><option value="dark">深色底</option></select>
+<button id="pause">暂停</button><button id="replay">从头同步播放</button>
+<label>速度 <input id="speed" type="range" min="0.25" max="1.5" step="0.05" value="1"><output id="sv">1×</output></label></div>
+<table id="grid"><thead><tr><th class="row"></th><th>1 级</th><th>2 级</th><th>3 级</th><th>4 级</th><th>5 级</th></tr></thead><tbody></tbody></table>
+<h1 style="margin-top:18px">镇妖符 · 妖怪状态</h1>
+<p class="sub">镇妖符是普通攻击（无等级，最常出现，所以最轻）。右边 5 格是叠在妖怪身上的受击与状态，底下是真实的纸扎童子；白闪、染色在游戏里由精灵调色完成，这里用画布滤镜示意。</p>
+<table id="grid2"><thead><tr><th class="row"></th><th>镇妖符</th><th>受击</th><th>冻结 · 寒冰</th><th>灼烧 · 烈焰</th><th>眩晕 · 镇山</th><th>减速 · 青藤</th></tr></thead><tbody><tr><th class="row">普攻 / 状态</th></tr></tbody></table>
+<footer>配方在 docs/evidence/pixelfx/fx/fuzhen/，参考 PixelFX（MIT）。浏览器预览，尚未接入 Cocos。单个调参见 fx-lab.html。</footer>
+<script type="module">
+import {createFrame,clearFrame,composite,createFx} from '../../docs/evidence/pixelfx/core/index.js';
+const ROWS=[['金','金光符','gold-pillar','天降光柱'],['木','青藤符','vine-zone','破土藤网'],['水','寒冰符','ice-drop','凝结冰锥'],['火','烈焰符','meteor','天降流星'],['土','镇山符','stone-pillar','地底石柱'],['雷','天雷符','thunder','连锁落雷']];
+const $=s=>document.querySelector(s),ground=new Image();ground.src='../../assets/resources/textures/bg_level1_village.png';
+let cells=[],paused=false,speed=1,last=performance.now();
+const enemy=new Image();enemy.src='../../assets/resources/textures/enemy_paperman.png';
+// 每种状态给妖怪精灵的调色（游戏里用精灵颜色/着色器实现）
+const TINT=[t=>(t%0.6)<0.08?'brightness(3) saturate(0)':'none',()=>'hue-rotate(170deg) saturate(0.6) brightness(1.15)',t=>`sepia(0.6) saturate(2.5) hue-rotate(-20deg) brightness(${1+0.15*Math.sin(t*20)})`,()=>'none',()=>'hue-rotate(60deg) saturate(0.7) brightness(0.9)'];
+const mods=await Promise.all(ROWS.map(r=>import('../../docs/evidence/pixelfx/fx/fuzhen/'+r[2]+'.js')));
+const [seal,status]=await Promise.all([import('../../docs/evidence/pixelfx/fx/fuzhen/seal-bolt.js'),import('../../docs/evidence/pixelfx/fx/fuzhen/status.js')]);
+const tb=$('#grid tbody');
+ROWS.forEach((r,i)=>{const tr=document.createElement('tr');tr.innerHTML=`<th class="row">${r[0]} · ${r[1]}<small>${r[3]}</small></th>`;
+ for(let l=1;l<=5;l++){const td=document.createElement('td'),c=document.createElement('canvas');const [w,h]=mods[i].meta.size;c.width=w;c.height=h;td.append(c);tr.append(td);cells.push({m:mods[i],l,c})}
+ tb.append(tr)});
+{const tr=$('#grid2 tbody tr');const add=(m,extra,st)=>{const td=document.createElement('td'),c=document.createElement('canvas');[c.width,c.height]=m.meta.size;td.append(c);tr.append(td);cells.push({m,l:1,c,extra,st})};
+ add(seal,{});for(let i=0;i<5;i++)add(status,{state:i},i)}
+function reset(){for(const c of cells){const o=c.m.meta.origin;c.fx=createFx(c.m,{...c.m.meta.options,level:c.l,...(c.extra||{}),x:o[0],y:o[1]});c.f=createFrame(...c.m.meta.size);c.img=new ImageData(...c.m.meta.size);c.buf=Object.assign(document.createElement('canvas'),{width:c.c.width,height:c.c.height})}}
+function paint(c){clearFrame(c.f);c.fx.draw(c.f);composite(c.f,c.img.data,null);c.buf.getContext('2d').putImageData(c.img,0,0);
+ const g=c.c.getContext('2d'),W=c.c.width,H=c.c.height;g.imageSmoothingEnabled=false;
+ if($('#bg').value==='scene'&&ground.naturalWidth){g.drawImage(ground,180,1050,W*2.4,H*2.4,0,0,W,H);g.fillStyle='rgba(10,15,30,.35)';g.fillRect(0,0,W,H)}else{g.fillStyle='#111321';g.fillRect(0,0,W,H)}
+ if(c.st!==undefined&&enemy.naturalWidth){const o=c.m.meta.origin,t=c.fx.t,sway=c.st===3?Math.sin(t*10)*2:0,bob=c.st===1?0:Math.abs(Math.sin(t*(c.st===4?3:7)))*-2;
+  g.filter=TINT[c.st](t);g.drawImage(enemy,36,31,184,210,o[0]-20+sway,o[1]-46+bob,40,46);g.filter='none'}
+ g.drawImage(c.buf,0,0)}
+function tick(now){const dt=Math.min(.1,(now-last)/1000)*speed;last=now;if(!paused)for(const c of cells)c.fx.update(dt);for(const c of cells)paint(c);requestAnimationFrame(tick)}
+$('#pause').onclick=e=>{paused=!paused;e.target.textContent=paused?'继续':'暂停'};
+$('#replay').onclick=reset;
+$('#speed').oninput=e=>{speed=+e.target.value;$('#sv').textContent=speed+'×'};
+reset();requestAnimationFrame(tick);
+</script></body></html>
