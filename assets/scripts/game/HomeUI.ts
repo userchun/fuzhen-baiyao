@@ -91,6 +91,7 @@ export class HomeUI {
     private heroFxColor = GOLD;
     private heroFxKind: HeroId = 'taoist';
     private heroFxScale = 1;
+    private heroSlide = 0; // 人物轮播切换方向：1 上滑、-1 下滑、0 不播入场
     private talismanGlow: UIOpacity | null = null;
     private heroSparks: { node: Node; opacity: UIOpacity; phase: number; x: number; y: number }[] = [];
     /** 本帧主界面是否画首局养成暖光引导（仅当次 show 生命周期） */
@@ -500,26 +501,58 @@ export class HomeUI {
         };
         // 可替换立绘与属性粒子分层；人物比例保持统一。
         const selected = heroDef(actions.hero ?? 'taoist');
-        const portrait=image(selected.portrait,[20,470,720,1170]);
+        const portrait=image(selected.portrait,[120,470,820,1170]); // 立绘居中
         this.heroIdle=portrait;this.heroClock=0;
-        const fx=makeNode('heroElementFX',layer);fx.setPosition(...position(370,790));
+        const fx=makeNode('heroElementFX',layer);fx.setPosition(...position(470,790));
         this.heroFx=fx.addComponent(Graphics);this.heroFxColor=selected.color;
         this.heroFxKind=selected.id;this.heroFxScale=scale;
-        label(selected.name,470,1125,37,selected.color);
-        label(selected.affinity+' · '+selected.weapon,470,1165,23,DIM);
-        HEROES.forEach((hero,index)=>{
-            const x=135+index*220,chosen=hero.id===selected.id;
-            const tile=rectNode('selectHero-'+hero.id,198*scale,68*scale,chosen?'#55412B':'#172136',layer,5*scale,235);
-            tile.setPosition(...position(x,1230));
-            const outline=tile.getComponent(Graphics);outline.lineWidth=2*scale;outline.strokeColor=hex(chosen?hero.color:'#4B5671');
-            outline.rect(-99*scale,-34*scale,198*scale,68*scale);outline.stroke();
-            label(hero.name,x,1230,25,chosen?hero.color:CREAM);
-            touch('heroChoice-'+hero.id,[x-99,1196,x+99,1264],()=>{
-                if(chosen)return;
-                if(!actions.onHero?.(hero.id)){this.showToast('人物选择保存失败，请重试');return;}
-                actions.hero=hero.id;this.renderReference(profile,levels,actions);
-            });
+        // 人物介绍：深色底牌 + 属性色描边，名字放大，专精与法器分两段
+        const plate=rectNode('heroIntroPlate',520*scale,112*scale,'#0B1020',layer,10*scale,215);
+        plate.setPosition(...position(470,1150));
+        const edge=plate.getComponent(Graphics);edge.lineWidth=2*scale;edge.strokeColor=hex(selected.color,200);
+        edge.roundRect(-260*scale,-56*scale,520*scale,112*scale,10*scale);edge.stroke();
+        label(selected.name,470,1125,44,selected.color);
+        label(selected.affinity+'  ·  '+selected.weapon,470,1178,27,CREAM);
+        // 人物轮播：在立绘上上下滑动切换（上滑下一位、下滑上一位），左侧竖排圆点指示当前位置
+        const order=HEROES.findIndex((hero)=>hero.id===selected.id);
+        const choose=(index: number, direction: number) => {
+            const hero=HEROES[(index+HEROES.length)%HEROES.length];
+            if(hero.id===selected.id)return;
+            if(!actions.onHero?.(hero.id)){this.showToast('人物选择保存失败，请重试');return;}
+            actions.hero=hero.id;this.heroSlide=direction;
+            this.audio?.playSfx('click',0.6);
+            this.renderReference(profile,levels,actions);
+        };
+        if(portrait&&this.heroSlide){
+            // 新立绘从滑动方向进入并淡入
+            const [px,py]=[portrait.position.x,portrait.position.y];
+            portrait.setPosition(px,py-this.heroSlide*140*scale);
+            const fade=portrait.addComponent(UIOpacity);fade.opacity=0;
+            tween(portrait).to(0.22,{position:portrait.position.clone().set(px,py)},{easing:'cubicOut'}).start();
+            tween(fade).to(0.18,{opacity:255}).start();
+            this.heroSlide=0;
+        }
+        const swipe=makeNode('heroSwipe',layer,640*scale,640*scale);
+        swipe.setPosition(...position(470,800));
+        let startY=0;
+        swipe.on(Node.EventType.TOUCH_START,(event: EventTouch)=>{startY=event.getUILocation().y;});
+        swipe.on(Node.EventType.TOUCH_END,(event: EventTouch)=>{
+            const dy=event.getUILocation().y-startY;
+            if(Math.abs(dy)<40*scale)return;
+            event.propagationStopped=true;
+            choose(order+(dy>0?1:-1),dy>0?1:-1);
         });
+        const dotX=48, dotTop=700, gap=56;
+        HEROES.forEach((hero,index)=>{
+            const chosen=index===order, size=(chosen?26:16)*scale;
+            const dot=rectNode('heroDot-'+hero.id,size,size,chosen?hero.color:'#8A93AD',layer,size/2,chosen?255:210);
+            const ring=dot.getComponent(Graphics);ring.lineWidth=2*scale;ring.strokeColor=hex('#0B1020');
+            ring.circle(0,0,size/2);ring.stroke();
+            dot.setPosition(...position(dotX,dotTop+index*gap));
+            touch('heroDotHit-'+hero.id,[dotX-30,dotTop+index*gap-28,dotX+30,dotTop+index*gap+28],()=>choose(index,index>order?1:-1));
+        });
+        label('︿',dotX,dotTop-48,24,DIM);
+        label('﹀',dotX,dotTop+(HEROES.length-1)*gap+48,24,DIM);
         image('ui_ref_coin',[197,32,452,106]);
         image('ui_ref_paper',[490,27,750,110]);
         image('ui_ref_gear',[811,28,905,116]);
