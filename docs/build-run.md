@@ -68,3 +68,11 @@ tsc --ignoreConfig assets/scripts/game/BarrierArt.ts --target ES2020 --module ES
 ### PixelFX 单套金系样板
 
 沿用 8769 本机静态服务，查看 `http://127.0.0.1:8769/docs/evidence/2026-11-01-pixelfx-gold-preview.html`。无需构建；页面直接运行 `docs/evidence/pixelfx/fx/holy/gold-ward.js`。该预览不是 7456 的 Cocos 运行版。源码来源和许可见 LICENSES.md，视觉状态见 art-bible。当前无可用 LSP 工具，已用 `node --check` 和 PixelFX 原生检查回退。
+
+### 本地素材中心（2026-11-02）
+
+在仓库根目录运行 `python3 tools/asset-center/serve.py`，打开 `http://127.0.0.1:8770/tools/asset-center/`。仅监听本机，无需安装依赖。刷新页面或点击“刷新索引”会重新扫描运行素材和 `docs/art/deliver/` 候选。
+
+支持分类、搜索、仅看动效、透明棋盘 / 深浅底 / 战场底、缩放、像素锐利、原图查看与下载、复制路径。序列动画可切动作、调整速度、暂停、拖动时间轴与逐帧查看；怪物帧率采用当前 Combat 配置，符师沿用 Art.ts 的图集采样与脚底校准。GIF 为原生循环录制，播放控制仅针对序列帧；结界交互页标明为历史独立预览，不代表当前 Cocos 实战效果。静态图、候选、缺失资源均明确区分。
+
+入口文件：`tools/asset-center/index.html`；扫描器：`tools/asset-center/build_catalog.py`；自动索引服务：`tools/asset-center/serve.py`。可单独执行扫描器更新 `catalog.json`，再用仓库根目录的任意静态 HTTP 服务访问。浏览器已验证序列播放 / 暂停 / 逐帧、动作切换与搜索；35 项文件路径及 72 帧边界已核验。

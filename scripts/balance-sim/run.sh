@@ -21,5 +21,6 @@ echo '{"type":"module"}' > "$DIR/out/package.json"
 find "$DIR/out" -name "*.js" -exec sed -i.bak -E "s#(from '\.[^']*)'#\1.js'#g" {} \; -exec rm -f {}.bak \;
 cd "$DIR"
 node test-siege.mjs
+node test-village-roster.mjs
 node test-settlement.mjs
 node sim.mjs

@@ -12,7 +12,7 @@ try {
   cpSync(resolve('scripts/balance-sim/stub/cc'), join(dir, 'node_modules/cc'), { recursive: true });
   writeFileSync(join(dir, 'package.json'), '{"type":"module"}');
   const out = join(dir, 'out');
-  execFileSync('tsc', ['--ignoreConfig', resolve('assets/scripts/game/Combat.ts'),
+  execFileSync('tsc', [...(Number(execFileSync('tsc', ['--version'], {encoding:'utf8'}).match(/(\d+)\./)[1]) >= 6 ? ['--ignoreConfig'] : []), resolve('assets/scripts/game/Combat.ts'),
     '--target', 'ES2020', '--module', 'ESNext', '--moduleResolution', 'bundler',
     '--skipLibCheck', '--noCheck', '--rootDir', resolve('assets/scripts'), '--outDir', out]);
   const rewrite = (path) => {

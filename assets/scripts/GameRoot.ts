@@ -262,6 +262,7 @@ export class GameRoot extends Component {
             if (e.def.elite) this.eliteKills++;
             this.skills.addXp(e.def.xp * this.meta.spiritMult);
         }, this.audio);
+        this.combat.bossSkillDamageMult = diff === 'hard' ? 1.5 : 1;
         this.combat.hpMult = level.hpMult * (diff === 'hard' ? HARD_HP_MULT : 1);
         // 开局冻结养成快照，本局中途不再变化
         this.meta = metaSnapshot(this.profile, GAME.wallHp);

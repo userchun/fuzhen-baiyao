@@ -4,7 +4,7 @@
 接口见 https://wiki.agnes-ai.com/en/docs/agnes-image-25-flash.md ：
 POST https://apihub.agnes-ai.com/v1/images/generations，参考图放 extra_body.image（data URI）。
 
-密钥读取顺序：环境变量 AGNES_API_KEY → imagegen skill 目录的 agnes_key_paid（收费）→ agnes_key_free（免费）。
+密钥读取顺序：环境变量 AGNES_API_KEY → 项目 .env → imagegen skill 目录的 agnes_key_paid（收费）→ agnes_key_free（免费）。
 收费 key 额度用完 / 被拒（401/402/403）或限流重试用完（429）才换免费 key。密钥不要放进仓库。
 
 用法：
@@ -15,6 +15,7 @@ import base64
 import json
 import mimetypes
 import os
+from pathlib import Path
 import sys
 import time
 import urllib.error
@@ -31,6 +32,14 @@ def read_keys() -> list:
     env = os.environ.get("AGNES_API_KEY", "").strip()
     if env:
         keys.append(("环境变量 AGNES_API_KEY", env))
+    env_file = Path(__file__).resolve().parent.parent / ".env"
+    if env_file.is_file():
+        for line in env_file.read_text().splitlines():
+            name, sep, value = line.strip().partition("=")
+            if sep and name.strip() == "AGNES_API_KEY":
+                value = value.strip().strip("\"'")
+                if value and value not in [x[1] for x in keys]:
+                    keys.append(("项目 .env", value))
     for label, path in KEY_FILES:
         if os.path.exists(path):
             with open(path) as f:
@@ -38,7 +47,7 @@ def read_keys() -> list:
             if k and k not in [x[1] for x in keys]:
                 keys.append((label, k))
     if not keys:
-        sys.exit(f"没有密钥：设置 AGNES_API_KEY，或放到 {SKILL_DIR} 的 agnes_key_free / agnes_key_paid")
+        sys.exit(f"没有密钥：在环境变量或项目 .env 设置 AGNES_API_KEY，或放到 {SKILL_DIR} 的 agnes_key_free / agnes_key_paid")
     return keys
 
 

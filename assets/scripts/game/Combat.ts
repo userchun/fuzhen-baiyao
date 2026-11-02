@@ -30,6 +30,11 @@ export interface Enemy {
     hitReactT: number;
     /** T2：黑山虚弱窗剩余秒；>0 时临时取消 armor 减免 */
     weakT: number;
+    armorBroken?: boolean;
+    visualT?: number;
+    visualAction?: string;
+    smashCooldown?: number;
+    smashWindup?: number;
     alive: boolean;
     /** Boss death oneshot in progress; blocks hurt/move; settle deferred to anim onDone */
     dying: boolean;
@@ -60,6 +65,7 @@ const PLAYER_ART_SIZE = 160; // 当前符师动作帧显示边长，完整轮廓
 
 // 战斗世界：施法、敌人移动、子弹碰撞、区域伤害、特效
 export class Combat {
+    bossSkillDamageMult = 1;
     enemies: Enemy[] = [];
     playerX = 0;
     /** 位移目标 X；实位 playerX 每帧缓动跟上（sine/exp 平滑，避免拖动硬切） */
@@ -107,6 +113,7 @@ export class Combat {
     private playerHit: FrameClip | null = null;
     /** 敌人 move 序列帧：id → clip（无帧则不下挂） */
     private enemyMoveClips = new Map<string, FrameClip>();
+    private enemyActionClips = new Map<string, FrameClip>();
     /** 节点 → FrameAnim（池化复用） */
     private enemyAnims = new Map<Node, FrameAnim>();
     /** 白骨夫人三相 idle：metal/water/fire → clip */
@@ -132,14 +139,14 @@ export class Combat {
     // swayDeg：art 子节点随步伐左右摇摆的角度（一个 clip 周期摆一个来回）
     // still：单张定稿图，不用走路帧，起伏 / 摇摆按时间由代码驱动（stepHz = 每秒迈几步）
     private static readonly ENEMY_MOVE: Record<string, { fps: number; bobPx: number; swayDeg?: number; prefix?: string; still?: boolean; stepHz?: number; squash?: number; driftPx?: number }> = {
-        jiangshi: { fps: 12, bobPx: 0, swayDeg: 1 }, // 2026-11-01 泥尸 12 帧并脚跳（部件合成：蓄力、起跳、腾空、落地缓冲），每秒跳一次
+        jiangshi: { fps: 12, bobPx: 0 }, // 2026-11-02 行尸拖步，起伏已包含在帧内，不叠加旧并脚跳摇摆
         paperman: { fps: 10, bobPx: 0 }, // 2026-11-01 槐树精 12 帧走路：定稿图拆成身子 / 手臂 / 腿后按走路节奏合成（起伏、轻晃已画进帧里），一个循环两步约 1.2 秒（🧪 待看手感）
-        foxfire: { fps: 14, bobPx: 0 }, // 2026-11-01 火狐 12 帧正面奔跑（部件合成：前爪交替、身子起伏、火焰尾巴摆动伸缩），快怪略快
+        foxfire: { fps: 14, bobPx: 0 }, // 2026-11-02 鬼火火舌循环；不使用旧火狐奔跑表现
         tongjia: { fps: 11, bobPx: 0 },
         tongqian: { fps: 10, bobPx: 0 }, // 2026-11-01 铜钱精 12 帧摇摆走路（部件合成：短腿交替、圆身左右晃）
         shuigui: { fps: 8, bobPx: 0 }, // 2026-11-01 井鬼 12 帧漂浮（部件合成：鬼身浮动轻摇、水纹胀缩），一个循环 1.5 秒；潜水仍由代码半透明表现
         lantern: { fps: 10, bobPx: 0 }, // 2026-10-31 v14 獠牙红灯笼 12 帧：左右摇摆、甩舌、火焰随摆；无 bob
-        heishan: { fps: 10, bobPx: 0, prefix: 'anim/boss_heishan/idle' }, // 20 帧呼吸 idle，一个循环 2 秒；无 bob
+        heishan: { fps: 10, bobPx: 0, prefix: 'anim/boss_heishan/move' }, // 20 帧呼吸 idle，一个循环 2 秒；无 bob
         baigu: { fps: 9, bobPx: 0, prefix: 'anim/boss_baigu_metal/idle' }, // 默认金相；三相见 baiguPhaseClips
     };
     /** U11：常见怪受击 easing 名单（无 hit sheet；不改伤） */
@@ -190,6 +197,16 @@ export class Combat {
             if (ENEMIES[id]?.boss) continue;
             const frames = getFrames(`anim/enemy_${id}/attack`);
             if (frames.length) this.siegeAttackClips.set(id, { frames, fps: frames.length / SIEGE.attackPeriod, loop: true });
+        }
+        for (const id of Object.keys(Combat.ENEMY_MOVE)) {
+            const prefix = id === 'heishan' ? 'anim/boss_heishan' : `anim/enemy_${id}`;
+            for (const action of ['idle', 'hurt', 'death', 'appear', 'skill1', 'skill2']) {
+                const clip = this.makeClip(`${prefix}/${action}`, action === 'hurt' ? 8 : 12, action === 'idle');
+                if (clip) {
+                    if (id === 'heishan' && action === 'skill2') clip.fps = clip.frames.length / (ENEMIES.heishan.smash?.windup ?? 1.5);
+                    this.enemyActionClips.set(`${id}:${action}`, clip);
+                }
+            }
         }
         // 白骨夫人三相 idle（phase 切换时换 clip；静态 boss_baigu_* 仍作 fallback）
         const baiguFps = Combat.ENEMY_MOVE.baigu?.fps ?? 9;
@@ -285,7 +302,7 @@ export class Combat {
 
     /** 非致命受击：hit oneshot → 回当前相 idle/move；无帧则 noop（静帧 fallback） */
     private playBossHit(e: Enemy): void {
-        if (e.dying || !e.alive) return;
+        if (e.dying || !e.alive || e.visualT > 0) return;
         let clip: FrameClip | null = null;
         if (e.def.id === 'heishan') clip = this.heishanHitClip;
         else if (e.def.id === 'baigu') clip = this.baiguHitClips.get(e.element) ?? null;
@@ -427,6 +444,7 @@ export class Combat {
             summonT: def.summonInterval ?? 0, flashT: 0, flashMax: 0, hitReactT: 0, weakT: 0, alive: true, dying: false,
         };
         this.enemies.push(e);
+        if (def.id === 'heishan') this.playEnemyAction(e, 'appear');
         drawHp(e);
     }
 
@@ -511,9 +529,11 @@ export class Combat {
                 // 跳尸、纸人的字印随 art 跳动和摇摆，避免身体动了汉字留在原地。
                 const sealParent = id === 'jiangshi' || id === 'paperman' ? artNode : n;
                 const sealColor = id === 'heishan' ? '#E8E2D0' : '#1E1A26'; // 暗色封印区用浅色字（泥尸改为浅色补子，用深色字）
-                const ch = addLabel(sealParent, d.char, Math.max(12, Math.round(size * art.sealR * 1.3)), sealColor);
-                ch.node.name = 'seal';
-                ch.node.setPosition(size * ((art.sealX ?? 0.5) - 0.5), size * (0.5 - art.sealY));
+                if (art.sealR > 0) {
+                    const ch = addLabel(sealParent, d.char, Math.max(12, Math.round(size * art.sealR * 1.3)), sealColor);
+                    ch.node.name = 'seal';
+                    ch.node.setPosition(size * ((art.sealX ?? 0.5) - 0.5), size * (0.5 - art.sealY));
+                }
             } else {
                 n = circleNode(key, d.radius, ELEMENT_COLOR[d.element], d.char);
             }
@@ -729,6 +749,78 @@ export class Combat {
         }
     }
 
+    private playEnemyAction(e: Enemy, action: string): void {
+        const clip = this.enemyActionClips.get(`${e.def.id}:${action}`);
+        if (!clip || e.dying || !e.alive) return;
+        const anim = this.getOrCreateEnemyAnim(e.node);
+        if (!anim) return;
+        e.visualT = clip.loop ? 0 : clip.frames.length / clip.fps;
+        e.visualAction = action;
+        anim.play(clip, () => {
+            if (e.dying || !e.alive) return;
+            e.visualT = 0;
+            e.visualAction = 'move';
+            this.ensureEnemyAnim(e.node, e.def.id, e.element);
+        });
+    }
+
+    /** 死亡表现脱离战斗实体，立即释放攻城槽与结算奖励，不重复伤害。 */
+    private playMobDeath(e: Enemy): void {
+        const clip = this.enemyActionClips.get(`${e.def.id}:death`);
+        if (!clip) return;
+        const prefix = `anim/enemy_${e.def.id}/death_00`;
+        const size = e.def.radius * 2 * (ENEMY_ART[e.def.id]?.scale ?? 2) * depthScale(e.depth);
+        const node = spriteNode(prefix, size, size, this.fxLayer);
+        if (!node) return;
+        node.setPosition(e.x, e.y);
+        const anim = new FrameAnim(node);
+        anim.play(clip);
+        this.splitFx.push({ node, anim, life: clip.frames.length / clip.fps + 0.05 });
+    }
+
+    /** 引魂灯笼只加速附近普通怪；不叠加，死亡/冻结/离开范围立即失效。 */
+    private hasteMultiplier(target: Enemy): number {
+        if (target.def.boss || target.def.elite) return 1;
+        let multiplier = 1;
+        for (const source of this.enemies) {
+            const aura = source.def.hasteAura;
+            if (!aura || !source.alive || source.dying || source.freezeT > 0
+                || source.t % aura.period >= aura.duration) continue;
+            if (Math.hypot(target.x-source.x, target.y-source.y) <= aura.radius) {
+                multiplier = Math.max(multiplier, aura.multiplier);
+            }
+        }
+        return multiplier;
+    }
+
+    /** 半血后蓄力砸地；冻结暂停计时，死亡不结算伤害，落锤后暴露核心。 */
+    private updateGraveSmash(e: Enemy, dt: number): void {
+        const spec = e.def.smash;
+        if (!spec || e.hp > e.maxHp * 0.5 || e.freezeT > 0) return;
+        if ((e.smashWindup ?? 0) > 0) {
+            e.smashWindup = Math.max(0, e.smashWindup - dt);
+            if (e.smashWindup === 0) {
+                const damage = spec.damage * this.bossSkillDamageMult;
+                this.wallHp -= damage;
+                e.weakT = spec.weakDuration;
+                this.barrier.hit(e.x);
+                this.fb.shake(12, 0.3);
+                this.fb.announce('核心暴露', e.x, e.y + 65, 30, '#FFE08A');
+                this.playPlayerHit();
+            }
+            return;
+        }
+        e.smashCooldown = (e.smashCooldown ?? spec.interval) - dt;
+        if (e.smashCooldown <= 0) {
+            e.smashCooldown = spec.interval;
+            e.smashWindup = spec.windup;
+            this.playEnemyAction(e, 'skill2');
+            this.fb.announce('荒坟老妖 · 砸地蓄力', 0, GAME.wallY + 110, 30, '#FFAA78');
+            flash(this.fxLayer, 'fx_hit_seal', e.x, GAME.wallY, spec.windup,
+                { size: 160, startScale: 0.7, endScale: 1.4, startAlpha: 180 });
+        }
+    }
+
     private updateEnemies(dt: number): void {
         this.siegeClock += dt;
         for (const e of this.enemies) {
@@ -741,12 +833,20 @@ export class Combat {
             if (!e.alive) continue;
             e.t += dt;
             const d = e.def;
+            if (e.visualT > 0) e.visualT = Math.max(0, e.visualT - dt);
+            if (d.id === 'heishan' && !(e.visualT > 0)) {
+                if ((e.weakT > 0 || e.depth >= 0.98) && e.visualAction !== 'idle') this.playEnemyAction(e, 'idle');
+                else if (e.weakT <= 0 && e.depth < 0.98 && e.visualAction === 'idle') {
+                    e.visualAction = 'move';
+                    this.ensureEnemyAnim(e.node, d.id, e.element);
+                }
+            }
             const previousGap = e.y - d.radius * depthScale(e.depth) - GAME.wallY;
             const siegeEntry = this.siege.find((entry) => entry.enemy === e);
             if (e.freezeT > 0) {
                 e.freezeT -= dt;
-            } else if (!siegeEntry) {
-                const sp = d.speed * (1 - e.slow);
+            } else if (!siegeEntry && !(e.smashWindup > 0)) {
+                const sp = d.speed * (1 - e.slow) * this.hasteMultiplier(e);
                 const rate = sp / travelPixels(); // px/s → depth/s（按旧路程换算，保持走到城墙的时间不变）
                 if (d.move === 'hop') {
                     // 缓动：正弦包络替代硬切窗口，起步/落地更顺
@@ -765,7 +865,7 @@ export class Combat {
             e.x = Math.max(-HALF_W, Math.min(HALF_W, e.x));
             // 水鬼：每 3 秒潜水 1 秒，潜水时无敌；潜水进出播 dive_in / dive_out
             const wasDiving = e.diving;
-            e.diving = !!d.dive && e.t % 3 > 2;
+            e.diving = !!d.dive && e.depth < 0.82 && e.t % 3 > 2;
             if (d.dive && wasDiving !== e.diving) {
                 this.audio?.playSfx(e.diving ? 'shuigui_dive_in' : 'shuigui_dive_out', 0.55);
             }
@@ -787,10 +887,13 @@ export class Combat {
             // T2：虚弱窗可读——略提亮；有 armor 且非虚弱时保持常态
             if (e.def.id === 'heishan' && e.weakT > 0) setOpacity(e.node, 230);
 
-            if (d.summon) {
+            this.updateGraveSmash(e, dt);
+
+            if (d.summon && !(e.smashWindup > 0)) {
                 e.summonT -= dt;
                 if (e.summonT <= 0) {
                     e.summonT = d.summonInterval;
+                    if (d.id === 'heishan') this.playEnemyAction(e, 'skill1');
                     for (let i = 0; i < (d.summonCount ?? 1); i++) {
                         this.spawnEnemy(d.summon, e.x + (i % 2 ? 1 : -1) * (d.radius + 30), e.depth);
                     }
@@ -1077,6 +1180,12 @@ export class Combat {
                 e.depth = Math.max(0, Math.min(1, (GAME.horizonY - e.y) / lanePixels()));
             }
             const inPosition = entry.slot !== null && Math.hypot(targetX - e.x, targetY - e.y) < 1;
+            if (entry.slot === null && distance < 1 && !controlled && e.visualAction !== 'idle') {
+                this.playEnemyAction(e, 'idle');
+            } else if (e.visualAction === 'idle' && (distance >= 1 || inPosition)) {
+                e.visualAction = 'move';
+                this.ensureEnemyAnim(e.node, e.def.id, e.element);
+            }
             if (controlled || !inPosition) {
                 entry.attackT = 0;
                 entry.hit = false;
@@ -1125,13 +1234,22 @@ export class Combat {
         const tier = elementTier(el, e.element);
         let dmg = amount * TIER_MULT[tier];
         // T2：虚弱窗内不吃 armor；窗外照常减免
-        if (show && e.def.armor && e.weakT <= 0) dmg = Math.max(MIN_HIT_DAMAGE, dmg - e.def.armor);
+        if (show && e.def.armor && e.weakT <= 0 && !e.armorBroken) {
+            dmg = Math.max(MIN_HIT_DAMAGE, dmg - e.def.armor);
+            if (e.def.breakArmorOnHit) {
+                e.armorBroken = true;
+                this.fb.announce('破甲', e.x, e.y + 35, 24, '#F5D76E');
+            }
+        }
         e.hp -= dmg;
         if (show) {
             this.fb.text(e.x, e.y + e.def.radius * depthScale(e.depth), dmg, tier);
             const py = e.y + e.def.radius * depthScale(e.depth);
             // U11：常见怪受击包络（不改伤）；跳尸/铜甲更长
             this.applyHitReact(e);
+            if (!e.def.boss && !this.siege.some(entry => entry.enemy === e && entry.attacking)) {
+                this.playEnemyAction(e, 'hurt');
+            }
             // U10：有 motion_ref 才播对应闪/停/叠色；无 ref 的普攻仍走通用层
             if (motionRef && hasMotionRef(motionRef)) {
                 if (motionRef === 'ice_hit' || motionRef === 'fire_hit' || motionRef === 'thunder_hit') {
@@ -1254,6 +1372,7 @@ export class Combat {
             return;
         }
         e.alive = false;
+        if (!e.def.boss && e.def.id !== 'lantern') this.playMobDeath(e);
         this.removeSiege(e);
         this.kills++;
         this.ultCharge = Math.min(this.ultNeed, this.ultCharge + 1);

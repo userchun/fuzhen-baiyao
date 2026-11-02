@@ -13,14 +13,14 @@ const frames = new Map<string, SpriteFrame>();
 /** sealYFrames：可选，move 每帧的字印 Y（同 sealY 比例），用于下蹲等胸口高度变化大的动作 */
 export const ENEMY_ART: Record<string, { tex: string; sealY: number; sealX?: number; sealR: number; scale: number; sealYFrames?: number[] }> = {
     // scale = 显示边长 / 碰撞直径。2026-10-31 按图里角色实际可见高度统一：普通小怪 150（纸人身形瘦，放到 165 看起来才一样大）、精英（铜甲尸、灯笼鬼）190（取 12 帧中位高度）
-    paperman: { tex: 'enemy_paperman', sealY: 0.53, sealX: 0.51, sealR: 0.05, scale: 1.98 }, // 2026-11-01 槐树精像素定稿：33×33 格放大到 495 方图，显示 99 = 每格 3 单位（与背景、结界一致），可见高约 85 ≈ 符师 0.6；脚底 0.94，字印落在胸口符纸上
-    jiangshi: { tex: 'enemy_jiangshi', sealY: 0.47, sealX: 0.50, sealR: 0.06, scale: 1.65, sealYFrames: [0.469, 0.492, 0.521, 0.426, 0.409, 0.398, 0.398, 0.413, 0.435, 0.525, 0.492, 0.469] }, // 2026-11-01 泥尸像素定稿：33×33 格放大到 495 方图，显示 99（碰撞直径 60），字印落在胸前补子上并逐帧跟随跳跃
-    foxfire: { tex: 'enemy_foxfire', sealY: 0.75, sealX: 0.44, sealR: 0.05, scale: 2.36, sealYFrames: [0.754, 0.748, 0.744, 0.742, 0.744, 0.748, 0.754, 0.748, 0.744, 0.742, 0.744, 0.748] }, // 2026-11-01 火狐像素定稿（正面奔跑、火焰尾巴）：33×33 格放大到 495 方图，显示 99（碰撞直径 42），字印落在胸前符牌上并逐帧跟随起伏
-    lantern: { tex: 'enemy_lantern', sealY: 0.40, sealR: 0.08, scale: 2.52 }, // 2026-10-31 v14 獠牙红灯笼 12 帧漂浮：字印落在独眼
-    tongqian: { tex: 'enemy_tongqian', sealY: 0.76, sealX: 0.49, sealR: 0.05, scale: 1.9, sealYFrames: [0.764, 0.759, 0.755, 0.754, 0.755, 0.759, 0.764, 0.759, 0.755, 0.754, 0.755, 0.759] }, // 2026-11-01 铜钱精像素定稿（铜钱串成的圆身，铜锈调成暗金、缩到 0.85）：33×33 格放大到 495 方图，显示 99（碰撞直径 52），字印落在肚子符牌上并逐帧跟随
-    shuigui: { tex: 'enemy_shuigui', sealY: 0.39, sealX: 0.50, sealR: 0.05, scale: 1.98, sealYFrames: [0.387, 0.383, 0.38, 0.379, 0.38, 0.383, 0.387, 0.391, 0.393, 0.395, 0.393, 0.391] }, // 2026-11-01 井鬼像素定稿（湿发女鬼飘在水洼上）：33×33 格放大到 495 方图，显示 99（碰撞直径 50），字印落在胸前符牌上并逐帧跟随浮动
+    paperman: { tex: 'enemy_paperman', sealY: 0.29, sealX: 0.50, sealR: 0.035, scale: 1.98 }, // 2026-11-02 纸扎童子：256 方帧、12 帧移动；额符字印，显示边长 99，脚底 0.94
+    jiangshi: { tex: 'enemy_jiangshi', sealY: 0.29, sealX: 0.53, sealR: 0.035, scale: 1.65 }, // 2026-11-02 行尸：256方帧、12帧拖步直走，额符；移除旧泥尸跳跃封印轨迹
+    foxfire: { tex: 'enemy_foxfire', sealY: 0.5, sealX: 0.50, sealR: 0, scale: 2.36 }, // 2026-11-02 鬼火：256方帧、12帧火舌循环；无实体符纸，不覆盖鬼脸，保留属性角标
+    lantern: { tex: 'enemy_lantern', sealY: 0.5, sealX: 0.5, sealR: 0, scale: 2.52 }, // 2026-11-02 荒村全动作新素材，保留属性角标，不覆盖主体特征
+    tongqian: { tex: 'enemy_tongqian', sealY: 0.5, sealX: 0.5, sealR: 0, scale: 1.9 }, // 2026-11-02 荒村全动作新素材，保留属性角标，不覆盖主体特征
+    shuigui: { tex: 'enemy_shuigui', sealY: 0.5, sealX: 0.5, sealR: 0, scale: 1.98 }, // 2026-11-02 荒村全动作新素材，保留属性角标，不覆盖主体特征
     tongjia: { tex: 'enemy_tongjia', sealY: 0.69, sealR: 0.12, scale: 3.52 },
-    heishan: { tex: 'boss_heishan', sealY: 0.51, sealX: 0.48, sealR: 0.09, scale: 2.75 }, // 2026-10-27 新岩石巨妖：字印对齐胸口封印圆
+    heishan: { tex: 'boss_heishan', sealY: 0.5, sealX: 0.5, sealR: 0, scale: 2.0 }, // 2026-11-02 荒村全动作新素材，保留属性角标，不覆盖主体特征
     baigu: { tex: 'boss_baigu_metal', sealY: 0.65, sealR: 0.10, scale: 3.05 },
 };
 

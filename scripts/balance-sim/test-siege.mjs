@@ -89,12 +89,13 @@ function placeAtSlots(c) {
   const originalSlot = c.siege[0].slot;
   e.t = 2;
   tick(c, 0.5);
-  assert.equal(c.wallHp, 100, 'diving cancels the pending hit');
-  assert.equal(c.siege[0].slot, originalSlot, 'diving retains the slot');
+  assert.equal(c.wallHp, 99, 'near-wall ghost stays visible and completes the pending hit');
+  assert.equal(e.diving, false, 'near-wall ghost cannot dive');
+  assert.equal(c.siege[0].slot, originalSlot, 'visible ghost retains the slot');
   tick(c, 0.5);
-  assert.equal(c.wallHp, 100, 'surfacing starts a new attack');
+  assert.equal(c.wallHp, 99, 'attack cooldown is preserved');
   tick(c, 0.65);
-  assert.equal(c.wallHp, 99);
+  assert.equal(c.wallHp, 98);
 }
 {
   const c = create();

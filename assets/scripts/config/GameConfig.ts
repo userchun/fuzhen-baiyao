@@ -111,6 +111,9 @@ export interface EnemyDef {
     summon?: string; summonCount?: number; summonInterval?: number;
     armor?: number;        // 每次直接命中减免的固定伤害
     dive?: boolean;        // 周期潜水，潜水时无敌
+    breakArmorOnHit?: boolean; // 首次直接命中破甲
+    hasteAura?: { radius: number; multiplier: number; period: number; duration: number };
+    smash?: { interval: number; windup: number; damage: number; weakDuration: number };
     phases?: Element[];    // Boss 按血量阶段切换属性
 }
 
@@ -118,23 +121,24 @@ export interface EnemyDef {
 export const SIEGE = { slots: 8, damagePerSecond: 8, attackPeriod: 1.2, hitAt: 0.5 };
 
 export const ENEMIES: Record<string, EnemyDef> = {
-    paperman: { id: 'paperman', name: '槐树精', char: '槐', element: 'wood', hp: 80, speed: 60, radius: 25, damage: 1, xp: 1, move: 'straight' },
-    jiangshi: { id: 'jiangshi', name: '泥尸', char: '泥', element: 'earth', hp: 120, speed: 70, radius: 30, damage: 2, xp: 2, move: 'hop' },
-    foxfire: { id: 'foxfire', name: '火狐', char: '狐', element: 'fire', hp: 38, speed: 110, radius: 21, damage: 1, xp: 1, move: 'sine' },
+    paperman: { id: 'paperman', name: '纸扎童子', char: '纸', element: 'wood', hp: 80, speed: 60, radius: 25, damage: 1, xp: 1, move: 'straight' },
+    jiangshi: { id: 'jiangshi', name: '行尸', char: '尸', element: 'earth', hp: 120, speed: 70, radius: 30, damage: 2, xp: 2, move: 'straight' },
+    foxfire: { id: 'foxfire', name: '鬼火', char: '火', element: 'fire', hp: 38, speed: 110, radius: 21, damage: 1, xp: 1, move: 'straight' },
     lantern: {
-        id: 'lantern', name: '灯笼鬼', char: '灯', element: 'fire', hp: 700, speed: 40, radius: 42, damage: 3, xp: 10,
-        move: 'straight', elite: true, splitInto: 'foxfire', splitCount: 3,
+        id: 'lantern', name: '引魂灯笼', char: '灯', element: 'fire', hp: 700, speed: 40, radius: 42, damage: 3, xp: 10,
+        move: 'straight', elite: true, hasteAura: { radius: 220, multiplier: 1.3, period: 6, duration: 2 }, // 🧪 周期加速光环，不叠加
     },
     heishan: {
         id: 'heishan', name: '荒坟老妖', char: '坟', element: 'earth', hp: 2600, speed: 22, radius: 80, damage: 15, xp: 0,
         move: 'straight', boss: true, summon: 'jiangshi', summonCount: 2, summonInterval: 5,
+        smash: { interval: 12, windup: 1.5, damage: 12, weakDuration: 2.8 }, // 🧪 半血后蓄力砸地
         armor: 10, // T2：常态岩甲；虚弱窗内 Combat 临时取消减免（不砍 Boss HP）
     },
     // ---- 第二章 · 古寺 ----
     tongjia: { id: 'tongjia', name: '铜甲尸', char: '铜', element: 'metal', hp: 240, speed: 45, radius: 32, damage: 2, xp: 3, move: 'straight', armor: 5 },
-    // 🧪 2026-11-01 第一关补金属性：铜钱精，带少量护甲（沿用铜甲尸的护甲机制）
-    tongqian: { id: 'tongqian', name: '铜钱精', char: '钱', element: 'metal', hp: 120, speed: 55, radius: 26, damage: 1, xp: 2, move: 'straight', armor: 3 },
-    shuigui: { id: 'shuigui', name: '井鬼', char: '井', element: 'water', hp: 80, speed: 80, radius: 25, damage: 1, xp: 2, move: 'straight', dive: true },
+    // 🧪 2026-11-01 第一关补金属性：铜钱鼠，带少量护甲（沿用铜甲尸的护甲机制）
+    tongqian: { id: 'tongqian', name: '铜钱鼠', char: '钱', element: 'metal', hp: 120, speed: 55, radius: 26, damage: 1, xp: 2, move: 'straight', armor: 3, breakArmorOnHit: true },
+    shuigui: { id: 'shuigui', name: '落水鬼', char: '溺', element: 'water', hp: 80, speed: 80, radius: 25, damage: 1, xp: 2, move: 'straight', dive: true },
     baigu: {
         id: 'baigu', name: '白骨夫人', char: '骨', element: 'metal', hp: 5000, speed: 20, radius: 80, damage: 18, xp: 0,
         move: 'straight', boss: true, summon: 'shuigui', summonCount: 2, summonInterval: 6,
@@ -149,15 +153,15 @@ export const LEVEL1_WAVES: WaveDef[] = [
     // T1：前 2 波间隔 +18%，缓开场墙压（不改 Boss HP / 全局移速）
     { time: 0, enemy: 'paperman', count: 10, interval: 1.18 },
     { time: 15, enemy: 'foxfire', count: 8, interval: 1.42 },
-    { time: 25, enemy: 'paperman', count: 24, interval: 0.6 },
-    { time: 35, enemy: 'shuigui', count: 6, interval: 1.5 }, // 🧪 2026-11-01 第一关补水属性：井鬼
-    { time: 45, enemy: 'jiangshi', count: 6, interval: 2.0 },
+    { time: 25, enemy: 'jiangshi', count: 6, interval: 2.0 },
+    { time: 35, enemy: 'paperman', count: 24, interval: 0.6 }, // 🧪 2026-11-01 第一关补水属性：落水鬼
+    { time: 45, enemy: 'foxfire', count: 8, interval: 1.42 },
     { time: 60, enemy: 'lantern', count: 1, interval: 0 },
-    { time: 70, enemy: 'foxfire', count: 15, interval: 0.6 },
-    { time: 85, enemy: 'paperman', count: 38, interval: 0.25 }, // 🧪 45→38，给井鬼、铜钱精腾压力
+    { time: 70, enemy: 'shuigui', count: 6, interval: 1.5 },
+    { time: 85, enemy: 'paperman', count: 38, interval: 0.25 }, // 🧪 45→38，给落水鬼、铜钱鼠腾压力
     { time: 100, enemy: 'jiangshi', count: 16, interval: 0.6 },
     { time: 110, enemy: 'lantern', count: 2, interval: 8 },
-    { time: 120, enemy: 'tongqian', count: 8, interval: 1.0 }, // 🧪 2026-11-01 第一关补金属性：铜钱精
+    { time: 120, enemy: 'tongqian', count: 8, interval: 1.0 }, // 🧪 2026-11-01 第一关补金属性：铜钱鼠
     { time: 130, enemy: 'foxfire', count: 24, interval: 0.3 }, // 🧪 30→24
     { time: 150, enemy: 'heishan', count: 1, interval: 0 },
     { time: 155, enemy: 'paperman', count: 60, interval: 0.4 },

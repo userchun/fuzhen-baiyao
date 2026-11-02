@@ -1,0 +1,3052 @@
+{
+  "items": [
+    {
+      "id": "bg_level1_village",
+      "name": "第一关 · 荒村背景",
+      "category": "背景",
+      "status": "已接入 · 待美术验收",
+      "kind": "static",
+      "clips": [],
+      "src": "/assets/resources/textures/bg_level1_village.png",
+      "width": 1080,
+      "height": 2340,
+      "alpha": false
+    },
+    {
+      "id": "boss_heishan",
+      "name": "荒坟老妖",
+      "category": "怪物",
+      "status": "已接入 · 待美术验收",
+      "kind": "sequence",
+      "clips": [
+        {
+          "name": "出场",
+          "fps": 12,
+          "frames": [
+            {
+              "src": "/assets/resources/textures/anim/boss_heishan/appear_00.png",
+              "width": 512,
+              "height": 512,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/boss_heishan/appear_01.png",
+              "width": 512,
+              "height": 512,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/boss_heishan/appear_02.png",
+              "width": 512,
+              "height": 512,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/boss_heishan/appear_03.png",
+              "width": 512,
+              "height": 512,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/boss_heishan/appear_04.png",
+              "width": 512,
+              "height": 512,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/boss_heishan/appear_05.png",
+              "width": 512,
+              "height": 512,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/boss_heishan/appear_06.png",
+              "width": 512,
+              "height": 512,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/boss_heishan/appear_07.png",
+              "width": 512,
+              "height": 512,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/boss_heishan/appear_08.png",
+              "width": 512,
+              "height": 512,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/boss_heishan/appear_09.png",
+              "width": 512,
+              "height": 512,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/boss_heishan/appear_10.png",
+              "width": 512,
+              "height": 512,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/boss_heishan/appear_11.png",
+              "width": 512,
+              "height": 512,
+              "alpha": true
+            }
+          ]
+        },
+        {
+          "name": "死亡",
+          "fps": 12,
+          "frames": [
+            {
+              "src": "/assets/resources/textures/anim/boss_heishan/death_00.png",
+              "width": 512,
+              "height": 512,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/boss_heishan/death_01.png",
+              "width": 512,
+              "height": 512,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/boss_heishan/death_02.png",
+              "width": 512,
+              "height": 512,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/boss_heishan/death_03.png",
+              "width": 512,
+              "height": 512,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/boss_heishan/death_04.png",
+              "width": 512,
+              "height": 512,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/boss_heishan/death_05.png",
+              "width": 512,
+              "height": 512,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/boss_heishan/death_06.png",
+              "width": 512,
+              "height": 512,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/boss_heishan/death_07.png",
+              "width": 512,
+              "height": 512,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/boss_heishan/death_08.png",
+              "width": 512,
+              "height": 512,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/boss_heishan/death_09.png",
+              "width": 512,
+              "height": 512,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/boss_heishan/death_10.png",
+              "width": 512,
+              "height": 512,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/boss_heishan/death_11.png",
+              "width": 512,
+              "height": 512,
+              "alpha": true
+            }
+          ]
+        },
+        {
+          "name": "待机",
+          "fps": 10,
+          "frames": [
+            {
+              "src": "/assets/resources/textures/anim/boss_heishan/idle_00.png",
+              "width": 512,
+              "height": 512,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/boss_heishan/idle_01.png",
+              "width": 512,
+              "height": 512,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/boss_heishan/idle_02.png",
+              "width": 512,
+              "height": 512,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/boss_heishan/idle_03.png",
+              "width": 512,
+              "height": 512,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/boss_heishan/idle_04.png",
+              "width": 512,
+              "height": 512,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/boss_heishan/idle_05.png",
+              "width": 512,
+              "height": 512,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/boss_heishan/idle_06.png",
+              "width": 512,
+              "height": 512,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/boss_heishan/idle_07.png",
+              "width": 512,
+              "height": 512,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/boss_heishan/idle_08.png",
+              "width": 512,
+              "height": 512,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/boss_heishan/idle_09.png",
+              "width": 512,
+              "height": 512,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/boss_heishan/idle_10.png",
+              "width": 512,
+              "height": 512,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/boss_heishan/idle_11.png",
+              "width": 512,
+              "height": 512,
+              "alpha": true
+            }
+          ]
+        },
+        {
+          "name": "移动",
+          "fps": 10,
+          "frames": [
+            {
+              "src": "/assets/resources/textures/anim/boss_heishan/move_00.png",
+              "width": 512,
+              "height": 512,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/boss_heishan/move_01.png",
+              "width": 512,
+              "height": 512,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/boss_heishan/move_02.png",
+              "width": 512,
+              "height": 512,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/boss_heishan/move_03.png",
+              "width": 512,
+              "height": 512,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/boss_heishan/move_04.png",
+              "width": 512,
+              "height": 512,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/boss_heishan/move_05.png",
+              "width": 512,
+              "height": 512,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/boss_heishan/move_06.png",
+              "width": 512,
+              "height": 512,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/boss_heishan/move_07.png",
+              "width": 512,
+              "height": 512,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/boss_heishan/move_08.png",
+              "width": 512,
+              "height": 512,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/boss_heishan/move_09.png",
+              "width": 512,
+              "height": 512,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/boss_heishan/move_10.png",
+              "width": 512,
+              "height": 512,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/boss_heishan/move_11.png",
+              "width": 512,
+              "height": 512,
+              "alpha": true
+            }
+          ]
+        },
+        {
+          "name": "召唤行尸",
+          "fps": 12,
+          "frames": [
+            {
+              "src": "/assets/resources/textures/anim/boss_heishan/skill1_00.png",
+              "width": 512,
+              "height": 512,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/boss_heishan/skill1_01.png",
+              "width": 512,
+              "height": 512,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/boss_heishan/skill1_02.png",
+              "width": 512,
+              "height": 512,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/boss_heishan/skill1_03.png",
+              "width": 512,
+              "height": 512,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/boss_heishan/skill1_04.png",
+              "width": 512,
+              "height": 512,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/boss_heishan/skill1_05.png",
+              "width": 512,
+              "height": 512,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/boss_heishan/skill1_06.png",
+              "width": 512,
+              "height": 512,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/boss_heishan/skill1_07.png",
+              "width": 512,
+              "height": 512,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/boss_heishan/skill1_08.png",
+              "width": 512,
+              "height": 512,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/boss_heishan/skill1_09.png",
+              "width": 512,
+              "height": 512,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/boss_heishan/skill1_10.png",
+              "width": 512,
+              "height": 512,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/boss_heishan/skill1_11.png",
+              "width": 512,
+              "height": 512,
+              "alpha": true
+            }
+          ]
+        },
+        {
+          "name": "蓄力砸地",
+          "fps": 10.666666666666666,
+          "frames": [
+            {
+              "src": "/assets/resources/textures/anim/boss_heishan/skill2_00.png",
+              "width": 512,
+              "height": 512,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/boss_heishan/skill2_01.png",
+              "width": 512,
+              "height": 512,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/boss_heishan/skill2_02.png",
+              "width": 512,
+              "height": 512,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/boss_heishan/skill2_03.png",
+              "width": 512,
+              "height": 512,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/boss_heishan/skill2_04.png",
+              "width": 512,
+              "height": 512,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/boss_heishan/skill2_05.png",
+              "width": 512,
+              "height": 512,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/boss_heishan/skill2_06.png",
+              "width": 512,
+              "height": 512,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/boss_heishan/skill2_07.png",
+              "width": 512,
+              "height": 512,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/boss_heishan/skill2_08.png",
+              "width": 512,
+              "height": 512,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/boss_heishan/skill2_09.png",
+              "width": 512,
+              "height": 512,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/boss_heishan/skill2_10.png",
+              "width": 512,
+              "height": 512,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/boss_heishan/skill2_11.png",
+              "width": 512,
+              "height": 512,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/boss_heishan/skill2_12.png",
+              "width": 512,
+              "height": 512,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/boss_heishan/skill2_13.png",
+              "width": 512,
+              "height": 512,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/boss_heishan/skill2_14.png",
+              "width": 512,
+              "height": 512,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/boss_heishan/skill2_15.png",
+              "width": 512,
+              "height": 512,
+              "alpha": true
+            }
+          ]
+        }
+      ],
+      "src": "/assets/resources/textures/boss_heishan.png",
+      "width": 512,
+      "height": 512,
+      "alpha": true
+    },
+    {
+      "id": "enemy_foxfire",
+      "name": "鬼火",
+      "category": "怪物",
+      "status": "已接入 · 待美术验收",
+      "kind": "sequence",
+      "clips": [
+        {
+          "name": "攻击",
+          "fps": 8.333333333333334,
+          "frames": [
+            {
+              "src": "/assets/resources/textures/anim/enemy_foxfire/attack_00.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/enemy_foxfire/attack_01.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/enemy_foxfire/attack_02.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/enemy_foxfire/attack_03.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/enemy_foxfire/attack_04.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/enemy_foxfire/attack_05.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/enemy_foxfire/attack_06.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/enemy_foxfire/attack_07.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/enemy_foxfire/attack_08.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/enemy_foxfire/attack_09.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            }
+          ]
+        },
+        {
+          "name": "死亡",
+          "fps": 12,
+          "frames": [
+            {
+              "src": "/assets/resources/textures/anim/enemy_foxfire/death_00.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/enemy_foxfire/death_01.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/enemy_foxfire/death_02.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/enemy_foxfire/death_03.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/enemy_foxfire/death_04.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/enemy_foxfire/death_05.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            }
+          ]
+        },
+        {
+          "name": "受击",
+          "fps": 8,
+          "frames": [
+            {
+              "src": "/assets/resources/textures/anim/enemy_foxfire/hurt_00.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            }
+          ]
+        },
+        {
+          "name": "待机",
+          "fps": 14,
+          "frames": [
+            {
+              "src": "/assets/resources/textures/anim/enemy_foxfire/idle_00.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/enemy_foxfire/idle_01.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/enemy_foxfire/idle_02.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/enemy_foxfire/idle_03.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/enemy_foxfire/idle_04.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/enemy_foxfire/idle_05.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            }
+          ]
+        },
+        {
+          "name": "移动",
+          "fps": 14,
+          "frames": [
+            {
+              "src": "/assets/resources/textures/anim/enemy_foxfire/move_00.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/enemy_foxfire/move_01.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/enemy_foxfire/move_02.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/enemy_foxfire/move_03.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/enemy_foxfire/move_04.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/enemy_foxfire/move_05.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/enemy_foxfire/move_06.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/enemy_foxfire/move_07.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/enemy_foxfire/move_08.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/enemy_foxfire/move_09.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/enemy_foxfire/move_10.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/enemy_foxfire/move_11.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            }
+          ]
+        }
+      ],
+      "src": "/assets/resources/textures/enemy_foxfire.png",
+      "width": 256,
+      "height": 256,
+      "alpha": true
+    },
+    {
+      "id": "enemy_jiangshi",
+      "name": "行尸",
+      "category": "怪物",
+      "status": "已接入 · 待美术验收",
+      "kind": "sequence",
+      "clips": [
+        {
+          "name": "攻击",
+          "fps": 8.333333333333334,
+          "frames": [
+            {
+              "src": "/assets/resources/textures/anim/enemy_jiangshi/attack_00.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/enemy_jiangshi/attack_01.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/enemy_jiangshi/attack_02.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/enemy_jiangshi/attack_03.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/enemy_jiangshi/attack_04.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/enemy_jiangshi/attack_05.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/enemy_jiangshi/attack_06.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/enemy_jiangshi/attack_07.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/enemy_jiangshi/attack_08.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/enemy_jiangshi/attack_09.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            }
+          ]
+        },
+        {
+          "name": "死亡",
+          "fps": 12,
+          "frames": [
+            {
+              "src": "/assets/resources/textures/anim/enemy_jiangshi/death_00.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/enemy_jiangshi/death_01.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/enemy_jiangshi/death_02.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/enemy_jiangshi/death_03.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/enemy_jiangshi/death_04.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/enemy_jiangshi/death_05.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            }
+          ]
+        },
+        {
+          "name": "受击",
+          "fps": 8,
+          "frames": [
+            {
+              "src": "/assets/resources/textures/anim/enemy_jiangshi/hurt_00.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            }
+          ]
+        },
+        {
+          "name": "待机",
+          "fps": 12,
+          "frames": [
+            {
+              "src": "/assets/resources/textures/anim/enemy_jiangshi/idle_00.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/enemy_jiangshi/idle_01.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/enemy_jiangshi/idle_02.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/enemy_jiangshi/idle_03.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/enemy_jiangshi/idle_04.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/enemy_jiangshi/idle_05.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            }
+          ]
+        },
+        {
+          "name": "移动",
+          "fps": 12,
+          "frames": [
+            {
+              "src": "/assets/resources/textures/anim/enemy_jiangshi/move_00.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/enemy_jiangshi/move_01.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/enemy_jiangshi/move_02.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/enemy_jiangshi/move_03.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/enemy_jiangshi/move_04.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/enemy_jiangshi/move_05.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/enemy_jiangshi/move_06.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/enemy_jiangshi/move_07.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/enemy_jiangshi/move_08.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/enemy_jiangshi/move_09.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/enemy_jiangshi/move_10.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/enemy_jiangshi/move_11.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            }
+          ]
+        }
+      ],
+      "src": "/assets/resources/textures/enemy_jiangshi.png",
+      "width": 256,
+      "height": 256,
+      "alpha": true
+    },
+    {
+      "id": "enemy_lantern",
+      "name": "引魂灯笼",
+      "category": "怪物",
+      "status": "已接入 · 待美术验收",
+      "kind": "sequence",
+      "clips": [
+        {
+          "name": "攻击",
+          "fps": 8.333333333333334,
+          "frames": [
+            {
+              "src": "/assets/resources/textures/anim/enemy_lantern/attack_00.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/enemy_lantern/attack_01.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/enemy_lantern/attack_02.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/enemy_lantern/attack_03.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/enemy_lantern/attack_04.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/enemy_lantern/attack_05.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/enemy_lantern/attack_06.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/enemy_lantern/attack_07.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/enemy_lantern/attack_08.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/enemy_lantern/attack_09.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            }
+          ]
+        },
+        {
+          "name": "死亡",
+          "fps": 12,
+          "frames": [
+            {
+              "src": "/assets/resources/textures/anim/enemy_lantern/death_00.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/enemy_lantern/death_01.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/enemy_lantern/death_02.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/enemy_lantern/death_03.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/enemy_lantern/death_04.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/enemy_lantern/death_05.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            }
+          ]
+        },
+        {
+          "name": "受击",
+          "fps": 8,
+          "frames": [
+            {
+              "src": "/assets/resources/textures/anim/enemy_lantern/hurt_00.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            }
+          ]
+        },
+        {
+          "name": "待机",
+          "fps": 10,
+          "frames": [
+            {
+              "src": "/assets/resources/textures/anim/enemy_lantern/idle_00.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/enemy_lantern/idle_01.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/enemy_lantern/idle_02.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/enemy_lantern/idle_03.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/enemy_lantern/idle_04.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/enemy_lantern/idle_05.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            }
+          ]
+        },
+        {
+          "name": "移动",
+          "fps": 10,
+          "frames": [
+            {
+              "src": "/assets/resources/textures/anim/enemy_lantern/move_00.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/enemy_lantern/move_01.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/enemy_lantern/move_02.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/enemy_lantern/move_03.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/enemy_lantern/move_04.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/enemy_lantern/move_05.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/enemy_lantern/move_06.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/enemy_lantern/move_07.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/enemy_lantern/move_08.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/enemy_lantern/move_09.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/enemy_lantern/move_10.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/enemy_lantern/move_11.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            }
+          ]
+        }
+      ],
+      "src": "/assets/resources/textures/enemy_lantern.png",
+      "width": 256,
+      "height": 256,
+      "alpha": true
+    },
+    {
+      "id": "enemy_paperman",
+      "name": "纸扎童子",
+      "category": "怪物",
+      "status": "已接入 · 待美术验收",
+      "kind": "sequence",
+      "clips": [
+        {
+          "name": "攻击",
+          "fps": 8.333333333333334,
+          "frames": [
+            {
+              "src": "/assets/resources/textures/anim/enemy_paperman/attack_00.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/enemy_paperman/attack_01.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/enemy_paperman/attack_02.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/enemy_paperman/attack_03.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/enemy_paperman/attack_04.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/enemy_paperman/attack_05.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/enemy_paperman/attack_06.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/enemy_paperman/attack_07.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/enemy_paperman/attack_08.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/enemy_paperman/attack_09.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            }
+          ]
+        },
+        {
+          "name": "死亡",
+          "fps": 12,
+          "frames": [
+            {
+              "src": "/assets/resources/textures/anim/enemy_paperman/death_00.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/enemy_paperman/death_01.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/enemy_paperman/death_02.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/enemy_paperman/death_03.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/enemy_paperman/death_04.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/enemy_paperman/death_05.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            }
+          ]
+        },
+        {
+          "name": "受击",
+          "fps": 8,
+          "frames": [
+            {
+              "src": "/assets/resources/textures/anim/enemy_paperman/hurt_00.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            }
+          ]
+        },
+        {
+          "name": "待机",
+          "fps": 10,
+          "frames": [
+            {
+              "src": "/assets/resources/textures/anim/enemy_paperman/idle_00.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/enemy_paperman/idle_01.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/enemy_paperman/idle_02.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/enemy_paperman/idle_03.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/enemy_paperman/idle_04.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/enemy_paperman/idle_05.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            }
+          ]
+        },
+        {
+          "name": "移动",
+          "fps": 10,
+          "frames": [
+            {
+              "src": "/assets/resources/textures/anim/enemy_paperman/move_00.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/enemy_paperman/move_01.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/enemy_paperman/move_02.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/enemy_paperman/move_03.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/enemy_paperman/move_04.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/enemy_paperman/move_05.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/enemy_paperman/move_06.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/enemy_paperman/move_07.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/enemy_paperman/move_08.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/enemy_paperman/move_09.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/enemy_paperman/move_10.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/enemy_paperman/move_11.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            }
+          ]
+        }
+      ],
+      "src": "/assets/resources/textures/enemy_paperman.png",
+      "width": 256,
+      "height": 256,
+      "alpha": true
+    },
+    {
+      "id": "enemy_shuigui",
+      "name": "落水鬼",
+      "category": "怪物",
+      "status": "已接入 · 待美术验收",
+      "kind": "sequence",
+      "clips": [
+        {
+          "name": "攻击",
+          "fps": 8.333333333333334,
+          "frames": [
+            {
+              "src": "/assets/resources/textures/anim/enemy_shuigui/attack_00.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/enemy_shuigui/attack_01.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/enemy_shuigui/attack_02.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/enemy_shuigui/attack_03.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/enemy_shuigui/attack_04.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/enemy_shuigui/attack_05.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/enemy_shuigui/attack_06.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/enemy_shuigui/attack_07.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/enemy_shuigui/attack_08.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/enemy_shuigui/attack_09.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            }
+          ]
+        },
+        {
+          "name": "死亡",
+          "fps": 12,
+          "frames": [
+            {
+              "src": "/assets/resources/textures/anim/enemy_shuigui/death_00.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/enemy_shuigui/death_01.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/enemy_shuigui/death_02.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/enemy_shuigui/death_03.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/enemy_shuigui/death_04.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/enemy_shuigui/death_05.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            }
+          ]
+        },
+        {
+          "name": "受击",
+          "fps": 8,
+          "frames": [
+            {
+              "src": "/assets/resources/textures/anim/enemy_shuigui/hurt_00.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            }
+          ]
+        },
+        {
+          "name": "待机",
+          "fps": 8,
+          "frames": [
+            {
+              "src": "/assets/resources/textures/anim/enemy_shuigui/idle_00.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/enemy_shuigui/idle_01.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/enemy_shuigui/idle_02.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/enemy_shuigui/idle_03.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/enemy_shuigui/idle_04.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/enemy_shuigui/idle_05.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            }
+          ]
+        },
+        {
+          "name": "移动",
+          "fps": 8,
+          "frames": [
+            {
+              "src": "/assets/resources/textures/anim/enemy_shuigui/move_00.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/enemy_shuigui/move_01.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/enemy_shuigui/move_02.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/enemy_shuigui/move_03.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/enemy_shuigui/move_04.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/enemy_shuigui/move_05.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/enemy_shuigui/move_06.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/enemy_shuigui/move_07.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/enemy_shuigui/move_08.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/enemy_shuigui/move_09.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/enemy_shuigui/move_10.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/enemy_shuigui/move_11.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            }
+          ]
+        }
+      ],
+      "src": "/assets/resources/textures/enemy_shuigui.png",
+      "width": 256,
+      "height": 256,
+      "alpha": true
+    },
+    {
+      "id": "enemy_tongqian",
+      "name": "铜钱鼠",
+      "category": "怪物",
+      "status": "已接入 · 待美术验收",
+      "kind": "sequence",
+      "clips": [
+        {
+          "name": "攻击",
+          "fps": 8.333333333333334,
+          "frames": [
+            {
+              "src": "/assets/resources/textures/anim/enemy_tongqian/attack_00.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/enemy_tongqian/attack_01.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/enemy_tongqian/attack_02.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/enemy_tongqian/attack_03.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/enemy_tongqian/attack_04.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/enemy_tongqian/attack_05.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/enemy_tongqian/attack_06.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/enemy_tongqian/attack_07.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/enemy_tongqian/attack_08.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/enemy_tongqian/attack_09.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            }
+          ]
+        },
+        {
+          "name": "死亡",
+          "fps": 12,
+          "frames": [
+            {
+              "src": "/assets/resources/textures/anim/enemy_tongqian/death_00.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/enemy_tongqian/death_01.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/enemy_tongqian/death_02.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/enemy_tongqian/death_03.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/enemy_tongqian/death_04.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/enemy_tongqian/death_05.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            }
+          ]
+        },
+        {
+          "name": "受击",
+          "fps": 8,
+          "frames": [
+            {
+              "src": "/assets/resources/textures/anim/enemy_tongqian/hurt_00.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            }
+          ]
+        },
+        {
+          "name": "待机",
+          "fps": 10,
+          "frames": [
+            {
+              "src": "/assets/resources/textures/anim/enemy_tongqian/idle_00.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/enemy_tongqian/idle_01.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/enemy_tongqian/idle_02.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/enemy_tongqian/idle_03.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/enemy_tongqian/idle_04.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/enemy_tongqian/idle_05.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            }
+          ]
+        },
+        {
+          "name": "移动",
+          "fps": 10,
+          "frames": [
+            {
+              "src": "/assets/resources/textures/anim/enemy_tongqian/move_00.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/enemy_tongqian/move_01.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/enemy_tongqian/move_02.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/enemy_tongqian/move_03.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/enemy_tongqian/move_04.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/enemy_tongqian/move_05.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/enemy_tongqian/move_06.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/enemy_tongqian/move_07.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/enemy_tongqian/move_08.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/enemy_tongqian/move_09.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/enemy_tongqian/move_10.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/enemy_tongqian/move_11.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            }
+          ]
+        }
+      ],
+      "src": "/assets/resources/textures/enemy_tongqian.png",
+      "width": 256,
+      "height": 256,
+      "alpha": true
+    },
+    {
+      "id": "player_actions",
+      "name": "符师动作原图",
+      "category": "角色",
+      "status": "已接入 · 待美术验收",
+      "kind": "sequence",
+      "clips": [
+        {
+          "name": "待机",
+          "fps": 4,
+          "frames": [
+            {
+              "src": "/assets/resources/textures/player_actions.png",
+              "width": 1448,
+              "height": 1086,
+              "alpha": true,
+              "crop": [
+                6,
+                0,
+                362,
+                362
+              ]
+            },
+            {
+              "src": "/assets/resources/textures/player_actions.png",
+              "width": 1448,
+              "height": 1086,
+              "alpha": true,
+              "crop": [
+                368,
+                0,
+                362,
+                362
+              ]
+            },
+            {
+              "src": "/assets/resources/textures/player_actions.png",
+              "width": 1448,
+              "height": 1086,
+              "alpha": true,
+              "crop": [
+                718,
+                1,
+                362,
+                362
+              ]
+            },
+            {
+              "src": "/assets/resources/textures/player_actions.png",
+              "width": 1448,
+              "height": 1086,
+              "alpha": true,
+              "crop": [
+                1080,
+                1,
+                362,
+                362
+              ]
+            }
+          ]
+        },
+        {
+          "name": "施法",
+          "fps": 12,
+          "frames": [
+            {
+              "src": "/assets/resources/textures/player_actions.png",
+              "width": 1448,
+              "height": 1086,
+              "alpha": true,
+              "crop": [
+                3,
+                365,
+                362,
+                362
+              ]
+            },
+            {
+              "src": "/assets/resources/textures/player_actions.png",
+              "width": 1448,
+              "height": 1086,
+              "alpha": true,
+              "crop": [
+                366,
+                364,
+                362,
+                362
+              ]
+            },
+            {
+              "src": "/assets/resources/textures/player_actions.png",
+              "width": 1448,
+              "height": 1086,
+              "alpha": true,
+              "crop": [
+                719,
+                364,
+                362,
+                362
+              ]
+            },
+            {
+              "src": "/assets/resources/textures/player_actions.png",
+              "width": 1448,
+              "height": 1086,
+              "alpha": true,
+              "crop": [
+                1080,
+                364,
+                362,
+                362
+              ]
+            }
+          ]
+        },
+        {
+          "name": "受击",
+          "fps": 12,
+          "frames": [
+            {
+              "src": "/assets/resources/textures/player_actions.png",
+              "width": 1448,
+              "height": 1086,
+              "alpha": true,
+              "crop": [
+                4,
+                715,
+                362,
+                362
+              ]
+            },
+            {
+              "src": "/assets/resources/textures/player_actions.png",
+              "width": 1448,
+              "height": 1086,
+              "alpha": true,
+              "crop": [
+                363,
+                715,
+                362,
+                362
+              ]
+            },
+            {
+              "src": "/assets/resources/textures/player_actions.png",
+              "width": 1448,
+              "height": 1086,
+              "alpha": true,
+              "crop": [
+                715,
+                715,
+                362,
+                362
+              ]
+            },
+            {
+              "src": "/assets/resources/textures/player_actions.png",
+              "width": 1448,
+              "height": 1086,
+              "alpha": true,
+              "crop": [
+                1080,
+                720,
+                362,
+                362
+              ]
+            }
+          ]
+        }
+      ],
+      "src": "/assets/resources/textures/player_actions.png",
+      "width": 1448,
+      "height": 1086,
+      "alpha": true
+    },
+    {
+      "id": "ui_home_bg",
+      "name": "旧版首页背景",
+      "category": "背景",
+      "status": "历史版本",
+      "kind": "static",
+      "clips": [],
+      "src": "/assets/resources/textures/ui_home_bg.png",
+      "width": 852,
+      "height": 1846,
+      "alpha": false
+    },
+    {
+      "id": "ui_home_hero",
+      "name": "首页符师立绘",
+      "category": "角色",
+      "status": "历史版本",
+      "kind": "static",
+      "clips": [],
+      "src": "/assets/resources/textures/ui_home_hero.png",
+      "width": 1024,
+      "height": 1536,
+      "alpha": true
+    },
+    {
+      "id": "ui_ref_background",
+      "name": "首页 · 长屏背景",
+      "category": "背景",
+      "status": "已接入 · 待美术验收",
+      "kind": "static",
+      "clips": [],
+      "src": "/assets/resources/textures/ui_ref_background.png",
+      "width": 941,
+      "height": 2040,
+      "alpha": false
+    },
+    {
+      "id": "ui_ref_coin",
+      "name": "铜钱资源栏",
+      "category": "界面",
+      "status": "已接入 · 待美术验收",
+      "kind": "static",
+      "clips": [],
+      "src": "/assets/resources/textures/ui_ref_coin.png",
+      "width": 255,
+      "height": 74,
+      "alpha": true
+    },
+    {
+      "id": "ui_ref_fight",
+      "name": "出战按钮",
+      "category": "界面",
+      "status": "已接入 · 待美术验收",
+      "kind": "static",
+      "clips": [],
+      "src": "/assets/resources/textures/ui_ref_fight.png",
+      "width": 446,
+      "height": 151,
+      "alpha": true
+    },
+    {
+      "id": "ui_ref_gear",
+      "name": "设置按钮",
+      "category": "界面",
+      "status": "已接入 · 待美术验收",
+      "kind": "static",
+      "clips": [],
+      "src": "/assets/resources/textures/ui_ref_gear.png",
+      "width": 94,
+      "height": 88,
+      "alpha": true
+    },
+    {
+      "id": "ui_ref_left",
+      "name": "上一关箭头",
+      "category": "界面",
+      "status": "已接入 · 待美术验收",
+      "kind": "static",
+      "clips": [],
+      "src": "/assets/resources/textures/ui_ref_left.png",
+      "width": 84,
+      "height": 121,
+      "alpha": true
+    },
+    {
+      "id": "ui_ref_level",
+      "name": "关卡面板",
+      "category": "界面",
+      "status": "已接入 · 待美术验收",
+      "kind": "static",
+      "clips": [],
+      "src": "/assets/resources/textures/ui_ref_level.png",
+      "width": 506,
+      "height": 169,
+      "alpha": true
+    },
+    {
+      "id": "ui_ref_paper",
+      "name": "符纸资源栏",
+      "category": "界面",
+      "status": "已接入 · 待美术验收",
+      "kind": "static",
+      "clips": [],
+      "src": "/assets/resources/textures/ui_ref_paper.png",
+      "width": 260,
+      "height": 83,
+      "alpha": true
+    },
+    {
+      "id": "ui_ref_progress",
+      "name": "旧版进度栏",
+      "category": "界面",
+      "status": "历史版本",
+      "kind": "static",
+      "clips": [],
+      "src": "/assets/resources/textures/ui_ref_progress.png",
+      "width": 497,
+      "height": 111,
+      "alpha": true
+    },
+    {
+      "id": "ui_ref_record",
+      "name": "记录入口",
+      "category": "界面",
+      "status": "已接入 · 待美术验收",
+      "kind": "static",
+      "clips": [],
+      "src": "/assets/resources/textures/ui_ref_record.png",
+      "width": 139,
+      "height": 180,
+      "alpha": true
+    },
+    {
+      "id": "ui_ref_right",
+      "name": "下一关箭头",
+      "category": "界面",
+      "status": "已接入 · 待美术验收",
+      "kind": "static",
+      "clips": [],
+      "src": "/assets/resources/textures/ui_ref_right.png",
+      "width": 86,
+      "height": 121,
+      "alpha": true
+    },
+    {
+      "id": "ui_ref_talisman",
+      "name": "符咒入口",
+      "category": "界面",
+      "status": "已接入 · 待美术验收",
+      "kind": "static",
+      "clips": [],
+      "src": "/assets/resources/textures/ui_ref_talisman.png",
+      "width": 139,
+      "height": 180,
+      "alpha": true
+    },
+    {
+      "id": "ui_ref_upgrade",
+      "name": "养成入口",
+      "category": "界面",
+      "status": "已接入 · 待美术验收",
+      "kind": "static",
+      "clips": [],
+      "src": "/assets/resources/textures/ui_ref_upgrade.png",
+      "width": 139,
+      "height": 179,
+      "alpha": true
+    },
+    {
+      "id": "candidate-barrier_earth",
+      "name": "barrier_earth",
+      "category": "候选",
+      "status": "审图候选 / 历史样板 · 非当前运行资源",
+      "kind": "static",
+      "clips": [],
+      "src": "/docs/art/deliver/barriers/barrier_earth.png",
+      "width": 1312,
+      "height": 736,
+      "alpha": true
+    },
+    {
+      "id": "candidate-barrier_fire",
+      "name": "barrier_fire",
+      "category": "候选",
+      "status": "审图候选 / 历史样板 · 非当前运行资源",
+      "kind": "static",
+      "clips": [],
+      "src": "/docs/art/deliver/barriers/barrier_fire.png",
+      "width": 1312,
+      "height": 736,
+      "alpha": true
+    },
+    {
+      "id": "candidate-barrier_metal",
+      "name": "barrier_metal",
+      "category": "候选",
+      "status": "审图候选 / 历史样板 · 非当前运行资源",
+      "kind": "static",
+      "clips": [],
+      "src": "/docs/art/deliver/barriers/barrier_metal.png",
+      "width": 1312,
+      "height": 736,
+      "alpha": true
+    },
+    {
+      "id": "candidate-barrier_water",
+      "name": "barrier_water",
+      "category": "候选",
+      "status": "审图候选 / 历史样板 · 非当前运行资源",
+      "kind": "static",
+      "clips": [],
+      "src": "/docs/art/deliver/barriers/barrier_water.png",
+      "width": 1312,
+      "height": 736,
+      "alpha": true
+    },
+    {
+      "id": "candidate-barrier_wood",
+      "name": "barrier_wood",
+      "category": "候选",
+      "status": "审图候选 / 历史样板 · 非当前运行资源",
+      "kind": "static",
+      "clips": [],
+      "src": "/docs/art/deliver/barriers/barrier_wood.png",
+      "width": 1312,
+      "height": 736,
+      "alpha": true
+    },
+    {
+      "id": "candidate-metal-ward-concept-v2",
+      "name": "metal-ward-concept-v2",
+      "category": "候选",
+      "status": "审图候选 / 历史样板 · 非当前运行资源",
+      "kind": "static",
+      "clips": [],
+      "src": "/docs/art/deliver/barriers/metal-ward-concept-v2.png",
+      "width": 1312,
+      "height": 736,
+      "alpha": true
+    },
+    {
+      "id": "candidate-metal-ward-straight-v3",
+      "name": "metal-ward-straight-v3",
+      "category": "候选",
+      "status": "审图候选 / 历史样板 · 非当前运行资源",
+      "kind": "static",
+      "clips": [],
+      "src": "/docs/art/deliver/barriers/metal-ward-straight-v3.png",
+      "width": 1312,
+      "height": 736,
+      "alpha": true
+    },
+    {
+      "id": "candidate-ghostflame-move-strip",
+      "name": "ghostflame-move-strip",
+      "category": "候选",
+      "status": "审图候选 / 历史样板 · 非当前运行资源",
+      "kind": "static",
+      "clips": [],
+      "src": "/docs/art/deliver/level1/ghostflame-move-strip.png",
+      "width": 1536,
+      "height": 512,
+      "alpha": true
+    },
+    {
+      "id": "candidate-haunted-village-roster",
+      "name": "荒村七怪 · 新阵容造型总览",
+      "category": "候选",
+      "status": "审图候选 / 历史样板 · 非当前运行资源",
+      "kind": "static",
+      "clips": [],
+      "src": "/docs/art/deliver/level1/haunted-village-roster.png",
+      "width": 1536,
+      "height": 1024,
+      "alpha": false
+    },
+    {
+      "id": "candidate-jiangshi-move-strip",
+      "name": "jiangshi-move-strip",
+      "category": "候选",
+      "status": "审图候选 / 历史样板 · 非当前运行资源",
+      "kind": "static",
+      "clips": [],
+      "src": "/docs/art/deliver/level1/jiangshi-move-strip.png",
+      "width": 2304,
+      "height": 768,
+      "alpha": true
+    },
+    {
+      "id": "candidate-move-strip",
+      "name": "move-strip",
+      "category": "候选",
+      "status": "审图候选 / 历史样板 · 非当前运行资源",
+      "kind": "static",
+      "clips": [],
+      "src": "/docs/art/deliver/level1/move-strip.png",
+      "width": 2304,
+      "height": 768,
+      "alpha": true
+    },
+    {
+      "id": "candidate-paperchild-move-strip",
+      "name": "paperchild-move-strip",
+      "category": "候选",
+      "status": "审图候选 / 历史样板 · 非当前运行资源",
+      "kind": "static",
+      "clips": [],
+      "src": "/docs/art/deliver/level1/paperchild-move-strip.png",
+      "width": 1536,
+      "height": 512,
+      "alpha": true
+    },
+    {
+      "id": "candidate-walkingcorpse-move-strip",
+      "name": "walkingcorpse-move-strip",
+      "category": "候选",
+      "status": "审图候选 / 历史样板 · 非当前运行资源",
+      "kind": "static",
+      "clips": [],
+      "src": "/docs/art/deliver/level1/walkingcorpse-move-strip.png",
+      "width": 1536,
+      "height": 512,
+      "alpha": true
+    },
+    {
+      "id": "candidate-ui_home_bg_pixel",
+      "name": "ui_home_bg_pixel",
+      "category": "候选",
+      "status": "审图候选 / 历史样板 · 非当前运行资源",
+      "kind": "static",
+      "clips": [],
+      "src": "/docs/art/deliver/ui_home_bg_pixel.png",
+      "width": 852,
+      "height": 1846,
+      "alpha": false
+    },
+    {
+      "id": "candidate-ui_home_hero_pixel",
+      "name": "ui_home_hero_pixel",
+      "category": "候选",
+      "status": "审图候选 / 历史样板 · 非当前运行资源",
+      "kind": "static",
+      "clips": [],
+      "src": "/docs/art/deliver/ui_home_hero_pixel.png",
+      "width": 1024,
+      "height": 1536,
+      "alpha": true
+    },
+    {
+      "id": "ghostflame-frames",
+      "name": "鬼火 · 新版移动候选",
+      "category": "候选",
+      "status": "已接入游戏 · 移动动画待实战确认",
+      "kind": "sequence",
+      "clips": [
+        {
+          "name": "移动",
+          "fps": 14,
+          "frames": [
+            {
+              "src": "/docs/art/deliver/level1/ghostflame-frames/move_00.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/docs/art/deliver/level1/ghostflame-frames/move_01.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/docs/art/deliver/level1/ghostflame-frames/move_02.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/docs/art/deliver/level1/ghostflame-frames/move_03.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/docs/art/deliver/level1/ghostflame-frames/move_04.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/docs/art/deliver/level1/ghostflame-frames/move_05.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/docs/art/deliver/level1/ghostflame-frames/move_06.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/docs/art/deliver/level1/ghostflame-frames/move_07.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/docs/art/deliver/level1/ghostflame-frames/move_08.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/docs/art/deliver/level1/ghostflame-frames/move_09.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/docs/art/deliver/level1/ghostflame-frames/move_10.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/docs/art/deliver/level1/ghostflame-frames/move_11.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            }
+          ]
+        }
+      ],
+      "src": "/docs/art/deliver/level1/ghostflame-frames/move_00.png",
+      "width": 256,
+      "height": 256,
+      "alpha": true
+    },
+    {
+      "id": "jiangshi-frames",
+      "name": "泥尸 · 新版移动候选",
+      "category": "候选",
+      "status": "旧阵容动画候选 · 造型重设后已退役，未接入游戏",
+      "kind": "sequence",
+      "clips": [
+        {
+          "name": "移动",
+          "fps": 12,
+          "frames": [
+            {
+              "src": "/docs/art/deliver/level1/jiangshi-frames/move_00.png",
+              "width": 384,
+              "height": 384,
+              "alpha": true
+            },
+            {
+              "src": "/docs/art/deliver/level1/jiangshi-frames/move_01.png",
+              "width": 384,
+              "height": 384,
+              "alpha": true
+            },
+            {
+              "src": "/docs/art/deliver/level1/jiangshi-frames/move_02.png",
+              "width": 384,
+              "height": 384,
+              "alpha": true
+            },
+            {
+              "src": "/docs/art/deliver/level1/jiangshi-frames/move_03.png",
+              "width": 384,
+              "height": 384,
+              "alpha": true
+            },
+            {
+              "src": "/docs/art/deliver/level1/jiangshi-frames/move_04.png",
+              "width": 384,
+              "height": 384,
+              "alpha": true
+            },
+            {
+              "src": "/docs/art/deliver/level1/jiangshi-frames/move_05.png",
+              "width": 384,
+              "height": 384,
+              "alpha": true
+            },
+            {
+              "src": "/docs/art/deliver/level1/jiangshi-frames/move_06.png",
+              "width": 384,
+              "height": 384,
+              "alpha": true
+            },
+            {
+              "src": "/docs/art/deliver/level1/jiangshi-frames/move_07.png",
+              "width": 384,
+              "height": 384,
+              "alpha": true
+            },
+            {
+              "src": "/docs/art/deliver/level1/jiangshi-frames/move_08.png",
+              "width": 384,
+              "height": 384,
+              "alpha": true
+            },
+            {
+              "src": "/docs/art/deliver/level1/jiangshi-frames/move_09.png",
+              "width": 384,
+              "height": 384,
+              "alpha": true
+            },
+            {
+              "src": "/docs/art/deliver/level1/jiangshi-frames/move_10.png",
+              "width": 384,
+              "height": 384,
+              "alpha": true
+            },
+            {
+              "src": "/docs/art/deliver/level1/jiangshi-frames/move_11.png",
+              "width": 384,
+              "height": 384,
+              "alpha": true
+            }
+          ]
+        }
+      ],
+      "src": "/docs/art/deliver/level1/jiangshi-frames/move_00.png",
+      "width": 384,
+      "height": 384,
+      "alpha": true
+    },
+    {
+      "id": "paperchild-frames",
+      "name": "纸扎童子 · 新版移动候选",
+      "category": "候选",
+      "status": "已接入游戏 · 移动动画待实战确认",
+      "kind": "sequence",
+      "clips": [
+        {
+          "name": "移动",
+          "fps": 10,
+          "frames": [
+            {
+              "src": "/docs/art/deliver/level1/paperchild-frames/move_00.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/docs/art/deliver/level1/paperchild-frames/move_01.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/docs/art/deliver/level1/paperchild-frames/move_02.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/docs/art/deliver/level1/paperchild-frames/move_03.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/docs/art/deliver/level1/paperchild-frames/move_04.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/docs/art/deliver/level1/paperchild-frames/move_05.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/docs/art/deliver/level1/paperchild-frames/move_06.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/docs/art/deliver/level1/paperchild-frames/move_07.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/docs/art/deliver/level1/paperchild-frames/move_08.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/docs/art/deliver/level1/paperchild-frames/move_09.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/docs/art/deliver/level1/paperchild-frames/move_10.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/docs/art/deliver/level1/paperchild-frames/move_11.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            }
+          ]
+        }
+      ],
+      "src": "/docs/art/deliver/level1/paperchild-frames/move_00.png",
+      "width": 256,
+      "height": 256,
+      "alpha": true
+    },
+    {
+      "id": "paperman-frames",
+      "name": "槐树精 · 新版移动候选",
+      "category": "候选",
+      "status": "旧阵容动画候选 · 造型重设后已退役，未接入游戏",
+      "kind": "sequence",
+      "clips": [
+        {
+          "name": "移动",
+          "fps": 10,
+          "frames": [
+            {
+              "src": "/docs/art/deliver/level1/paperman-frames/move_00.png",
+              "width": 384,
+              "height": 384,
+              "alpha": true
+            },
+            {
+              "src": "/docs/art/deliver/level1/paperman-frames/move_01.png",
+              "width": 384,
+              "height": 384,
+              "alpha": true
+            },
+            {
+              "src": "/docs/art/deliver/level1/paperman-frames/move_02.png",
+              "width": 384,
+              "height": 384,
+              "alpha": true
+            },
+            {
+              "src": "/docs/art/deliver/level1/paperman-frames/move_03.png",
+              "width": 384,
+              "height": 384,
+              "alpha": true
+            },
+            {
+              "src": "/docs/art/deliver/level1/paperman-frames/move_04.png",
+              "width": 384,
+              "height": 384,
+              "alpha": true
+            },
+            {
+              "src": "/docs/art/deliver/level1/paperman-frames/move_05.png",
+              "width": 384,
+              "height": 384,
+              "alpha": true
+            },
+            {
+              "src": "/docs/art/deliver/level1/paperman-frames/move_06.png",
+              "width": 384,
+              "height": 384,
+              "alpha": true
+            },
+            {
+              "src": "/docs/art/deliver/level1/paperman-frames/move_07.png",
+              "width": 384,
+              "height": 384,
+              "alpha": true
+            },
+            {
+              "src": "/docs/art/deliver/level1/paperman-frames/move_08.png",
+              "width": 384,
+              "height": 384,
+              "alpha": true
+            },
+            {
+              "src": "/docs/art/deliver/level1/paperman-frames/move_09.png",
+              "width": 384,
+              "height": 384,
+              "alpha": true
+            },
+            {
+              "src": "/docs/art/deliver/level1/paperman-frames/move_10.png",
+              "width": 384,
+              "height": 384,
+              "alpha": true
+            },
+            {
+              "src": "/docs/art/deliver/level1/paperman-frames/move_11.png",
+              "width": 384,
+              "height": 384,
+              "alpha": true
+            }
+          ]
+        }
+      ],
+      "src": "/docs/art/deliver/level1/paperman-frames/move_00.png",
+      "width": 384,
+      "height": 384,
+      "alpha": true
+    },
+    {
+      "id": "walkingcorpse-frames",
+      "name": "行尸 · 新版移动候选",
+      "category": "候选",
+      "status": "已接入游戏 · 移动动画待实战确认",
+      "kind": "sequence",
+      "clips": [
+        {
+          "name": "移动",
+          "fps": 12,
+          "frames": [
+            {
+              "src": "/docs/art/deliver/level1/walkingcorpse-frames/move_00.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/docs/art/deliver/level1/walkingcorpse-frames/move_01.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/docs/art/deliver/level1/walkingcorpse-frames/move_02.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/docs/art/deliver/level1/walkingcorpse-frames/move_03.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/docs/art/deliver/level1/walkingcorpse-frames/move_04.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/docs/art/deliver/level1/walkingcorpse-frames/move_05.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/docs/art/deliver/level1/walkingcorpse-frames/move_06.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/docs/art/deliver/level1/walkingcorpse-frames/move_07.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/docs/art/deliver/level1/walkingcorpse-frames/move_08.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/docs/art/deliver/level1/walkingcorpse-frames/move_09.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/docs/art/deliver/level1/walkingcorpse-frames/move_10.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/docs/art/deliver/level1/walkingcorpse-frames/move_11.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            }
+          ]
+        }
+      ],
+      "src": "/docs/art/deliver/level1/walkingcorpse-frames/move_00.png",
+      "width": 256,
+      "height": 256,
+      "alpha": true
+    },
+    {
+      "id": "2026-11-01-barrier-pixel-gold",
+      "name": "金系结界 · 像素受击与破碎",
+      "category": "特效",
+      "status": "录制预览 · 非实时引擎",
+      "kind": "gif",
+      "clips": [],
+      "src": "/docs/evidence/2026-11-01-barrier-pixel-gold.gif",
+      "width": 480,
+      "height": 227,
+      "alpha": false
+    },
+    {
+      "id": "2026-11-01-pixelfx-gold-ward",
+      "name": "金系结界 · PixelFX 历史样板",
+      "category": "特效",
+      "status": "录制预览 · 非实时引擎",
+      "kind": "gif",
+      "clips": [],
+      "src": "/docs/evidence/2026-11-01-pixelfx-gold-ward.gif",
+      "width": 704,
+      "height": 240,
+      "alpha": false
+    },
+    {
+      "id": "barrier-live",
+      "name": "五行结界 · 交互预览",
+      "category": "特效",
+      "status": "历史独立预览 · 非当前 Cocos 运行版",
+      "kind": "embed",
+      "src": "/docs/evidence/2026-11-01-barrier-animation-preview.html",
+      "width": 720,
+      "height": 200,
+      "clips": []
+    }
+  ]
+}

@@ -116,8 +116,8 @@ export class HomeUI {
         this.node = root;
         rectNode('homeBase', GAME.width, GAME.height, INDIGO, root);
         if (hasArt('ui_ref_background')) {
-            const scale = Math.min(GAME.width / 941, GAME.height / 1672);
-            spriteNode('ui_ref_background', 941 * scale, 1672 * scale, root);
+            const cover = Math.max(GAME.width / 941, GAME.height / 2040);
+            spriteNode('ui_ref_background', 941 * cover, 2040 * cover, root);
             this.renderReference(p, levels, act);
             return;
         }
@@ -438,7 +438,12 @@ export class HomeUI {
         this.node.getChildByName('dyn')?.destroy();
         const layer = makeNode('dyn', this.node, GAME.width, GAME.height);
         const scale = Math.min(GAME.width / 941, GAME.height / 1672);
-        const position = (x: number, y: number): [number, number] => [(x-470.5)*scale, (836-y)*scale];
+        // 9:16 原稿控件独立锚定；长屏增加的高度由背景延展承接。
+        const extra = Math.max(0, GAME.height - 1672 * scale);
+        const position = (x: number, y: number): [number, number] => [
+            (x-470.5)*scale,
+            (836-y)*scale + (y < 150 ? extra/2 : y > 1270 ? -extra/2 : 0),
+        ];
         const label = (text: string, x: number, y: number, size: number, color = CREAM) => {
             const textLabel = addLabel(layer, text, size*scale, color);
             textLabel.node.setPosition(...position(x,y));

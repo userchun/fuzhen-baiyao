@@ -26,3 +26,8 @@ assets/resources/placeholder.meta
 art/asf/**
 !art/asf/README.md
 
+
+# 本机密钥与环境配置
+.env
+.env.*
+!.env.example

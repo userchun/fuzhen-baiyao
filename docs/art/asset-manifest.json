@@ -4,9 +4,9 @@
       "id": "ui_ref_background",
       "path": "assets/resources/textures/ui_ref_background.png",
       "width": 941,
-      "height": 1672,
+      "height": 2040,
       "frames": 1,
-      "source": "ChatGPT Image 首页候选图；UI 轮廓切分，背景遮挡处由 ChatGPT Image 补全",
+      "source": "ChatGPT Image 首页背景；保留中心原图，上下延展夜空与石阶",
       "license": "AI 生成",
       "status": "已接入；393×852 预览与出战进入选卡已验证，待用户美术验收",
       "alpha": false
@@ -120,6 +120,211 @@
       "source": "ChatGPT Image 首页候选图；UI 轮廓切分，背景遮挡处由 ChatGPT Image 补全",
       "license": "AI 生成",
       "status": "已接入；393×852 预览与出战进入选卡已验证，待用户美术验收"
+    },
+    {
+      "id": "level1_paperman_move_v2",
+      "path": "docs/art/deliver/level1/paperman-frames/",
+      "width": 384,
+      "height": 384,
+      "frames": 12,
+      "fps": 10,
+      "source": "ChatGPT Image，以现有槐树精和像素样板生成6×2动作图集；脚本切帧统一尺度与脚底",
+      "license": "AI 生成",
+      "status": "旧阵容动画候选已退役；未接入游戏",
+      "alpha": true
+    },
+    {
+      "id": "level1_jiangshi_move_v2",
+      "path": "docs/art/deliver/level1/jiangshi-frames/",
+      "width": 384,
+      "height": 384,
+      "frames": 12,
+      "fps": 12,
+      "source": "ChatGPT Image，参考现有泥尸与像素样板生成6×2并脚跳动作图集；统一尺度并保留纵向跳跃",
+      "license": "AI 生成",
+      "status": "旧阵容动画候选已退役；未接入游戏",
+      "alpha": true
+    },
+    {
+      "id": "level1_roster_concept",
+      "path": "docs/art/deliver/level1/haunted-village-roster.png",
+      "width": 1536,
+      "height": 1024,
+      "frames": 1,
+      "alpha": false,
+      "source": "ChatGPT Image，用户确认的荒村七怪阵容造型总览；参考当前像素风样板",
+      "license": "AI 生成",
+      "status": "阵容造型审图候选，尚未拆分或接入游戏"
+    },
+    {
+      "id": "paperchild_move",
+      "path": "assets/resources/textures/anim/enemy_paperman/",
+      "width": 256,
+      "height": 256,
+      "frames": 12,
+      "fps": 10,
+      "alpha": true,
+      "source": "ChatGPT Image，已确认荒村七怪中的纸扎童子为参考，6×2图集切帧，统一缩放与脚底",
+      "license": "AI 生成",
+      "status": "已接入游戏，待用户实战视觉确认"
+    },
+    {
+      "id": "walkingcorpse_move",
+      "path": "assets/resources/textures/anim/enemy_jiangshi/",
+      "width": 256,
+      "height": 256,
+      "frames": 12,
+      "fps": 12,
+      "alpha": true,
+      "source": "ChatGPT Image，以确认总览中枯瘦行尸为参考，6×2图集切帧",
+      "license": "AI 生成",
+      "status": "已接入，待用户实战确认"
+    },
+    {
+      "id": "ghostflame_move",
+      "path": "assets/resources/textures/anim/enemy_foxfire/",
+      "width": 256,
+      "height": 256,
+      "frames": 12,
+      "fps": 14,
+      "alpha": true,
+      "source": "ChatGPT Image，以确认总览中鬼火为参考生成6×2图集；切帧统一尺度",
+      "license": "AI 生成",
+      "status": "已接入，待用户实战确认"
+    },
+    {
+      "id": "level1_full_paperman",
+      "path": "assets/resources/textures/anim/enemy_paperman/",
+      "width": 256,
+      "height": 256,
+      "frames": 35,
+      "actions": {
+        "idle": 6,
+        "move": 12,
+        "attack": 10,
+        "death": 6,
+        "hurt": 1
+      },
+      "fps": 10,
+      "alpha": true,
+      "source": "ChatGPT Image，已确认荒村七怪为参考；切帧、动作顺序整理及必要姿势保持，前三只保留已确认移动帧",
+      "license": "AI 生成",
+      "status": "帧素材已接入；自动验证通过，完整实战与用户美术验收待完成"
+    },
+    {
+      "id": "level1_full_jiangshi",
+      "path": "assets/resources/textures/anim/enemy_jiangshi/",
+      "width": 256,
+      "height": 256,
+      "frames": 35,
+      "actions": {
+        "idle": 6,
+        "move": 12,
+        "attack": 10,
+        "death": 6,
+        "hurt": 1
+      },
+      "fps": 12,
+      "alpha": true,
+      "source": "ChatGPT Image，已确认荒村七怪为参考；切帧、动作顺序整理及必要姿势保持，前三只保留已确认移动帧",
+      "license": "AI 生成",
+      "status": "帧素材已接入；自动验证通过，完整实战与用户美术验收待完成"
+    },
+    {
+      "id": "level1_full_foxfire",
+      "path": "assets/resources/textures/anim/enemy_foxfire/",
+      "width": 256,
+      "height": 256,
+      "frames": 35,
+      "actions": {
+        "idle": 6,
+        "move": 12,
+        "attack": 10,
+        "death": 6,
+        "hurt": 1
+      },
+      "fps": 14,
+      "alpha": true,
+      "source": "ChatGPT Image，已确认荒村七怪为参考；切帧、动作顺序整理及必要姿势保持，前三只保留已确认移动帧",
+      "license": "AI 生成",
+      "status": "帧素材已接入；自动验证通过，完整实战与用户美术验收待完成"
+    },
+    {
+      "id": "level1_full_shuigui",
+      "path": "assets/resources/textures/anim/enemy_shuigui/",
+      "width": 256,
+      "height": 256,
+      "frames": 35,
+      "actions": {
+        "idle": 6,
+        "move": 12,
+        "attack": 10,
+        "death": 6,
+        "hurt": 1
+      },
+      "fps": 8,
+      "alpha": true,
+      "source": "ChatGPT Image，已确认荒村七怪为参考；切帧、动作顺序整理及必要姿势保持，前三只保留已确认移动帧",
+      "license": "AI 生成",
+      "status": "帧素材已接入；自动验证通过，完整实战与用户美术验收待完成"
+    },
+    {
+      "id": "level1_full_tongqian",
+      "path": "assets/resources/textures/anim/enemy_tongqian/",
+      "width": 256,
+      "height": 256,
+      "frames": 35,
+      "actions": {
+        "idle": 6,
+        "move": 12,
+        "attack": 10,
+        "death": 6,
+        "hurt": 1
+      },
+      "fps": 10,
+      "alpha": true,
+      "source": "ChatGPT Image，已确认荒村七怪为参考；切帧、动作顺序整理及必要姿势保持，前三只保留已确认移动帧",
+      "license": "AI 生成",
+      "status": "帧素材已接入；自动验证通过，完整实战与用户美术验收待完成"
+    },
+    {
+      "id": "level1_full_lantern",
+      "path": "assets/resources/textures/anim/enemy_lantern/",
+      "width": 256,
+      "height": 256,
+      "frames": 35,
+      "actions": {
+        "idle": 6,
+        "move": 12,
+        "attack": 10,
+        "death": 6,
+        "hurt": 1
+      },
+      "fps": 10,
+      "alpha": true,
+      "source": "ChatGPT Image，已确认荒村七怪为参考；切帧、动作顺序整理及必要姿势保持，前三只保留已确认移动帧",
+      "license": "AI 生成",
+      "status": "帧素材已接入；自动验证通过，完整实战与用户美术验收待完成"
+    },
+    {
+      "id": "level1_full_heishan",
+      "path": "assets/resources/textures/anim/boss_heishan/",
+      "width": 512,
+      "height": 512,
+      "frames": 76,
+      "actions": {
+        "appear": 12,
+        "idle": 12,
+        "move": 12,
+        "skill1": 12,
+        "skill2": 16,
+        "death": 12
+      },
+      "fps": 10,
+      "alpha": true,
+      "source": "ChatGPT Image，已确认荒村七怪为参考；切帧、动作顺序整理及必要姿势保持，前三只保留已确认移动帧",
+      "license": "AI 生成",
+      "status": "帧素材已接入；自动验证通过，完整实战与用户美术验收待完成"
     }
   ]
 }
