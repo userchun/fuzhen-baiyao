@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# 可选：仅在显式启用 ASF 时使用。默认精灵图表流程不需要本脚本（不用视频）。
 # 把 imagegen/Agnes 产出的定稿 PNG 收成 ASF master（master.png + master.json）。
 # 真实 CLI：master_still.py approve --still ... --route external（默认 external = 外部工具出图）
 set -euo pipefail

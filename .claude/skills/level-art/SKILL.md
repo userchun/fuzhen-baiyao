@@ -42,16 +42,18 @@ description: 符阵白妖（fuzhen-baiyao）按关卡做美术素材的流程：
      - prompt 里写明"每格同一角色、同大小、脚底同高、格间留空、透明背景"，以及动作的分解。
 - 原图和中间产物都放到 `generated-images/<关卡>-<主题>-<日期>/`。替换游戏里的旧图之前，先把旧图备份到这里。
 
-## 2.5 可选：ASF 整套动作（图生视频）
+## 2.5 动作精灵图（默认；不用视频）
 
-若要一次性出 idle/walk/run/attack 等动作集（而不是网格序列图切帧），在 **Agnes/imagegen** 定稿造型确认后：
+本项目只要 **动作精灵表 / 帧序列**，**不要**图生视频，也 **不要**默认走 Agent Sprite Forge 的 `$video2dsprite` / I2V。
 
-1. `tools/asf/imagegen-take.sh`（或 `agnes.py`）把定稿图放到 `art/asf/<id>-takes/`。
-2. `tools/asf/approve-from-imagegen.sh` 收成 `art/asf/<id>-master/`（ASF `master.json`）。
-3. 用 ASF `$video2dsprite` / `sprite_set.py` 出到 `art/asf/<id>-set/`（见 `art/asf/README.md`）。
-4. 挑帧后再按 §3–§4 切齐、进 `textures/anim/`。
+定稿造型确认后：
 
-**静帧走 imagegen→Agnes；跳过 Magpie；不要用 Codex CLI image_gen / ASF route_media 生静帧。**
+1. 用 Agnes/imagegen（`tools/asf/imagegen-take.sh`、`agnes.py`，或有参考时用 `scripts/agnes-image.py`）以定稿为参考，按动作出 **网格序列图**，可暂存 `art/asf/<id>-sheets/`（或 `generated-images/…`）。
+2. AI 序列连续失败时，改用部件合成：`scripts/puppet-*.py`（见 §2 既有说明）。
+3. 按 §3 切帧对齐（及像素化），再按 §4 放进 `assets/resources/textures/anim/<id>/`。
+
+细则与目录约定见 `art/asf/README.md`。ASF 克隆仅可选，默认不用。
+
 
 ## 3. 切帧
 

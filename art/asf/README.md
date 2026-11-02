@@ -1,70 +1,63 @@
-# Agent Sprite Forge × 项目 `imagegen`（Agnes，跳过 Magpie）
+# 动作精灵图工作区（Agnes imagegen，不用视频）
 
-本目录是符镇百妖的 **ASF 动作集工作区**。  
-**原画（master still）走项目 imagegen skill 的 Agnes 后端**（`scripts/agnes.py` → `POST /v1/images/generations`）。**跳过 Magpie**（不调用 `magpie.py` / Magpie MCP）。
+本目录只做 **静帧 / 动作精灵表（sprite sheet）** 的暂存。  
+**默认不用** Agent Sprite Forge 的 `video2dsprite` / 图生视频（Grok I2V）。ASF 对本项目可选、默认不走。
 
-| 环节 | 工具 | 路径 |
+**跳过 Magpie。** 生图走项目 imagegen → Agnes（`agnes-image-2.5-flash`）。
+
+| 环节 | 工具 | 输出 |
 |---|---|---|
-| 静帧 imagegen | `~/.claude/skills/imagegen/scripts/agnes.py` | `art/asf/<char>-takes/` |
-| 收成 ASF master | `tools/asf/approve-from-imagegen.sh` → `master_still.py approve --route external` | `art/asf/<char>-master/` |
-| 动作集 I2V | ASF `$video2dsprite` / `sprite_set.py` | `art/asf/<char>-set/` |
-| 进引擎 | 人工拷贝 | `assets/resources/textures/`（动画 `textures/anim/`） |
+| 1. 定稿造型 | `tools/asf/imagegen-take.sh` 或 `~/.claude/skills/imagegen/scripts/agnes.py`；有参考图时优先仓库内 `scripts/agnes-image.py`（若存在） | `art/asf/<id>-takes/` 或 `generated-images/…` |
+| 2. 动作精灵表 | 同一套 Agnes/imagegen：以定稿为参考出 **网格序列图**；或 AI 序列失败时用 `scripts/puppet-*.py` 部件合成 | `art/asf/<id>-sheets/` |
+| 3. 切帧对齐 | `level-art` §3（现有切帧/像素化流程） | 帧 PNG |
+| 4. 进引擎 | 拷贝 | `assets/resources/textures/anim/<id>/`（`move_00..` 等） |
 
-- Agnes base（文档默认）：`https://apihub.agnes-ai.com/v1`
-- 默认模型：`agnes-image-2.5-flash`
-- 鉴权：环境变量 `AGNES_API_KEY`（不要写入仓库或聊天）
-- ASF 克隆：`~/Tools/agent-sprite-forge`（不进本仓库）
-- 引擎：**Cocos Creator 3.8.8**
+- Agnes：`https://apihub.agnes-ai.com/v1`，模型 `agnes-image-2.5-flash`
+- 鉴权：`AGNES_API_KEY`（勿写入仓库/聊天）
+- 引擎：Cocos Creator 3.8.8
+- `tools/asf/approve-from-imagegen.sh` 仅在显式启用 ASF 时才需要；默认精灵图表流程不调用它，也不调用 `$video2dsprite`。
 
-## 串联步骤
+## 推荐流程（精灵图）
 
-### 1) Agnes 出 master 候选
+### 1) 定稿
 
 ```bash
-export AGNES_API_KEY=...   # 本机自行设置
+export AGNES_API_KEY=...
 
 tools/asf/imagegen-take.sh --char daoshi --out-name take.png --size 1024x1024 -- \
-  "暗黑国风Q版道士主角，全身侧视朝右，黑发束发，青灰道袍，腰间符袋，手持桃木剑，脚底同高，无文字无水印"
+  "暗黑国风Q版道士主角，全身正面俯视朝下，黑发束发，青灰道袍，腰间符袋，手持桃木剑，脚底同高，无文字无水印"
 ```
 
-等价：
+用户确认一张定稿后再继续。
+
+### 2) 出动作精灵表（仍用 imagegen，不用视频）
+
+用定稿作参考，按动作各出一张网格图（例如走路 12 帧：3×2 半周期再镜像，或 6×2），prompt 写明：每格同一角色、同大小、脚底同高、全身完整、朝向与 `level-art` 一致、动作分解。
+
+有仓库脚本时：
 
 ```bash
-python3 ~/.claude/skills/imagegen/scripts/agnes.py \
-  -o art/asf/daoshi-takes/take.png --size 1024x1024 \
-  "……同上 prompt……"
+# 示例：带参考 + 比例（以仓库 scripts/agnes-image.py 为准）
+python3 scripts/agnes-image.py --prompt-file walk.txt --ref art/asf/daoshi-takes/take.png \
+  --size 2K --ratio 3:2 --out art/asf/daoshi-sheets/walk.png
 ```
 
-先 `--dry-run` 可检查 endpoint/model 且不发请求体里的密钥。
+序列图连续失败 → 改用部件合成（见 `level-art`）：`scripts/puppet-walk.py` / `puppet-hop.py` / `puppet-fox.py` 等。
 
-### 2) 批准为 ASF master
+### 3) 切帧 → 进游戏
 
-```bash
-tools/asf/approve-from-imagegen.sh \
-  --still art/asf/daoshi-takes/take.png \
-  --name daoshi \
-  --subject "符镇百妖道士主角，全身侧视" \
-  --identity "黑发束发、青灰道袍、腰间符袋、手持桃木剑，暗黑国风Q版" \
-  --class hero --facing right \
-  --output-dir art/asf/daoshi-master
-```
+按 `.claude/skills/level-art/SKILL.md` §3–§4：切格、对齐、像素化（若需要），再拷到 `assets/resources/textures/anim/<id>/`，登记素材清单。
 
-### 3) 动作集（ASF video2dsprite）
+## 不要做的事
 
-```text
-Use $video2dsprite to animate the approved master at art/asf/daoshi-master/master.json：
-idle、walk、run、attack、hurt。输出到 art/asf/daoshi-set。
-```
-
-### 4) 进 Cocos
-
-帧确认后拷到 `assets/resources/textures/anim/<id>/`，按 `level-art` 命名，登记 `docs/art/asset-manifest.json`。
+- 不要默认跑 ASF `$video2dsprite` / `sprite_set.py` / Grok 图生视频
+- 不要用 Magpie MCP / `magpie.py`
+- 不要把中间大图/视频提交进 git（`art/asf/**` 已忽略，仅保留本 README）
 
 ## 检查
 
 ```bash
 python3 ~/.claude/skills/imagegen/scripts/agnes.py --dry-run -o /tmp/x.png "ping"
-python3 ~/Tools/agent-sprite-forge/tools/install_skills.py --check --host codex
 ```
 
-`tools/asf/magpie-take.sh` 仅保留为跳转 stub，实际走 Agnes。
+`tools/asf/magpie-take.sh` 只是跳到 `imagegen-take.sh` 的 stub。
