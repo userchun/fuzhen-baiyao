@@ -75,8 +75,18 @@ export class GameUI {
     private toastT = 0;
     private toastFade = 0.35; // 末段淡出秒数
     private overlay: Node | null = null;
+    private pauseBtn: Node | null = null;
 
     constructor(private root: Node, private audio?: AudioManager) {
+        // 顶部暗带：妖怪从顶边入场时，压暗顶部 HUD 一带，让文字和刚出场的妖怪都能看清
+        const shade = makeNode('topShade', root).addComponent(Graphics);
+        const bandH = SAFE_TOP + 40;
+        for (let i = 0; i < 8; i++) {
+            shade.fillColor = hex('#0A0812', 28);
+            const h = bandH * (1 - i / 8);
+            shade.rect(-GAME.width / 2, top() - h, GAME.width, h);
+            shade.fill();
+        }
         this.wallBar = this.makeHudBar(
             'wallBar', WALL_BAR_H, WALL_FILL_COLOR,
             'ui_barrier_bar_bg', 'ui_barrier_bar_fill', 'ui_barrier_bar_frame',
@@ -92,6 +102,11 @@ export class GameUI {
         // 击杀 / 时间：右上角小字，不加底板
         this.info = addLabel(root, '', 20, '#B8B0C8');
         this.info.node.setPosition(GAME.width / 2 - 100, top() - SAFE_TOP);
+        // 暂停按钮：右上角击杀/时间下方（gameplay-design 第 1.1 节）
+        this.pauseBtn = rectNode('pauseBtn', 64, 64, '#1A1622', root, 12, 200);
+        this.pauseBtn.setPosition(GAME.width / 2 - 52, top() - SAFE_TOP - 52);
+        addLabel(this.pauseBtn, 'Ⅱ', 34, '#E8D9A8');
+        this.pauseBtn.active = false;
         // 左侧技能栏
         this.skillPanel = makeNode('skillPanel', root);
         this.skillPanel.setPosition(-GAME.width / 2 + 44, top() - SAFE_TOP - 160);
@@ -489,6 +504,7 @@ export class GameUI {
     showResult(
         win: boolean, kills: number, time: number, buttons: { text: string; cb: () => void }[],
         rewards?: { lines: { text: string; coin: number; paper: number }[]; coin: number; paper: number; saved: boolean },
+        title?: string,
     ): void {
         const ov = this.openOverlay();
         const fx = spriteNode(win ? 'fx_settle_win' : 'fx_settle_lose', 128, 128, ov);
@@ -496,8 +512,8 @@ export class GameUI {
             fx.setPosition(0, 470);
             popIn(fx, 0.3);
         }
-        const titleText = win ? '镇妖成功' : '结界破碎';
-        const titleColor = win ? '#FFD700' : '#E74C3C';
+        const titleText = title ?? (win ? '镇妖成功' : '结界破碎');
+        const titleColor = win ? '#FFD700' : title ? '#C9B98F' : '#E74C3C';
         const banner = spriteNode('ui_title_banner', 620, 150, ov);
         if (banner) {
             banner.setPosition(0, 380);
@@ -556,6 +572,36 @@ export class GameUI {
             cb();
         });
         return btn;
+    }
+
+    /** 暂停按钮的显隐与回调：只在战斗进行中显示 */
+    setPauseButton(visible: boolean, onPause?: () => void): void {
+        if (!this.pauseBtn) return;
+        this.pauseBtn.active = visible;
+        if (onPause) {
+            this.pauseBtn.off(Node.EventType.TOUCH_END);
+            this.pauseBtn.on(Node.EventType.TOUCH_END, (e: EventTouch) => {
+                e.propagationStopped = true;
+                this.audio?.playSfx('click', 0.6);
+                onPause();
+            });
+        }
+    }
+
+    /** 暂停菜单：继续、音乐开关、音效开关、退出本局（第 1.1 节） */
+    showPause(o: {
+        music: boolean; sfx: boolean;
+        onResume: () => void; onMusic: () => void; onSfx: () => void; onQuit: () => void;
+    }): void {
+        const ov = this.openOverlay();
+        // 吞掉遮罩上的触摸，避免透传到战场
+        ov.on(Node.EventType.TOUCH_END, (e: EventTouch) => { e.propagationStopped = true; });
+        const panel = rectNode('pausePanel', 460, 560, '#1A1622', ov, 16, 240);
+        addLabel(panel, '暂停', 48, '#F2E0A8').node.setPosition(0, 210);
+        this.button(panel, '继续', o.onResume, 340, 84, '#7A2E22', 0, 90);
+        this.button(panel, `音乐：${o.music ? '开' : '关'}`, o.onMusic, 340, 72, '#2E2A3A', 0, -10);
+        this.button(panel, `音效：${o.sfx ? '开' : '关'}`, o.onSfx, 340, 72, '#2E2A3A', 0, -100);
+        this.button(panel, '退出本局', o.onQuit, 340, 72, '#3A2228', 0, -200);
     }
 
     clearOverlay(): void {

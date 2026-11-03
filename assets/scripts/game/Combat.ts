@@ -1289,7 +1289,7 @@ export class Combat {
             this.playPlayerHit();
             for (const entry of hits) {
                 this.barrier.hit(entry.enemy.x);
-                burst(this.fxLayer, entry.enemy.x, GAME.wallY, FX.barrier(entry.enemy.x, GAME.wallY));
+                burst(this.fxLayer, entry.enemy.x, GAME.stopY, FX.barrier(entry.enemy.x, GAME.stopY));
             }
         }
     }

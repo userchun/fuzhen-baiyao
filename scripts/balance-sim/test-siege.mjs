@@ -18,7 +18,7 @@ function placeAtSlots(c) {
     if (entry.slot === null) continue;
     const e = entry.enemy;
     e.x = -LAYOUT.roadHalfW + entry.slot * (2 * LAYOUT.roadHalfW / (SIEGE.slots - 1));
-    e.y = GAME.wallY + e.def.radius * depthScale(e.depth);
+    e.y = GAME.stopY + e.def.radius * depthScale(e.depth);
     e.depth = (GAME.horizonY - e.y) / lanePixels();
   }
 }

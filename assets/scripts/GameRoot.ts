@@ -1,12 +1,12 @@
 import { HERO_SELECTION_KEY, heroId, HeroId } from './config/HeroConfig';
-import { _decorator, Component, Node, UITransform, EventTouch, view, ResolutionPolicy, input, Input, sys, screen } from 'cc';
+import { _decorator, Component, Node, UITransform, EventTouch, view, ResolutionPolicy, input, Input, sys, screen, game, Game } from 'cc';
 import { GAME, LEVELS, COMBOS, ENEMIES, applyScreen } from './config/GameConfig';
 import { Difficulty, HARD_HP_MULT } from './config/MetaConfig';
 import { Profile, loadProfile, saveProfile, defaultProfile, defaultLevel, PROFILE_KEY, PROFILE_BAK_KEY, LEGACY_UNLOCK_KEY, buyStat, buyStar, nextRunId, commitSettlement } from './meta/Profile';
 import { computeSettlement, metaSnapshot, MetaSnapshot } from './meta/Settlement';
 import { StatId } from './config/MetaConfig';
 import { TalismanId } from './config/GameConfig';
-import { makeNode, rectNode } from './core/Draw';
+import { makeNode, rectNode, addLabel } from './core/Draw';
 import { loadArt, spriteNode } from './core/Art';
 import { loadAudio, AudioManager } from './core/AudioManager';
 
@@ -34,7 +34,7 @@ export class GameRoot extends Component {
     private spawner: Spawner;
     private fb: Feedback;
     private audio: AudioManager;
-    private state: 'menu' | 'play' | 'pick' | 'over' = 'menu';
+    private state: 'menu' | 'play' | 'pick' | 'pause' | 'over' = 'menu';
     private relayout: (() => void) | null = null;
     private levelIndex = 0;
     private difficulty: Difficulty = 'normal';
@@ -72,6 +72,8 @@ export class GameRoot extends Component {
             this.showMenu(this.home.currentLevel);
         };
         view.on('canvas-resize', relayout);
+        // 切到后台自动暂停（第 1.1 节）
+        game.on(Game.EVENT_HIDE, () => this.pause());
         screen.on('window-resize', relayout);
         this.relayout = relayout;
 
@@ -107,7 +109,10 @@ export class GameRoot extends Component {
         input.on(Input.EventType.TOUCH_CANCEL, release);
 
         // 先加载美术素材再进菜单；热更/Preview 重载后也强制主界面，勿停在 play
+        // 美术素材首次加载需十几秒，期间显示提示，避免空场景像卡死
+        const loading = addLabel(this.node, '符纸铺展中……', 28, '#C8B890');
         loadArt().then(() => {
+            loading.node.destroy();
             this.world.destroyAllChildren();
             this.combat = null!;
             this.spawner = null!;
@@ -123,6 +128,7 @@ export class GameRoot extends Component {
         input.off(Input.EventType.TOUCH_MOVE);
         input.off(Input.EventType.TOUCH_END);
         input.off(Input.EventType.TOUCH_CANCEL);
+        game.off(Game.EVENT_HIDE);
     }
 
     update(dt: number): void {
@@ -134,6 +140,7 @@ export class GameRoot extends Component {
         }
         this.ui.update(dt);
         this.home.update(dt);
+        this.ui.setPauseButton(this.state === 'play');
         if (this.state === 'over') this.combat?.updateBarrier(dt);
         if (this.state !== 'play') return;
         dt = Math.min(dt, 1 / 20);
@@ -316,6 +323,53 @@ export class GameRoot extends Component {
             this.ui.clearOverlay();
             this.state = 'play';
         });
+    }
+
+    /** 主动暂停 / 切后台自动暂停：只在战斗进行中生效 */
+    private pause(): void {
+        if (this.state !== 'play') return;
+        this.state = 'pause';
+        this.combat.stopHold();
+        this.showPauseMenu();
+    }
+
+    private showPauseMenu(): void {
+        const s = this.profile.settings;
+        const toggle = (key: 'music' | 'sfx') => {
+            s[key] = !s[key];
+            this.applySettings();
+            this.syncBgm();
+            this.save();
+            this.showPauseMenu();
+        };
+        this.ui.showPause({
+            music: s.music, sfx: s.sfx,
+            onResume: () => { this.ui.clearOverlay(); this.state = 'play'; },
+            onMusic: () => toggle('music'),
+            onSfx: () => toggle('sfx'),
+            onQuit: () => this.quit(),
+        });
+    }
+
+    /** 退出本局：按第 3.2 节"退出"行结算（不发精英与宝箱），再展示结果 */
+    private quit(): void {
+        this.state = 'over';
+        this.spawner.stop();
+        this.combat.stopHold();
+        const lv = this.levelIndex;
+        const st = computeSettlement(this.runId, {
+            level: lv, diff: this.difficulty, result: 'quit', time: this.time,
+            eliteKills: this.eliteKills, firstClear: !this.profile.cleared[lv]?.[this.difficulty],
+        });
+        commitSettlement(this.profile, st, LEVELS.length);
+        const saved = this.save();
+        const buttons = [
+            { text: '返回主界面', cb: () => this.showMenu(lv) },
+            { text: '再来一局', cb: () => this.startLevel(lv) },
+        ];
+        this.ui.showResult(false, this.combat.kills, this.time, buttons,
+            { lines: st.lines, coin: st.coin, paper: st.paper, saved }, '已退出本局');
+        this.ui.setResultTotal(this.profile.coin, this.profile.paper, saved);
     }
 
     private end(win: boolean): void {
