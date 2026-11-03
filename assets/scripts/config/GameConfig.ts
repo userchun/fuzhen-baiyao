@@ -7,6 +7,7 @@ export const GAME = {
     width: 720,
     height: 1280,
     wallY: -440,      // 结界防线 y（内部字段沿用 wallY，由 applyScreen 重算）
+    stopY: -360,      // 妖怪停步线（城墙顶），由 applyScreen 重算
     playerY: -470,
     moveZoneY: -350,  // 此线以下拖动移动，以上点按瞄准/攻击
     horizonY: 520,    // 地平线 y（2.5D 纵深最远点，由 applyScreen 按屏幕高度重算）
@@ -23,7 +24,8 @@ export const GAME = {
  * 底部从下往上：安全区 40 → 血条区 → 结界防线（wallY）→ 战场。
  */
 export const LAYOUT = {
-    wallFromBottom: 258,   // 结界拦怪线距屏幕底边
+    wallFromBottom: 258,   // 结界墙脚距屏幕底边
+    stopAboveWall: 80,     // 妖怪停步线在墙脚之上多少像素（城墙顶边约 85），妖怪不越过城墙
     playerFromBottom: 160, // 主角中心距屏幕底边：160 高的完整轮廓位于结界后方
     spawnAboveTop: 60,     // 出怪线在屏幕顶边之上多少像素
     wallArtW: 860,         // 旧城墙图片尺寸保留；当前结界不使用
@@ -35,6 +37,7 @@ export const LAYOUT = {
 export function applyScreen(visibleHeight: number): void {
     GAME.height = Math.max(1280, Math.round(visibleHeight));
     GAME.wallY = -GAME.height / 2 + LAYOUT.wallFromBottom;
+    GAME.stopY = GAME.wallY + LAYOUT.stopAboveWall;
     GAME.playerY = -GAME.height / 2 + LAYOUT.playerFromBottom;
     GAME.moveZoneY = GAME.wallY + 90;
     GAME.horizonY = GAME.height / 2 + LAYOUT.spawnAboveTop;

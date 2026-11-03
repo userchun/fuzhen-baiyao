@@ -904,13 +904,14 @@ export class Combat {
             const d = e.def;
             if (e.visualT > 0) e.visualT = Math.max(0, e.visualT - dt);
             if (d.id === 'heishan' && !(e.visualT > 0)) {
-                if ((e.weakT > 0 || e.depth >= 0.98) && e.visualAction !== 'idle') this.playEnemyAction(e, 'idle');
-                else if (e.weakT <= 0 && e.depth < 0.98 && e.visualAction === 'idle') {
+                const atWall = e.y - d.radius * depthScale(e.depth) <= GAME.stopY + 2;
+                if ((e.weakT > 0 || atWall) && e.visualAction !== 'idle') this.playEnemyAction(e, 'idle');
+                else if (e.weakT <= 0 && !atWall && e.visualAction === 'idle') {
                     e.visualAction = 'move';
                     this.ensureEnemyAnim(e.node, d.id, e.element);
                 }
             }
-            const previousGap = e.y - d.radius * depthScale(e.depth) - GAME.wallY;
+            const previousGap = e.y - d.radius * depthScale(e.depth) - GAME.stopY;
             const siegeEntry = this.siege.find((entry) => entry.enemy === e);
             if (e.freezeT > 0) {
                 e.freezeT -= dt;
@@ -979,20 +980,20 @@ export class Combat {
             }
 
             const r = d.radius * depthScale(e.depth);
-            if (d.boss && e.y - r <= GAME.wallY) {
+            if (d.boss && e.y - r <= GAME.stopY) {
                 // Boss 抵达城墙：停下持续攻城
-                e.depth = 1;
-                e.y = GAME.wallY + r;
+                e.y = GAME.stopY + r;
+                e.depth = (GAME.horizonY - e.y) / lanePixels();
                 this.wallHp -= d.damage * dt;
                 if (Math.floor(e.t*5)!==Math.floor((e.t-dt)*5)) this.barrier.hit(e.x);
                 if (Math.random() < dt * 4) this.fb.shake(6, 0.15);
-            } else if (!d.boss && !siegeEntry && e.y - r <= GAME.wallY) {
+            } else if (!d.boss && !siegeEntry && e.y - r <= GAME.stopY) {
                 // 记录本帧内到达时刻；同一时刻按生成顺序排序。
-                const gap = e.y - r - GAME.wallY;
+                const gap = e.y - r - GAME.stopY;
                 const fraction = previousGap <= 0 ? 0 : previousGap / (previousGap - gap);
                 const arrival = this.siegeClock - dt + Math.max(0, Math.min(1, fraction)) * dt;
                 this.siege.push({ enemy: e, arrival, order: this.siegeOrder++, slot: null, attackT: 0, hit: false, attacking: false });
-                e.y = GAME.wallY + r;
+                e.y = GAME.stopY + r;
                 e.depth = (GAME.horizonY - e.y) / lanePixels();
             }
             // move 序列帧 + 可选 art 子节点 Y-bob（逻辑坐标不变，碰撞仍用 e.x/e.y）
@@ -1234,7 +1235,7 @@ export class Combat {
             const controlled = e.freezeT > 0 || e.diving;
             const r = e.def.radius * depthScale(e.depth);
             const targetX = entry.slot === null ? e.x : -HALF_W + entry.slot * (HALF_W * 2 / (SIEGE.slots - 1));
-            const targetY = GAME.wallY + r + (entry.slot === null ? 45 + 28 * waiting++ : 0);
+            const targetY = GAME.stopY + r + (entry.slot === null ? 45 + 28 * waiting++ : 0);
             const dx = targetX - e.x, dy = targetY - e.y;
             const distance = Math.hypot(dx, dy);
             if (!controlled && distance > 0.01) {
