@@ -9,6 +9,7 @@ Cocos Creator 3.8.8 竖屏结界防守割草游戏。代码在 `assets/scripts/`
 | 内容 | 唯一文档 | 说明 |
 |---|---|---|
 | 玩法：定位、局内战斗、局外养成、奖励经济、关卡推进、验收标准、开发顺序 | `docs/gameplay-design.md` | 玩法的唯一来源。第 0 节是简纲，末尾有改动记录 |
+| 主设计文档（OhMyGame 画布总览，只做导航不写规则） | `canvas/documents/main-gdd.md` | 编辑器要求放在 canvas 下，是 docs/ 规则的唯一例外 |
 | 美术方向和素材规格 | `docs/art/art-bible.md` | 只管视觉，玩法规则写进 gameplay-design 再在这里引用 |
 | 出图提示词 | `docs/art/prompts-dark-qban.md` | |
 | 风格样板图 | `docs/art/ref/style_target.png` | 2026-11-01 当前选定：⑤精致像素 |

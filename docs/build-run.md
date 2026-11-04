@@ -16,7 +16,7 @@
 
 ## 2026-11-01 本地验证
 
-- 青绿鎏金主页已接入 `HomeUI.ts` 与 `assets/resources/textures/ui_home_bg.png`，Cocos Creator 3.8.8 已导入资源。
+- （历史，已被精致像素首页替换）青绿鎏金主页曾接入 `HomeUI.ts` 与 `assets/resources/textures/ui_home_bg.png`，Cocos Creator 3.8.8 已导入资源。
 - 浏览器预览：`http://127.0.0.1:7456/`；已检查 360×720、375×812，点击“出战”可进入第一关选卡与战斗。
 - 主页插画与 UI 分离，战斗图片和音频仍缺失，当前以代码图形及静音运行。
 - 类型检查：`tsc --noEmit -p . --ignoreDeprecations 6.0 --skipLibCheck --lib ES2017,DOM` 通过。默认命令存在引擎声明及 ES2017 库配置报错，未在本次换肤中修改项目编译配置。

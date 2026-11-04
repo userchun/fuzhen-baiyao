@@ -1,0 +1,20 @@
+{
+  "version": 1,
+  "viewport": {
+    "width": 1280,
+    "height": 720
+  },
+  "nodes": [
+    {
+      "id": "node-main-gdd",
+      "type": "document",
+      "title": "符镇百妖 · 主设计文档",
+      "description": "项目总览入口，规则细节引用 docs/gameplay-design.md",
+      "data": {
+        "documentId": "main-gdd"
+      }
+    }
+  ],
+  "edges": [],
+  "id": "54c87f54-7c18-471d-9761-041ec00a9ddf"
+}

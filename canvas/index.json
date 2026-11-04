@@ -1,0 +1,16 @@
+{
+  "version": 1,
+  "boards": [
+    {
+      "id": "54c87f54-7c18-471d-9761-041ec00a9ddf",
+      "name": "Untitled"
+    }
+  ],
+  "documents": [
+    {
+      "id": "main-gdd",
+      "title": "符镇百妖 · 主设计文档"
+    }
+  ],
+  "mainDocumentId": "main-gdd"
+}
