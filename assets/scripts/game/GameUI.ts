@@ -223,8 +223,20 @@ export class GameUI {
             g.clear();
             if (ratio <= 0) return;
             g.fillColor = hex('#000000', CD_MASK_ALPHA);
-            // y-up、原点在图标中心：底部矩形从 -H/2 起高 ratio*H
-            g.rect(-TALISMAN_ICON_W / 2, -TALISMAN_ICON_H / 2, TALISMAN_ICON_W, ratio * TALISMAN_ICON_H);
+            const radius = g.node.getComponent(UITransform)!.width / 2;
+            if (ratio === 1) {
+                g.circle(0, 0, radius);
+            } else {
+                // 从十二点顺时针揭开，剩余冷却扇面收回到十二点。
+                const sweep = ratio * 2 * Math.PI;
+                const segments = Math.ceil(ratio * 48);
+                g.moveTo(0, 0);
+                for (let i = 0; i <= segments; i++) {
+                    const angle = Math.PI / 2 + sweep * i / segments;
+                    g.lineTo(Math.cos(angle) * radius, Math.sin(angle) * radius);
+                }
+                g.close();
+            }
             g.fill();
         });
     }
@@ -241,8 +253,9 @@ export class GameUI {
             const art = !!icon;
             if (!icon) icon = circleNode('talisman', 22, ELEMENT_COLOR[d.element], d.name[0], panel);
             icon.setPosition(0, y);
-            // CD 遮罩与符牌同尺寸（上→下 burn）；角标仍在最上层
-            this.cdMasks.set(id, makeNode('cd', icon, TALISMAN_ICON_W, TALISMAN_ICON_H).addComponent(Graphics));
+            // 圆形冷却遮罩放在等级角标下方。
+            const cooldownDiameter = art ? Math.min(TALISMAN_ICON_W, TALISMAN_ICON_H) : 44;
+            this.cdMasks.set(id, makeNode('cd', icon, cooldownDiameter, cooldownDiameter).addComponent(Graphics));
             this.levelBadge(icon, st.level >= d.maxLevel ? 'MAX' : `${st.level}`, 16, art ? -24 : -16);
             addLabel(panel, d.name, 14, '#E8E0F0').node.setPosition(0, y - (art ? 40 : 32));
             y -= art ? 84 : 72;
@@ -402,6 +415,7 @@ export class GameUI {
             const iconSide = Math.min(ICON_W, ICON_H);
             if (o.type === 'talisman') pickIcon = spriteNode('icon_talisman_' + o.id, iconSide, iconSide, card);
             else if (o.type === 'passive') pickIcon = spriteNode('icon_passive_' + o.id, iconSide, iconSide, card);
+            else if (o.type === 'heal') pickIcon = spriteNode('icon_pick_heal', iconSide, iconSide, card);
             if (pickIcon) pickIcon.setPosition(0, ICON_Y);
 
             // —— 3) 底描述带：两行 SHRINK，顶锚在图标底之下 ——

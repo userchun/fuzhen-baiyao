@@ -1,7 +1,7 @@
 import { HeroId, heroDef } from '../config/HeroConfig';
 import { Node, Graphics, Label, UITransform } from 'cc';
 import {
-    ENEMIES, EnemyDef, GAME, BASE_ATTACK, HERO_WEAPONS, TalismanId, ELEMENT_COLOR, ELEMENT_NAME, Element, elementTier, TIER_MULT,
+    ENEMIES, EnemyDef, GAME, BASE_ATTACK, HERO_BASIC_EFFECTS, HERO_WEAPONS, TalismanId, ELEMENT_COLOR, ELEMENT_NAME, Element, elementTier, TIER_MULT,
     MIN_HIT_DAMAGE, RIVER_INTERVAL, SIEGE, depthY, depthScale, lanePixels, travelPixels, LAYOUT,
     ULT, ULT_NAMES, GROWTH,
 } from '../config/GameConfig';
@@ -13,7 +13,7 @@ import { SkillSystem } from './SkillSystem';
 import { paintElement, drawHp } from './EnemyView';
 import { Feedback } from './Feedback';
 import { AudioManager } from '../core/AudioManager';
-import { FX, burst, flash, flashCombat, flashCastGlow, flashHasteTrail, flashMotionHit } from './ParticleFX';
+import { FX, burst, flash, flashCombat, flashCastGlow, flashBellRipple, flashHasteTrail, flashMotionHit } from './ParticleFX';
 import { hitPulse } from './Anim';
 import { FrameAnim, FrameClip } from './FrameAnim';
 import { FX_SHEETS, FX_FPS } from '../config/FxSheets';
@@ -25,7 +25,7 @@ export interface Enemy {
     def: EnemyDef; node: Node; element: Element; diving: boolean;
     x: number; y: number; baseX: number;
     depth: number; // 2.5D 纵深：0=远(地平线) → 1=近(城墙)
-    hp: number; maxHp: number; t: number; slow: number; freezeT: number; summonT: number; flashT: number;
+    hp: number; maxHp: number; t: number; slow: number; bellSlowT?: number; burning?: boolean; stunVisualT?: number; freezeT: number; summonT: number; flashT: number;
     /** U11：受击闪缩放包络上限（秒）；与 flashT 同步写入 */
     flashMax: number;
     /** U11：受击时降权 move 帧推进的剩余秒 */
@@ -57,7 +57,6 @@ interface Bullet {
 interface Zone {
     key: string; node: Node; x: number; y: number; r: number;
     dps: number; slow: number; el: Element; life: number; alive: boolean;
-    bound?: Set<Enemy>; // 已播过缠绕特效的妖怪
 }
 
 interface Fx { key: string; node: Node; life: number; maxLife: number; scale: number; alive: boolean; }
@@ -114,6 +113,7 @@ export class Combat {
     private castingPlayer = false;
     private reactingPlayer = false;
     private playerIdle: FrameClip | null = null;
+    private playerAttack: FrameClip | null = null;
     private playerCast: FrameClip | null = null;
     private playerHit: FrameClip | null = null;
     /** 敌人 move 序列帧：id → clip（无帧则不下挂） */
@@ -163,7 +163,7 @@ export class Combat {
     /** 灯笼鬼死亡分裂 3f one-shot（非独立敌人类型；splitInto 仍为 foxfire）；U9 骨架优先 death 帧 */
     private lanternSplitClip: FrameClip | null = null;
     private lanternDeathClip: FrameClip | null = null;
-    private splitFx: { node: Node; anim: FrameAnim; life: number; follow?: Enemy }[] = [];
+    private splitFx: { node: Node; anim: FrameAnim; life: number; follow?: Enemy; whileActive?: () => boolean; followOffsetY?: number }[] = [];
     private fxTimers: { t: number; fn: () => void }[] = [];
 
     constructor(layer: Node, private skills: SkillSystem, private fb: Feedback, private onKill: (e: Enemy) => void, private audio?: AudioManager, private selectedHero: HeroId = 'taoist') {
@@ -182,8 +182,8 @@ export class Combat {
         this.setupEnemyMoveClips();
     }
 
-    setBarrierElement(element: BarrierElement): void {
-        this.barrier.setElement(element);
+    setBarrierElement(element: BarrierElement, village = false): void {
+        this.barrier.setElement(element, village);
         this.updateBarrier(0);
     }
 
@@ -371,6 +371,7 @@ export class Combat {
     private setupPlayerAnim(): void {
         const prefix=heroDef(this.selectedHero).prefix;
         this.playerIdle = this.makeClip(prefix+'/idle', 4, true); // 4 帧背面呼吸与飘带，1 秒循环
+        this.playerAttack = this.makeClip(prefix + '/attack', 14, false);
         this.playerCast = this.makeClip(prefix+'/cast', 12, false); // 4 帧抬手 / 送符 / 收势，约 0.33 秒
         this.playerHit = this.makeClip(prefix+'/hit', 12, false); // 4 帧受击回正，约 0.33 秒
         // 仅当贴图玩家（spriteNode 成功）且至少有 idle 帧时启用
@@ -403,12 +404,11 @@ export class Combat {
      * castColor：技能色族（缺省朱砂 #E23B3B）；疾书≥1 强制青绿 #3DB8A0。
      * 分符≥1 时挂金尘裂；朱砂≥1 且无疾书时叠朱红脉冲（无焰形）。
      */
-    private playPlayerCast(castColor = '#E23B3B'): void {
+    private playPlayerCast(castColor = '#E23B3B', releaseAttack?: () => void, weaponAttack = true): void {
         const hasteLv = this.skills.passive('haste');
         const powerLv = this.skills.passive('power');
         const multiLv = this.skills.passive('multi');
-        const px = this.playerX;
-        const py = GAME.playerY + 8;
+        const { x: px, y: py } = this.playerReleasePoint();
         // 色优先：疾书青绿 > 调用方技能色 > 朱砂朱红
         const glow = hasteLv >= 1 ? '#3DB8A0' : castColor;
         if (hasteLv >= 1) {
@@ -426,9 +426,37 @@ export class Combat {
         if (multiLv >= 1) {
             burst(this.fxLayer, px, py, FX.goldDust(px, py));
         }
-        if (!this.playerAnim || !this.playerCast || this.castingPlayer || this.reactingPlayer) return;
+        const clip = releaseAttack ? this.playerAttack ?? this.playerCast : this.playerCast;
+        if (!this.playerAnim || !clip || this.castingPlayer || this.reactingPlayer) {
+            releaseAttack?.();
+            return;
+        }
         this.castingPlayer = true;
-        this.playerAnim.play(this.playerCast, () => this.playPlayerIdle());
+        this.playerAnim.play(clip, () => this.playPlayerIdle());
+        if (!releaseAttack) return;
+        if (clip !== this.playerAttack) {
+            releaseAttack();
+            return;
+        }
+        // 四套普攻的第 5 帧是甩符、短劈、甩铃或送出葫芦的出手姿势。
+        this.scheduleFx(4 / clip.fps, () => {
+            releaseAttack();
+            if (weaponAttack && this.selectedHero === 'sword') {
+                this.playWeaponFx('hero_sword_slash', this.playerX, GAME.playerY + 47, 128);
+            }
+        });
+    }
+
+    private playWeaponFx(name: string, x: number, y: number, width: number): boolean {
+        const frames = getFrames('fx/' + name);
+        if (!frames.length) return false;
+        const node = spriteNode(`fx/${name}_00`, width, width * 9 / 16, this.fxLayer);
+        if (!node) return false;
+        node.setPosition(x, y);
+        const anim = new FrameAnim(node);
+        anim.play({ frames, fps: FX_FPS, loop: false });
+        this.splitFx.push({ node, anim, life: frames.length / FX_FPS });
+        return true;
     }
 
     spawnEnemy(id: string, x = (Math.random() * 2 - 1) * HALF_W, depth = 0): void {
@@ -470,18 +498,26 @@ export class Combat {
         return Math.max(-1.2, Math.min(1.2, a));
     }
 
+    private playerReleasePoint(): { x: number; y: number } {
+        // 战斗动作固定朝上，巫女的引魂铃位于画面左侧。
+        const handX = this.selectedHero === 'medium' ? -24 : 24;
+        return { x: this.playerX + handX, y: GAME.playerY + 44 };
+    }
+
     /** 点击攻击：朝目标点扔一张镇妖符 */
     manualShot(tx: number, ty: number, cd = BASE_ATTACK.holdCd): void {
         if (this.manualCd > 0) return;
         this.manualCd = cd;
-        const ox = this.playerX;
-        const oy = GAME.playerY + 30;
-        const dx = tx - ox;
-        const dy = Math.max(10, ty - oy); // 只能往城墙外打
-        const dist = Math.hypot(dx, dy);
-        const dmg = BASE_ATTACK.damage * this.brushMult * (1 + 0.2 * this.skills.passive('power'));
-        this.shoot('manual', ox, oy, dx / dist * BASE_ATTACK.speed, dy / dist * BASE_ATTACK.speed, dmg, { radius: 14, pierce: 1 });
-        this.playPlayerCast(heroDef(this.selectedHero).color);
+        const damage = BASE_ATTACK.damage * this.brushMult * (1 + 0.2 * this.skills.passive('power'));
+        const color = this.selectedHero === 'taoist' ? '#E23B3B' : heroDef(this.selectedHero).color;
+        this.playPlayerCast(color, () => {
+            const { x: ox, y: oy } = this.playerReleasePoint();
+            const dx = tx - ox;
+            const dy = Math.max(10, ty - oy);
+            const speed = BASE_ATTACK.speed / Math.hypot(dx, dy);
+            const pierce = this.selectedHero === 'sword' ? HERO_BASIC_EFFECTS.swordExtraHits : 0;
+            this.shoot('manual', ox, oy, dx * speed, dy * speed, damage, { radius: 14, pierce });
+        });
     }
 
     update(dt: number): void {
@@ -554,11 +590,11 @@ export class Combat {
         }
         if (kind === 'bullet') {
             // 金光束：白金光矛贴图，缺图回退细方块
-            if (id === 'metal') return spriteNode('fx_metal_bolt', 18, 72) ?? rectNode(key, 10, 40, ELEMENT_COLOR.metal, undefined, 4);
+            if (id === 'metal') return spriteNode('weapon_projectile_sword', 18, 62) ?? rectNode(key, 10, 40, ELEMENT_COLOR.metal, undefined, 4);
             if (id === 'manual') return this.createWeaponProjectile(key);
             if (id === 'river') return rectNode(key, GAME.width, 60, '#5AB4F0', undefined, 0, 170);
             // 寒冰符：冰锥贴图，缺图回退圆点
-            if (id === 'fire') return spriteNode('fx_fire_ball', 30, 40) ?? circleNode(key, 14, ELEMENT_COLOR.fire);
+            if (id === 'fire') return spriteNode('weapon_projectile_flame', 30, 52) ?? circleNode(key, 14, ELEMENT_COLOR.fire);
             if (id === 'water') return spriteNode('fx_water_bolt', 20, 72) ?? circleNode(key, 11, ELEMENT_COLOR.water);
             return circleNode(key, id === 'fire' ? 14 : 11, ELEMENT_COLOR[id as Element]);
         }
@@ -570,7 +606,13 @@ export class Combat {
     // ---------- 施法 ----------
 
     private createWeaponProjectile(key: string): Node {
-        if(this.selectedHero==='taoist') return circleNode(key,14,'#FFE9A8','符');
+        if (this.selectedHero === 'taoist') {
+            return spriteNode('ui_ref_paper', 23, 36) ?? circleNode(key, 14, '#FFE9A8', '符');
+        }
+        const size = this.selectedHero === 'sword' ? [12, 54]
+            : this.selectedHero === 'medium' ? [38, 27] : [25, 45];
+        const projectile = spriteNode('weapon_projectile_' + this.selectedHero, size[0], size[1]);
+        if (projectile) return projectile;
         const n=makeNode(key,undefined,32,44),g=n.addComponent(Graphics);
         const color=heroDef(this.selectedHero).color;
         if(this.selectedHero==='sword') {
@@ -633,27 +675,33 @@ export class Combat {
         const s = this.skills;
         const dmg = s.damage(id);
         const count = 1 + s.extra;
-        const ox = this.playerX;
-        const oy = GAME.playerY + 30;
-        // 施放光跟技能色族（雷无五行 → 紫电；其余走 ELEMENT_COLOR）
         const skillGlow = id === 'thunder' ? '#B48CFF' : (ELEMENT_COLOR[id as Element] ?? '#E23B3B');
-        this.playPlayerCast(skillGlow);
+        if (id === 'metal' || id === 'water' || id === 'fire') {
+            this.playPlayerCast(skillGlow, () => this.releaseTalisman(id, lv, dmg, count), false);
+        } else {
+            this.playPlayerCast(skillGlow);
+            this.releaseTalisman(id, lv, dmg, count);
+        }
+    }
 
-        // 2026-10-31：六符都改成在战场上随机挑一只妖怪、从天而降（不再从主角身上发射）；镇妖符仍由主角发出
-        const skyY = top() + 60; // 从出怪线附近落下（再高会被当成出界）
+    private releaseTalisman(id: TalismanId, lv: number, dmg: number, count: number): void {
+        const { x: ox, y: oy } = this.playerReleasePoint();
         if (id === 'metal') {
-            // 金光：一道光柱从顶端竖直劈下，穿透这一列
+            // 金光矛从持武侧射向目标，保留穿透。
             const used = new Set<Enemy>();
             for (let i = 0; i < count; i++) {
                 const t = this.randomTarget(used);
                 if (!t) return;
                 used.add(t);
-                this.shoot('metal', t.x, skyY, 0, -1600, dmg, { pierce: lv, radius: 16, life: 2 });
+                const dx = t.x - ox;
+                const dy = t.y - oy;
+                const speed = 1600 / Math.max(1, Math.hypot(dx, dy));
+                this.shoot('metal', ox, oy, dx * speed, dy * speed, dmg, { pierce: lv, radius: 16, life: 2 });
                 this.playSheet(`gold_pillar_lv${fxLv(lv)}`, t.x, this.footY(t), this.fxScale(t));
             }
             this.audio?.playSfx('shoot', 0.45);
         } else if (id === 'water' || id === 'fire') {
-            // 寒冰：冰锥从天上砸向目标，命中后照常弹射；烈焰：火流星砸下，落点爆炸
+            // 寒冰命中后弹射，烈焰在落点爆炸。
             const used = new Set<Enemy>();
             for (let i = 0; i < count; i++) {
                 const t = this.randomTarget(used);
@@ -701,6 +749,16 @@ export class Combat {
                         this.removeSiege(e);
                         e.depth = Math.max(0, e.depth - 50 / lanePixels()); // 击退（推远）
                         e.freezeT = Math.max(e.freezeT, 0.4);
+                        const wasStunned = (e.stunVisualT ?? 0) > 0;
+                        e.stunVisualT = 0.4;
+                        if (!wasStunned && e.alive && !e.dying) {
+                            const height = e.def.radius * (ENEMY_ART[e.def.id]?.scale ?? 2) * 2;
+                            const offset = height * depthScale(e.depth);
+                            this.playSheet('status_stun', e.x, this.footY(e) + offset, this.fxScale(e) * 0.65, 0, {
+                                life: Infinity, follow: e, followOffsetY: height,
+                                whileActive: () => (e.stunVisualT ?? 0) > 0,
+                            });
+                        }
                     }
                 }
             }
@@ -746,7 +804,7 @@ export class Combat {
         setOpacity(node, burn ? 110 : 0); // 青藤的地面由像素特效画，旧绿圈隐藏
         this.zones.push({
             key, node, x, y, r, life, alive: true,
-            dps: burn ? dps * 3 : dps, slow: burn ? 0.3 : 0.5, el: burn ? 'fire' : 'wood', bound: new Set(),
+            dps: burn ? dps * 3 : dps, slow: burn ? 0.3 : 0.5, el: burn ? 'fire' : 'wood',
         });
         // T5 漏挂：焚林落区时若节流空闲立刻闪一次（不改 ×3）
         if (burn && this.burnShengT <= 0) {
@@ -758,8 +816,13 @@ export class Combat {
     // ---------- 更新 ----------
 
     private updateZones(dt: number): void {
+        const burning = new Set<Enemy>();
+        const previouslySlowed = new Set(this.enemies.filter((enemy) => enemy.slow > 0));
         this.burnShengT = Math.max(0, this.burnShengT - dt);
-        for (const e of this.enemies) e.slow = 0;
+        for (const e of this.enemies) {
+            e.slow = (e.bellSlowT ?? 0) > 0 ? HERO_BASIC_EFFECTS.bellSlow : 0;
+            if (e.bellSlowT) e.bellSlowT = Math.max(0, e.bellSlowT - dt);
+        }
         for (const z of this.zones) {
             z.life -= dt;
             if (z.life <= 0) { z.alive = false; continue; }
@@ -768,17 +831,27 @@ export class Combat {
                 if (Math.hypot(e.x - z.x, e.y - z.y) < z.r + e.def.radius * 0.5 * depthScale(e.depth)) {
                     e.slow = Math.max(e.slow, z.slow);
                     this.hurt(e, z.dps * dt, z.el, false);
-                    // 青藤命中：妖怪第一次踩进藤网时，在它脚下缠上藤蔓
-                    if (z.el === 'wood' && z.bound && !z.bound.has(e)) {
-                        z.bound.add(e);
-                        this.playSheet('status_slow', e.x, this.footY(e), this.fxScale(e), 0, { life: z.life, follow: e });
-                    }
+                    if (z.el === 'fire' && z.dps > 0 && dt > 0) burning.add(e);
                     // E T3：焚林区 tick 节流 ≤2Hz（不改 ×3）
                     if (z.key === 'zone:burn' && this.burnShengT <= 0) {
                         this.burnShengT = 0.5;
                         this.playComboSheng('burn', e.x, e.y);
                     }
                 }
+            }
+        }
+        for (const e of this.enemies) {
+            if (e.alive && !e.dying && e.slow > 0 && !previouslySlowed.has(e)) {
+                this.playSheet('status_slow', e.x, this.footY(e), this.fxScale(e), 0, {
+                    life: Infinity, follow: e,
+                });
+            }
+            const wasBurning = e.burning;
+            e.burning = burning.has(e) && e.alive && !e.dying;
+            if (e.burning && !wasBurning) {
+                this.playSheet('status_burn', e.x, this.footY(e), this.fxScale(e) * 0.7, 0, {
+                    life: Infinity, follow: e, whileActive: () => !!e.burning,
+                });
             }
         }
     }
@@ -803,7 +876,7 @@ export class Combat {
      * 按锚点在帧内的位置摆放节点；scale 为像素放大倍数。素材缺失时静默跳过。
      */
     private playSheet(name: string, x: number, y: number, scale = FX_PIXEL_SCALE, delay = 0,
-        loop?: { life: number; follow: Enemy }): void {
+        loop?: { life: number; follow: Enemy; whileActive?: () => boolean; followOffsetY?: number }): void {
         const meta = FX_SHEETS[name];
         const frames = meta ? getFrames('fx/' + name) : [];
         if (!meta || !frames.length) return;
@@ -816,7 +889,7 @@ export class Combat {
         const clip: FrameClip = { frames, fps: FX_FPS, loop: !!loop };
         const start = () => anim.play(clip);
         if (delay > 0) { node.active = false; this.scheduleFx(delay, () => { node.active = true; start(); }); } else start();
-        this.splitFx.push({ node, anim, life: loop ? loop.life : delay + frames.length / FX_FPS + 0.05, follow: loop?.follow });
+        this.splitFx.push({ node, anim, life: loop ? loop.life : delay + frames.length / FX_FPS + 0.05, follow: loop?.follow, whileActive: loop?.whileActive, followOffsetY: loop?.followOffsetY });
     }
 
     /** 特效跟妖怪一样按纵深缩放 */
@@ -884,8 +957,11 @@ export class Combat {
             e.smashCooldown = spec.interval;
             e.smashWindup = spec.windup;
             this.playEnemyAction(e, 'skill2');
-            this.fb.announce('荒坟老妖 · 砸地蓄力', 0, GAME.wallY + 110, 30, '#FFAA78');
-            flash(this.fxLayer, 'fx_hit_seal', e.x, GAME.wallY, spec.windup,
+            // 提示字放在 Boss 头顶（不进顶部 HUD），预警圈画在 Boss 脚下：停步线上移后旧墙脚位置会被身体挡住
+            const bossR = e.def.radius * depthScale(e.depth);
+            const tipY = Math.min(e.y + bossR + 70, GAME.height / 2 - 170);
+            this.fb.announce('荒坟老妖 · 砸地蓄力', 0, tipY, 30, '#FFAA78');
+            flash(this.fxLayer, 'fx_hit_seal', e.x, e.y - bossR, spec.windup,
                 { size: 160, startScale: 0.7, endScale: 1.4, startAlpha: 180 });
         }
     }
@@ -913,6 +989,7 @@ export class Combat {
             }
             const previousGap = e.y - d.radius * depthScale(e.depth) - GAME.stopY;
             const siegeEntry = this.siege.find((entry) => entry.enemy === e);
+            if (e.stunVisualT) e.stunVisualT = Math.max(0, e.stunVisualT - dt);
             if (e.freezeT > 0) {
                 e.freezeT -= dt;
             } else if (!siegeEntry && !(e.smashWindup > 0)) {
@@ -942,11 +1019,12 @@ export class Combat {
             setOpacity(e.node, e.diving ? 60 : e.freezeT > 0 ? 220 : 255);
             // 冻结时罩一层冰壳；节点按需创建，随对象池复用
             let frost = e.node.getChildByName('frost');
-            if (e.freezeT > 0 && !frost) {
+            const showFrost = e.freezeT > (e.stunVisualT ?? 0);
+            if (showFrost && !frost) {
                 frost = spriteNode('fx_water_freeze', d.radius * 2.8, d.radius * 2.8, e.node);
                 if (frost) frost.name = 'frost';
             }
-            if (frost) frost.active = e.freezeT > 0;
+            if (frost) frost.active = showFrost;
             // U11：受击闪包络（平滑峰值→回落，不糊轮廓）
             if (e.flashT > 0) e.flashT -= dt;
             if (e.hitReactT > 0) e.hitReactT -= dt;
@@ -1138,6 +1216,21 @@ export class Combat {
             if (b.kind === 'manual') {
                 if(this.selectedHero==='taoist') this.playSheet('seal_bolt', e.x, this.footY(e), this.fxScale(e) * 0.75);
                 else burst(this.fxLayer,e.x,e.y,FX.hit(e.x,e.y,heroDef(this.selectedHero).color));
+                if (this.selectedHero === 'medium' && e.alive && !e.dying) {
+                    e.bellSlowT = HERO_BASIC_EFFECTS.bellSlowSeconds;
+                    flashBellRipple(this.fxLayer, e.x, this.footY(e), depthScale(e.depth));
+                } else if (this.selectedHero === 'flame') {
+                    const radius = HERO_BASIC_EFFECTS.fireSplashRadius;
+                    if (!this.playWeaponFx('hero_flame_impact', e.x, e.y, radius * 2)) {
+                        burst(this.fxLayer, e.x, e.y, FX.explode(e.x, e.y, radius, '#F59453'));
+                    }
+                    for (const nearby of this.enemies) {
+                        if (nearby === e || !nearby.alive || nearby.dying) continue;
+                        if (Math.hypot(nearby.x - e.x, nearby.y - e.y) <= radius) {
+                            this.hurt(nearby, b.damage * HERO_BASIC_EFFECTS.fireSplashDamage, 'fire');
+                        }
+                    }
+                }
             }
             if (b.kind === 'metal') flash(this.fxLayer, 'fx_metal_hit', e.x, e.y, 0.22, { size: 64, startScale: 0.6, endScale: 1.2, startAlpha: 230 });
             if (--b.pierce < 0) b.alive = false;
@@ -1481,14 +1574,14 @@ export class Combat {
             for (const f of due) f.fn();
         }
         if (this.splitFx.length) {
-            const next: { node: Node; anim: FrameAnim; life: number; follow?: Enemy }[] = [];
+            const next: { node: Node; anim: FrameAnim; life: number; follow?: Enemy; whileActive?: () => boolean; followOffsetY?: number }[] = [];
             for (const f of this.splitFx) {
                 f.anim.update(dt);
                 f.life -= dt;
                 if (f.follow) {
                     // 缠绕跟着妖怪走；妖怪死了或挣脱减速就收掉
-                    if (!f.follow.alive || f.follow.dying || f.follow.slow <= 0) f.life = 0;
-                    else f.node.setPosition(f.follow.x, this.footY(f.follow));
+                    if (!f.follow.alive || f.follow.dying || !(f.whileActive?.() ?? (f.follow.slow > 0))) f.life = 0;
+                    else f.node.setPosition(f.follow.x, this.footY(f.follow) + (f.followOffsetY ?? 0) * depthScale(f.follow.depth));
                 }
                 if (f.life > 0) next.push(f);
                 else f.node.destroy();

@@ -77,6 +77,15 @@ export function travelPixels(): number {
 // 2026-11-02 试玩觉得出手太密：普攻和六符冷却都 ×1.5，单发伤害同比 ×1.5，每秒伤害不变（🧪）
 export const BASE_ATTACK = { damage: 18, holdCd: 0.38, autoCd: 0.68, speed: 1100 };
 /** 已确认专属武器：普攻共用BASE_ATTACK数值；属性参与现有相克。专精被动另行设计。 */
+/** 普攻附加效果试玩参数。 */
+export const HERO_BASIC_EFFECTS = {
+    swordExtraHits: 1,
+    bellSlow: 0.20,
+    bellSlowSeconds: 0.9,
+    fireSplashRadius: 70,
+    fireSplashDamage: 0.4,
+};
+
 export const HERO_WEAPONS = {
     taoist: { name: '镇妖符箓', element: 'none' as Element },
     sword: { name: '桃木剑', element: 'metal' as Element },

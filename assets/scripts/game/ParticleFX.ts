@@ -1,4 +1,4 @@
-import { Node, ParticleSystem2D, UITransform, Layers, Color, v2, Sprite, UIOpacity, tween, Vec3 } from 'cc';
+import { Node, ParticleSystem2D, UITransform, Layers, Color, v2, Sprite, UIOpacity, Graphics, tween, Vec3 } from 'cc';
 import { getFrame, getFrames } from '../core/Art';
 import type { Element, HitTier } from '../config/GameConfig';
 
@@ -66,6 +66,26 @@ export function burst(parent: Node, x: number, y: number, spec: FxSpec): void {
     ps.gravity = v2(0, -spec.gravity);
     ps.autoRemoveOnFinish = true;
     ps.resetSystem();
+}
+
+/** 铃波命中时，在目标脚下扩散一圈青蓝水纹。 */
+export function flashBellRipple(parent: Node, x: number, y: number, scale: number): void {
+    const node = makeNode('bellRipple', parent);
+    node.setPosition(x, y);
+    node.setScale(scale * 0.55, scale * 0.55, 1);
+    const ring = node.addComponent(Graphics);
+    ring.lineWidth = 3;
+    ring.strokeColor = toColor('#74D6D7', 170);
+    ring.ellipse(0, 0, 30, 12);
+    ring.stroke();
+    ring.lineWidth = 2;
+    ring.strokeColor = toColor('#C4F9F2', 195);
+    ring.ellipse(0, 0, 21, 8);
+    ring.stroke();
+
+    const opacity = node.addComponent(UIOpacity);
+    tween(node).to(0.28, { scale: new Vec3(scale * 1.35, scale * 1.35, 1) }).start();
+    tween(opacity).to(0.28, { opacity: 0 }).call(() => node.destroy()).start();
 }
 
 // ---------- Sprite one-shot flashes (VFX combat P0) ----------

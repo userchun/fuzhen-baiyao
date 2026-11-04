@@ -283,7 +283,7 @@ export class GameRoot extends Component {
         this.combat.hpMult = level.hpMult * (diff === 'hard' ? HARD_HP_MULT : 1);
         // 开局冻结养成快照，本局中途不再变化
         this.meta = metaSnapshot(this.profile, GAME.wallHp);
-        this.combat.setBarrierElement(this.home.currentBarrier);
+        this.combat.setBarrierElement(this.home.currentBarrier, index === 0);
         this.combat.wallMax = this.meta.wallMax;
         this.combat.wallHp = this.meta.wallMax;
         this.combat.brushMult = this.meta.brushMult;
