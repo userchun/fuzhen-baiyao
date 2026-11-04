@@ -20,6 +20,7 @@ import { Spawner } from './game/Spawner';
 import { GameUI } from './game/GameUI';
 import { Feedback } from './game/Feedback';
 import { HomeUI } from './game/HomeUI';
+import { LoadingView } from './game/LoadingView';
 
 const { ccclass } = _decorator;
 
@@ -41,6 +42,7 @@ export class GameRoot extends Component {
     private selectedHero: HeroId = (() => { try { return heroId(sys.localStorage.getItem(HERO_SELECTION_KEY)); } catch { return 'taoist'; } })();
     private profile: Profile = loadProfile(sys.localStorage, LEVELS.length);
     private home: HomeUI;
+    private loading: LoadingView | null = null;
     private bg: Node;
     private time = 0;
     private runId = '';
@@ -110,9 +112,11 @@ export class GameRoot extends Component {
 
         // 先加载美术素材再进菜单；热更/Preview 重载后也强制主界面，勿停在 play
         // 美术素材首次加载需十几秒，期间显示提示，避免空场景像卡死
-        const loading = addLabel(this.node, '符纸铺展中……', 28, '#C8B890');
-        loadArt().then(() => {
-            loading.node.destroy();
+        const loading = new LoadingView(this.node);
+        this.loading = loading;
+        loadArt((done, total) => loading.setProgress(done / total)).then(() => {
+            this.loading = null;
+            loading.destroy();
             this.world.destroyAllChildren();
             this.combat = null!;
             this.spawner = null!;
@@ -138,6 +142,7 @@ export class GameRoot extends Component {
             const want = Math.max(1280, Math.round(GAME.width * win.height / win.width));
             if (win.width > 0 && Math.abs(want - GAME.height) > 2) this.relayout();
         }
+        this.loading?.update(dt);
         this.ui.update(dt);
         this.home.update(dt);
         this.ui.setPauseButton(this.state === 'play');

@@ -34,7 +34,7 @@ export function artKeyFromPath(path: string): string {
 }
 
 /** 加载全部素材；失败不抛错，只是 frames 为空 */
-export function loadArt(): Promise<void> {
+export function loadArt(onProgress?: (done: number, total: number) => void): Promise<void> {
     return new Promise((resolve) => {
         const infos = resources.getDirWithPath('textures', Texture2D);
         if (infos.length === 0) { resolve(); return; }
@@ -81,7 +81,9 @@ export function loadArt(): Promise<void> {
                         });
                     }
                 }
-                if (--left === 0) resolve();
+                left--;
+                onProgress?.(infos.length - left, infos.length);
+                if (left === 0) resolve();
             });
         });
     });

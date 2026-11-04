@@ -113,6 +113,7 @@ export class GameUI {
         // 底部移动区提示：只留一行淡字，不再铺色块
         this.moveHint = addLabel(root, '← 拖动移动 →', 18, '#6F6888');
         this.moveHint.node.setPosition(0, GAME.wallY + 120);
+        this.moveHint.node.active = false; // 开战时 setBoss 再显示，加载和主页不露出
         // Boss 进度：左上角细条，Boss 出场前显示来袭进度，出场后显示 Boss 血量
         const bossNode = makeNode('bossBar', root);
         bossNode.setPosition(-GAME.width / 2 + 24, top() - SAFE_TOP - 14);
@@ -293,6 +294,7 @@ export class GameUI {
         this.bossBar.clear();
         this.bossText.string = '';
         this.moveHintT = -1;
+        this.moveHint.node.active = true;
         setOpacity(this.moveHint.node, 255);
     }
 
