@@ -1,5 +1,5 @@
 import { HeroId, heroDef } from '../config/HeroConfig';
-import { Node, Graphics, Label, UITransform } from 'cc';
+import { Node, Graphics, Label, UITransform, Sprite } from 'cc';
 import {
     ENEMIES, EnemyDef, GAME, BASE_ATTACK, HERO_BASIC_EFFECTS, HERO_WEAPONS, TalismanId, ELEMENT_COLOR, ELEMENT_NAME, Element, elementTier, TIER_MULT,
     MIN_HIT_DAMAGE, RIVER_INTERVAL, SIEGE, depthY, depthScale, lanePixels, travelPixels, LAYOUT,
@@ -8,7 +8,7 @@ import {
 import { Pool } from '../core/Pool';
 import { STAT_EFFECT } from '../config/MetaConfig';
 import { circleNode, rectNode, makeNode, hex, setOpacity, paintCircle, addLabel } from '../core/Draw';
-import { ENEMY_ART, hasArt, spriteNode, getFrames } from '../core/Art';
+import { ENEMY_ART, hasArt, spriteNode, getFrames, glyphNode } from '../core/Art';
 import { SkillSystem } from './SkillSystem';
 import { paintElement, drawHp } from './EnemyView';
 import { Feedback } from './Feedback';
@@ -107,6 +107,7 @@ export class Combat {
     private barrier: BarrierView;
     private zoneLayer: Node;
     private enemyLayer: Node;
+    private enemySortT = 0;
     private bulletLayer: Node;
     private fxLayer: Node;
     private playerAnim: FrameAnim | null = null;
@@ -571,16 +572,22 @@ export class Combat {
                 const sealParent = id === 'jiangshi' || id === 'paperman' ? artNode : n;
                 const sealColor = id === 'heishan' ? '#E8E2D0' : '#1E1A26'; // 暗色封印区用浅色字（泥尸改为浅色补子，用深色字）
                 if (art.sealR > 0) {
-                    const ch = addLabel(sealParent, d.char, Math.max(12, Math.round(size * art.sealR * 1.3)), sealColor);
-                    ch.node.name = 'seal';
-                    ch.node.setPosition(size * ((art.sealX ?? 0.5) - 0.5), size * (0.5 - art.sealY));
+                    const sealSize = Math.max(12, Math.round(size * art.sealR * 1.3));
+                    const seal = glyphNode(art.tex, d.char, sealSize, sealColor, sealParent)
+                        ?? addLabel(sealParent, d.char, sealSize, sealColor).node;
+                    seal.name = 'seal';
+                    seal.setPosition(size * ((art.sealX ?? 0.5) - 0.5), size * (0.5 - art.sealY));
                 }
             } else {
                 n = circleNode(key, d.radius, ELEMENT_COLOR[d.element], d.char);
             }
-            const badge = addLabel(n, ELEMENT_NAME[d.element], Math.max(16, Math.round(d.radius * 0.5)));
-            badge.node.name = 'badge';
-            badge.node.setPosition(d.radius * 0.75, d.radius * 0.75);
+            // 属性角标：有合图时用图里的字（和身体同一张图，可合批），否则退回文字
+            const badgeSize = Math.max(16, Math.round(d.radius * 0.5));
+            const badge = (art && glyphNode(art.tex, ELEMENT_NAME[d.element] || '金', badgeSize, '#FFFFFF', n))
+                ?? addLabel(n, ELEMENT_NAME[d.element], badgeSize).node;
+            badge.name = 'badge';
+            badge.setPosition(d.radius * 0.75, d.radius * 0.75);
+            if (badge.getComponent(Sprite)) badge.active = d.element !== 'none';
             if (d.elite || d.boss) {
                 const bar = makeNode('hp', n);
                 bar.setPosition(0, d.radius * (art && hasArt(art.tex) ? art.scale : 1) + 12);
@@ -966,7 +973,23 @@ export class Combat {
         }
     }
 
+    /** 同种妖怪排在一起画：它们共用一张合图，相邻时引擎才能一次画完（原本就按出生顺序画，无前后遮挡排序） */
+    private sortEnemyLayer(dt: number): void {
+        this.enemySortT -= dt;
+        if (this.enemySortT > 0) return;
+        this.enemySortT = 0.3;
+        const kids = this.enemyLayer.children;
+        let sorted = true;
+        for (let i = 1; i < kids.length; i++) {
+            if (kids[i - 1].name > kids[i].name) { sorted = false; break; }
+        }
+        if (sorted) return;
+        const order = [...kids].sort((a, b) => (a.name < b.name ? -1 : a.name > b.name ? 1 : 0));
+        order.forEach((n, i) => n.setSiblingIndex(i));
+    }
+
     private updateEnemies(dt: number): void {
+        this.sortEnemyLayer(dt);
         this.siegeClock += dt;
         for (const e of this.enemies) {
             // death oneshot：只推进帧，不移动/攻城/召唤；播完由 onDone settle

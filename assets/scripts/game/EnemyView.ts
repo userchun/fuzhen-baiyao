@@ -1,7 +1,7 @@
 import { Node, Graphics, Label } from 'cc';
 import { EnemyDef, Element, ELEMENT_COLOR, ELEMENT_NAME } from '../config/GameConfig';
 import { paintCircle, hex } from '../core/Draw';
-import { ENEMY_ART, setFrame } from '../core/Art';
+import { ENEMY_ART, setFrame, glyphKey } from '../core/Art';
 
 // 妖怪外观：属性颜色/角标、血条
 
@@ -14,7 +14,14 @@ export function paintElement(node: Node, def: EnemyDef, el: Element): void {
     } else {
         paintCircle(node.getComponent(Graphics), def.radius, ELEMENT_COLOR[el]);
     }
-    node.getChildByName('badge').getComponent(Label).string = ELEMENT_NAME[el];
+    const badge = node.getChildByName('badge');
+    const label = badge?.getComponent(Label);
+    if (label) label.string = ELEMENT_NAME[el];
+    else if (badge) {
+        const tex = ENEMY_ART[def.id]?.tex;
+        badge.active = el !== 'none';
+        if (tex && el !== 'none') setFrame(badge, glyphKey(tex, ELEMENT_NAME[el]));
+    }
 }
 
 export function drawHp(e: { node: Node; hp: number; maxHp: number; def: EnemyDef }): void {

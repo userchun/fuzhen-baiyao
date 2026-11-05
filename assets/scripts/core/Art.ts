@@ -1,5 +1,6 @@
-import { resources, Texture2D, SpriteFrame, Sprite, Node, UITransform, Rect, Size } from 'cc';
-import { makeNode } from './Draw';
+import { resources, Texture2D, SpriteFrame, Sprite, Node, UITransform, Rect, Size, ImageAsset } from 'cc';
+import { ENEMIES, ELEMENT_NAME } from '../config/GameConfig';
+import { makeNode, hex } from './Draw';
 import { FX_SHEETS, FX_COLS } from '../config/FxSheets';
 
 // 美术素材：启动时加载 resources/textures 下全部图片，按相对路径取 SpriteFrame。
@@ -83,10 +84,103 @@ export function loadArt(onProgress?: (done: number, total: number) => void): Pro
                 }
                 left--;
                 onProgress?.(infos.length - left, infos.length);
-                if (left === 0) resolve();
+                if (left === 0) {
+                    packEnemyAtlases();
+                    resolve();
+                }
             });
         });
     });
+}
+
+/**
+ * 妖怪合图：像素图用最近邻采样，引擎自带的动态合图不收，导致每只妖怪单独一次绘制。
+ * 这里在加载完后把每种妖怪的静态图 + 全部动作帧拼进一张图，并把属性角标和字印的汉字也画进去，
+ * 同种妖怪就能一次画完。拼图失败（如无 canvas 环境）时保留原来的散图，不影响显示。
+ */
+const GLYPH = 64;
+export function glyphKey(tex: string, ch: string): string {
+    return `glyph/${tex}/${ch}`;
+}
+
+function packEnemyAtlases(): void {
+    if (typeof document === 'undefined') return;
+    const groups = new Map<string, string[]>();
+    for (const key of frames.keys()) {
+        const m = /^anim\/(enemy_[a-z]+)\//.exec(key);
+        const group = m ? m[1] : /^enemy_[a-z]+$/.test(key) ? key : null;
+        if (!group) continue;
+        if (!groups.has(group)) groups.set(group, []);
+        groups.get(group)!.push(key);
+    }
+    for (const [group, keys] of groups) {
+        try {
+            packGroup(group, keys);
+        } catch (e) {
+            console.warn('[Art] 妖怪合图失败，保留散图', group, e);
+        }
+    }
+}
+
+function packGroup(group: string, keys: string[]): void {
+    const list = keys.map((k) => ({ key: k, sf: frames.get(k)! }));
+    const cell = list[0].sf.texture.width;
+    // 只合尺寸一致、整张使用的方帧
+    for (const { sf } of list) {
+        const t = sf.texture;
+        if (t.width !== cell || t.height !== cell || sf.rect.width !== cell || sf.rect.height !== cell) return;
+    }
+    const def = Object.values(ENEMIES).find((d) => ENEMY_ART[d.id]?.tex === group);
+    const chars = [...new Set([...Object.values(ELEMENT_NAME).filter(Boolean), ...(def?.char ? [def.char] : [])])];
+    const cols = Math.ceil(Math.sqrt(list.length));
+    const rows = Math.ceil(list.length / cols);
+    const width = Math.max(cols * cell, chars.length * GLYPH);
+    const height = rows * cell + GLYPH;
+    if (width > 2048 || height > 2048) return;
+
+    const canvas = document.createElement('canvas');
+    canvas.width = width;
+    canvas.height = height;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+    ctx.imageSmoothingEnabled = false;
+    list.forEach(({ sf }, i) => {
+        const img = (sf.texture as Texture2D).image?.data as CanvasImageSource | undefined;
+        if (!img) throw new Error('no image data');
+        ctx.drawImage(img, (i % cols) * cell, Math.floor(i / cols) * cell);
+    });
+    ctx.fillStyle = '#FFFFFF';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.font = `bold ${Math.round(GLYPH * 0.82)}px sans-serif`;
+    chars.forEach((ch, i) => ctx.fillText(ch, i * GLYPH + GLYPH / 2, rows * cell + GLYPH / 2 + 2));
+
+    const tex = new Texture2D();
+    tex.image = new ImageAsset(canvas);
+    tex.setFilters(Texture2D.Filter.NEAREST, Texture2D.Filter.NEAREST);
+    tex.setMipFilter(Texture2D.Filter.NONE);
+    const sub = (x: number, y: number, size: number) => {
+        const f = new SpriteFrame();
+        f.texture = tex;
+        f.rect = new Rect(x, y, size, size);
+        f.originalSize = new Size(size, size);
+        f.packable = false;
+        return f;
+    };
+    list.forEach(({ key }, i) => frames.set(key, sub((i % cols) * cell, Math.floor(i / cols) * cell, cell)));
+    chars.forEach((ch, i) => frames.set(glyphKey(group, ch), sub(i * GLYPH, rows * cell, GLYPH)));
+}
+
+/** 合图里的单字贴图（白字，按 color 着色）；没有合图时返回 null，由调用方退回 Label */
+export function glyphNode(tex: string, ch: string, size: number, color: string, parent?: Node): Node | null {
+    const sf = frames.get(glyphKey(tex, ch));
+    if (!sf) return null;
+    const n = makeNode('glyph', parent, size, size);
+    const sp = n.addComponent(Sprite);
+    sp.sizeMode = Sprite.SizeMode.CUSTOM;
+    sp.spriteFrame = sf;
+    sp.color = hex(color);
+    return n;
 }
 
 export function hasArt(name: string): boolean {
