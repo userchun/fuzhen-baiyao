@@ -13,20 +13,20 @@
 
 ## 规则
 
-- 2026-11-01：首页独立背景新稿 `docs/art/deliver/ui_home_bg_pixel.png` 由内置 GPT Image 参考本项目像素样板和首页符师生成，1 张，已接入运行背景；授权状态同上 GPT Image 条目。
+- 2026-11-01：首页独立背景新稿 `docs/art/deliver/ui_home_bg_pixel.png`（已删除，见 git 历史） 由内置 GPT Image 参考本项目像素样板和首页符师生成，1 张，已接入运行背景；授权状态同上 GPT Image 条目。
 
-- 2026-11-01：首页符师候选 `docs/art/deliver/ui_home_hero_pixel.png` 由内置 GPT Image 参考本项目像素样板生成，1 张，已接入运行资源 `assets/resources/textures/ui_home_hero.png`；授权状态同上 GPT Image 条目。
+- 2026-11-01：首页符师候选 `docs/art/deliver/ui_home_hero_pixel.png`（已删除，见 git 历史） 由内置 GPT Image 参考本项目像素样板生成，1 张，已接入运行资源 `assets/resources/textures/ui_home_hero.png`；授权状态同上 GPT Image 条目。
 - 新素材入库时，同步在 `docs/art/art-bible.md` 素材清单填写来源，并在本文登记授权。
 - CC-BY 素材要在游戏内署名；CC-BY-SA、GPL 素材不要用。
 - 不用他人立绘或 IP 角色作参考图生成可售卖素材。
 
 - 2026-11-01：战斗符师动作图集 `assets/resources/textures/player_actions.png` 由内置 GPT Image 参考本项目首页符师生成，替换旧图集；旧战斗静态图已停用并移入废纸篓。授权状态同上 GPT Image 条目。
 
-- 2026-11-01：五行结界候选 `docs/art/deliver/barriers/barrier_{metal,wood,water,fire,earth}.png`，共 5 张，由 Magpie Image 使用 `agnes/agnes-image-2.5-flash` 纯文生图生成，黑底特效图集，尚未入运行资源。Agnes 适用条款及商用授权待发布前核实，不标为 CC0；不计入 GPT Image 素材数量。
+- 2026-11-01：五行结界候选 `docs/art/deliver/barriers/barrier_{metal,wood,water,fire,earth}.png`（已删除，见 git 历史），共 5 张，由 Magpie Image 使用 `agnes/agnes-image-2.5-flash` 纯文生图生成，黑底特效图集，尚未入运行资源。Agnes 适用条款及商用授权待发布前核实，不标为 CC0；不计入 GPT Image 素材数量。
 
-- 2026-11-01：金系重做单张造型候选 `docs/art/deliver/barriers/metal-ward-concept-v2.png` 由 Agnes 2.5 Flash 纯文生图生成，尚未接入，授权状态同上述 Agnes 候选。`BarrierArt.ts` / `BarrierView.ts` 为本项目原创绘制代码，未引入 PixelFX 代码或运行依赖。
+- 2026-11-01：金系重做单张造型候选 `docs/art/deliver/barriers/metal-ward-concept-v2.png`（已删除，见 git 历史） 由 Agnes 2.5 Flash 纯文生图生成，尚未接入，授权状态同上述 Agnes 候选。`BarrierArt.ts` / `BarrierView.ts` 为本项目原创绘制代码，未引入 PixelFX 代码或运行依赖。
 
-- 2026-11-01：金系横向平直造型候选 `docs/art/deliver/barriers/metal-ward-straight-v3.png`，Agnes 2.5 Flash 纯文生图，1 张。未接入；授权状态同此前 Agnes 候选。
+- 2026-11-01：金系横向平直造型候选 `docs/art/deliver/barriers/metal-ward-straight-v3.png`（已删除，见 git 历史），Agnes 2.5 Flash 纯文生图，1 张。未接入；授权状态同此前 Agnes 候选。
 
 - 2026-11-01：`docs/evidence/pixelfx/` 包含 PixelFX core 及项目金系改写效果 `fx/holy/gold-ward.js`。来源 commit `a84159688af3ca37a4be05a0d422b94451b2e24e`，保留该目录 `LICENSE`、`NOTICE.md` 及源码声明；未引入 gallery 字体。Cocos 原有 `BarrierArt.ts` / `BarrierView.ts` 尚未换成这套实现。
 - 2026-11-02：`docs/evidence/pixelfx/fx/fuzhen/` 为本项目基于 PixelFX core 与 fire/impacts 等配方改写的符咒特效，沿用 MIT 并保留源码声明；`art/fx/` 精灵表由 `tools/fx-bake/bake.mjs` 从这些配方生成。

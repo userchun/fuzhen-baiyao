@@ -14,13 +14,13 @@
 | 引魂灯笼（精英） | 残破朱红灯体、小庙檐、符纸流苏、引魂烟 | 全动作帧已接入，待实战美术验收 |
 | 荒坟老妖（Boss） | 石棺墓碑融合巨躯、偏重石臂、裂缝核心 | 全动作帧已接入，待实战美术验收 |
 
-总览：`docs/art/deliver/level1/haunted-village-roster.png`；素材中心候选分类可查看。使用 ChatGPT Image，提示词锁定同一俯视朝下视角、清晰像素簇、民俗材质和七种独立剪影；本图含名称与背景，属于概念板，不能直接当透明战斗精灵或动画图集。
+总览：`docs/art/deliver/level1/haunted-village-roster.png`（已删除，见 git 历史）；素材中心候选分类可查看。使用 ChatGPT Image，提示词锁定同一俯视朝下视角、清晰像素簇、民俗材质和七种独立剪影；本图含名称与背景，属于概念板，不能直接当透明战斗精灵或动画图集。
 
 下一验收点：确认全员造型与普通/精英/Boss 比例后，逐只生成透明定稿与动作。切帧、方向、循环、引擎实战通过后才标记运行素材完成。
 
 ## 已退役的旧阵容动画候选
 
-槐树精 `docs/art/deliver/level1/paperman-frames/` 与圆胖泥尸 `docs/art/deliver/level1/jiangshi-frames/` 保留作历史，素材中心标记退役；没有覆盖游戏帧。新行尸改为直走，旧并脚跳不沿用。旧生成原图分别存于 `generated-images/level1-paperman-20261102/` 与 `generated-images/level1-jiangshi-20261102/`。
+槐树精 `docs/art/deliver/level1/paperman-frames/`（已删除，见 git 历史） 与圆胖泥尸 `docs/art/deliver/level1/jiangshi-frames/`（已删除，见 git 历史） 保留作历史，素材中心标记退役；没有覆盖游戏帧。新行尸改为直走，旧并脚跳不沿用。旧生成原图分别存于 `generated-images/level1-paperman-20261102/` 与 `generated-images/level1-jiangshi-20261102/`。
 
 ## 本轮验证
 

@@ -2108,12 +2108,78 @@
       "alpha": true
     },
     {
+      "id": "fx_water_bolt",
+      "name": "fx_water_bolt",
+      "category": "界面",
+      "status": "已接入 · 待美术验收",
+      "kind": "static",
+      "clips": [],
+      "src": "/assets/resources/textures/fx_water_bolt.png",
+      "width": 40,
+      "height": 107,
+      "alpha": true
+    },
+    {
       "id": "hero_flame",
       "name": "hero_flame",
       "category": "界面",
       "status": "已接入 · 待美术验收",
       "kind": "sequence",
       "clips": [
+        {
+          "name": "攻击",
+          "fps": 6.666666666666667,
+          "frames": [
+            {
+              "src": "/assets/resources/textures/anim/hero_flame/attack_00.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/hero_flame/attack_01.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/hero_flame/attack_02.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/hero_flame/attack_03.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/hero_flame/attack_04.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/hero_flame/attack_05.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/hero_flame/attack_06.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/hero_flame/attack_07.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            }
+          ]
+        },
         {
           "name": "cast",
           "fps": 10,
@@ -2266,6 +2332,60 @@
       "kind": "sequence",
       "clips": [
         {
+          "name": "攻击",
+          "fps": 6.666666666666667,
+          "frames": [
+            {
+              "src": "/assets/resources/textures/anim/hero_medium/attack_00.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/hero_medium/attack_01.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/hero_medium/attack_02.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/hero_medium/attack_03.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/hero_medium/attack_04.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/hero_medium/attack_05.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/hero_medium/attack_06.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/hero_medium/attack_07.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            }
+          ]
+        },
+        {
           "name": "cast",
           "fps": 10,
           "frames": [
@@ -2368,6 +2488,60 @@
       "status": "已接入 · 待美术验收",
       "kind": "sequence",
       "clips": [
+        {
+          "name": "攻击",
+          "fps": 6.666666666666667,
+          "frames": [
+            {
+              "src": "/assets/resources/textures/anim/hero_sword/attack_00.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/hero_sword/attack_01.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/hero_sword/attack_02.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/hero_sword/attack_03.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/hero_sword/attack_04.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/hero_sword/attack_05.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/hero_sword/attack_06.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/hero_sword/attack_07.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            }
+          ]
+        },
         {
           "name": "cast",
           "fps": 10,
@@ -2917,9 +3091,9 @@
     },
     {
       "id": "ui_home_bg",
-      "name": "旧版首页背景",
+      "name": "加载页 · 首页背景",
       "category": "背景",
-      "status": "历史版本",
+      "status": "已接入 · 待美术验收",
       "kind": "static",
       "clips": [],
       "src": "/assets/resources/textures/ui_home_bg.png",
@@ -2931,7 +3105,7 @@
       "id": "ui_home_hero",
       "name": "首页符师立绘",
       "category": "角色",
-      "status": "历史版本",
+      "status": "已接入 · 待美术验收",
       "kind": "static",
       "clips": [],
       "src": "/assets/resources/textures/ui_home_hero.png",
@@ -3024,18 +3198,6 @@
       "alpha": true
     },
     {
-      "id": "ui_ref_progress",
-      "name": "旧版进度栏",
-      "category": "界面",
-      "status": "历史版本",
-      "kind": "static",
-      "clips": [],
-      "src": "/assets/resources/textures/ui_ref_progress.png",
-      "width": 497,
-      "height": 111,
-      "alpha": true
-    },
-    {
       "id": "ui_ref_record",
       "name": "记录入口",
       "category": "界面",
@@ -3084,100 +3246,40 @@
       "alpha": true
     },
     {
-      "id": "candidate-barrier_earth",
-      "name": "barrier_earth",
-      "category": "候选",
-      "status": "审图候选 / 历史样板 · 非当前运行资源",
+      "id": "weapon_projectile_flame",
+      "name": "weapon_projectile_flame",
+      "category": "界面",
+      "status": "已接入 · 待美术验收",
       "kind": "static",
       "clips": [],
-      "src": "/docs/art/deliver/barriers/barrier_earth.png",
-      "width": 1312,
-      "height": 736,
+      "src": "/assets/resources/textures/weapon_projectile_flame.png",
+      "width": 68,
+      "height": 128,
       "alpha": true
     },
     {
-      "id": "candidate-barrier_fire",
-      "name": "barrier_fire",
-      "category": "候选",
-      "status": "审图候选 / 历史样板 · 非当前运行资源",
+      "id": "weapon_projectile_medium",
+      "name": "weapon_projectile_medium",
+      "category": "界面",
+      "status": "已接入 · 待美术验收",
       "kind": "static",
       "clips": [],
-      "src": "/docs/art/deliver/barriers/barrier_fire.png",
-      "width": 1312,
-      "height": 736,
+      "src": "/assets/resources/textures/weapon_projectile_medium.png",
+      "width": 128,
+      "height": 91,
       "alpha": true
     },
     {
-      "id": "candidate-barrier_metal",
-      "name": "barrier_metal",
-      "category": "候选",
-      "status": "审图候选 / 历史样板 · 非当前运行资源",
+      "id": "weapon_projectile_sword",
+      "name": "weapon_projectile_sword",
+      "category": "界面",
+      "status": "已接入 · 待美术验收",
       "kind": "static",
       "clips": [],
-      "src": "/docs/art/deliver/barriers/barrier_metal.png",
-      "width": 1312,
-      "height": 736,
+      "src": "/assets/resources/textures/weapon_projectile_sword.png",
+      "width": 26,
+      "height": 128,
       "alpha": true
-    },
-    {
-      "id": "candidate-barrier_water",
-      "name": "barrier_water",
-      "category": "候选",
-      "status": "审图候选 / 历史样板 · 非当前运行资源",
-      "kind": "static",
-      "clips": [],
-      "src": "/docs/art/deliver/barriers/barrier_water.png",
-      "width": 1312,
-      "height": 736,
-      "alpha": true
-    },
-    {
-      "id": "candidate-barrier_wood",
-      "name": "barrier_wood",
-      "category": "候选",
-      "status": "审图候选 / 历史样板 · 非当前运行资源",
-      "kind": "static",
-      "clips": [],
-      "src": "/docs/art/deliver/barriers/barrier_wood.png",
-      "width": 1312,
-      "height": 736,
-      "alpha": true
-    },
-    {
-      "id": "candidate-metal-ward-concept-v2",
-      "name": "metal-ward-concept-v2",
-      "category": "候选",
-      "status": "审图候选 / 历史样板 · 非当前运行资源",
-      "kind": "static",
-      "clips": [],
-      "src": "/docs/art/deliver/barriers/metal-ward-concept-v2.png",
-      "width": 1312,
-      "height": 736,
-      "alpha": true
-    },
-    {
-      "id": "candidate-metal-ward-straight-v3",
-      "name": "metal-ward-straight-v3",
-      "category": "候选",
-      "status": "审图候选 / 历史样板 · 非当前运行资源",
-      "kind": "static",
-      "clips": [],
-      "src": "/docs/art/deliver/barriers/metal-ward-straight-v3.png",
-      "width": 1312,
-      "height": 736,
-      "alpha": true
-    },
-    {
-      "id": "candidate-four-heroes-specializations",
-      "name": "four-heroes-specializations",
-      "category": "候选",
-      "status": "审图候选 / 历史样板 · 非当前运行资源",
-      "kind": "static",
-      "clips": [],
-      "src": "/docs/art/deliver/heroes/four-heroes-specializations.png",
-      "width": 1915,
-      "height": 821,
-      "alpha": false
     },
     {
       "id": "candidate-ghostflame-move-strip",
@@ -3189,42 +3291,6 @@
       "src": "/docs/art/deliver/level1/ghostflame-move-strip.png",
       "width": 1536,
       "height": 512,
-      "alpha": true
-    },
-    {
-      "id": "candidate-haunted-village-roster",
-      "name": "荒村七怪 · 新阵容造型总览",
-      "category": "候选",
-      "status": "审图候选 / 历史样板 · 非当前运行资源",
-      "kind": "static",
-      "clips": [],
-      "src": "/docs/art/deliver/level1/haunted-village-roster.png",
-      "width": 1536,
-      "height": 1024,
-      "alpha": false
-    },
-    {
-      "id": "candidate-jiangshi-move-strip",
-      "name": "jiangshi-move-strip",
-      "category": "候选",
-      "status": "审图候选 / 历史样板 · 非当前运行资源",
-      "kind": "static",
-      "clips": [],
-      "src": "/docs/art/deliver/level1/jiangshi-move-strip.png",
-      "width": 2304,
-      "height": 768,
-      "alpha": true
-    },
-    {
-      "id": "candidate-move-strip",
-      "name": "move-strip",
-      "category": "候选",
-      "status": "审图候选 / 历史样板 · 非当前运行资源",
-      "kind": "static",
-      "clips": [],
-      "src": "/docs/art/deliver/level1/move-strip.png",
-      "width": 2304,
-      "height": 768,
       "alpha": true
     },
     {
@@ -3249,30 +3315,6 @@
       "src": "/docs/art/deliver/level1/walkingcorpse-move-strip.png",
       "width": 1536,
       "height": 512,
-      "alpha": true
-    },
-    {
-      "id": "candidate-ui_home_bg_pixel",
-      "name": "ui_home_bg_pixel",
-      "category": "候选",
-      "status": "审图候选 / 历史样板 · 非当前运行资源",
-      "kind": "static",
-      "clips": [],
-      "src": "/docs/art/deliver/ui_home_bg_pixel.png",
-      "width": 852,
-      "height": 1846,
-      "alpha": false
-    },
-    {
-      "id": "candidate-ui_home_hero_pixel",
-      "name": "ui_home_hero_pixel",
-      "category": "候选",
-      "status": "审图候选 / 历史样板 · 非当前运行资源",
-      "kind": "static",
-      "clips": [],
-      "src": "/docs/art/deliver/ui_home_hero_pixel.png",
-      "width": 1024,
-      "height": 1536,
       "alpha": true
     },
     {
@@ -3367,97 +3409,6 @@
       "alpha": true
     },
     {
-      "id": "jiangshi-frames",
-      "name": "泥尸 · 新版移动候选",
-      "category": "候选",
-      "status": "旧阵容动画候选 · 造型重设后已退役，未接入游戏",
-      "kind": "sequence",
-      "clips": [
-        {
-          "name": "移动",
-          "fps": 12,
-          "frames": [
-            {
-              "src": "/docs/art/deliver/level1/jiangshi-frames/move_00.png",
-              "width": 384,
-              "height": 384,
-              "alpha": true
-            },
-            {
-              "src": "/docs/art/deliver/level1/jiangshi-frames/move_01.png",
-              "width": 384,
-              "height": 384,
-              "alpha": true
-            },
-            {
-              "src": "/docs/art/deliver/level1/jiangshi-frames/move_02.png",
-              "width": 384,
-              "height": 384,
-              "alpha": true
-            },
-            {
-              "src": "/docs/art/deliver/level1/jiangshi-frames/move_03.png",
-              "width": 384,
-              "height": 384,
-              "alpha": true
-            },
-            {
-              "src": "/docs/art/deliver/level1/jiangshi-frames/move_04.png",
-              "width": 384,
-              "height": 384,
-              "alpha": true
-            },
-            {
-              "src": "/docs/art/deliver/level1/jiangshi-frames/move_05.png",
-              "width": 384,
-              "height": 384,
-              "alpha": true
-            },
-            {
-              "src": "/docs/art/deliver/level1/jiangshi-frames/move_06.png",
-              "width": 384,
-              "height": 384,
-              "alpha": true
-            },
-            {
-              "src": "/docs/art/deliver/level1/jiangshi-frames/move_07.png",
-              "width": 384,
-              "height": 384,
-              "alpha": true
-            },
-            {
-              "src": "/docs/art/deliver/level1/jiangshi-frames/move_08.png",
-              "width": 384,
-              "height": 384,
-              "alpha": true
-            },
-            {
-              "src": "/docs/art/deliver/level1/jiangshi-frames/move_09.png",
-              "width": 384,
-              "height": 384,
-              "alpha": true
-            },
-            {
-              "src": "/docs/art/deliver/level1/jiangshi-frames/move_10.png",
-              "width": 384,
-              "height": 384,
-              "alpha": true
-            },
-            {
-              "src": "/docs/art/deliver/level1/jiangshi-frames/move_11.png",
-              "width": 384,
-              "height": 384,
-              "alpha": true
-            }
-          ]
-        }
-      ],
-      "src": "/docs/art/deliver/level1/jiangshi-frames/move_00.png",
-      "width": 384,
-      "height": 384,
-      "alpha": true
-    },
-    {
       "id": "paperchild-frames",
       "name": "纸扎童子 · 新版移动候选",
       "category": "候选",
@@ -3546,97 +3497,6 @@
       "src": "/docs/art/deliver/level1/paperchild-frames/move_00.png",
       "width": 256,
       "height": 256,
-      "alpha": true
-    },
-    {
-      "id": "paperman-frames",
-      "name": "槐树精 · 新版移动候选",
-      "category": "候选",
-      "status": "旧阵容动画候选 · 造型重设后已退役，未接入游戏",
-      "kind": "sequence",
-      "clips": [
-        {
-          "name": "移动",
-          "fps": 10,
-          "frames": [
-            {
-              "src": "/docs/art/deliver/level1/paperman-frames/move_00.png",
-              "width": 384,
-              "height": 384,
-              "alpha": true
-            },
-            {
-              "src": "/docs/art/deliver/level1/paperman-frames/move_01.png",
-              "width": 384,
-              "height": 384,
-              "alpha": true
-            },
-            {
-              "src": "/docs/art/deliver/level1/paperman-frames/move_02.png",
-              "width": 384,
-              "height": 384,
-              "alpha": true
-            },
-            {
-              "src": "/docs/art/deliver/level1/paperman-frames/move_03.png",
-              "width": 384,
-              "height": 384,
-              "alpha": true
-            },
-            {
-              "src": "/docs/art/deliver/level1/paperman-frames/move_04.png",
-              "width": 384,
-              "height": 384,
-              "alpha": true
-            },
-            {
-              "src": "/docs/art/deliver/level1/paperman-frames/move_05.png",
-              "width": 384,
-              "height": 384,
-              "alpha": true
-            },
-            {
-              "src": "/docs/art/deliver/level1/paperman-frames/move_06.png",
-              "width": 384,
-              "height": 384,
-              "alpha": true
-            },
-            {
-              "src": "/docs/art/deliver/level1/paperman-frames/move_07.png",
-              "width": 384,
-              "height": 384,
-              "alpha": true
-            },
-            {
-              "src": "/docs/art/deliver/level1/paperman-frames/move_08.png",
-              "width": 384,
-              "height": 384,
-              "alpha": true
-            },
-            {
-              "src": "/docs/art/deliver/level1/paperman-frames/move_09.png",
-              "width": 384,
-              "height": 384,
-              "alpha": true
-            },
-            {
-              "src": "/docs/art/deliver/level1/paperman-frames/move_10.png",
-              "width": 384,
-              "height": 384,
-              "alpha": true
-            },
-            {
-              "src": "/docs/art/deliver/level1/paperman-frames/move_11.png",
-              "width": 384,
-              "height": 384,
-              "alpha": true
-            }
-          ]
-        }
-      ],
-      "src": "/docs/art/deliver/level1/paperman-frames/move_00.png",
-      "width": 384,
-      "height": 384,
       "alpha": true
     },
     {
@@ -3740,18 +3600,6 @@
       "src": "/docs/evidence/2026-11-01-barrier-pixel-gold.gif",
       "width": 480,
       "height": 227,
-      "alpha": false
-    },
-    {
-      "id": "2026-11-01-pixelfx-gold-ward",
-      "name": "金系结界 · PixelFX 历史样板",
-      "category": "特效",
-      "status": "录制预览 · 非实时引擎",
-      "kind": "gif",
-      "clips": [],
-      "src": "/docs/evidence/2026-11-01-pixelfx-gold-ward.gif",
-      "width": 704,
-      "height": 240,
       "alpha": false
     },
     {
@@ -3862,17 +3710,6 @@
       "src": "/tools/asset-center/fx-lab.html",
       "width": 720,
       "height": 620,
-      "clips": []
-    },
-    {
-      "id": "barrier-live",
-      "name": "五行结界 · 交互预览",
-      "category": "特效",
-      "status": "历史独立预览 · 非当前 Cocos 运行版",
-      "kind": "embed",
-      "src": "/docs/evidence/2026-11-01-barrier-animation-preview.html",
-      "width": 720,
-      "height": 200,
       "clips": []
     }
   ]

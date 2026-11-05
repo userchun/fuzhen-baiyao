@@ -309,41 +309,6 @@
       "status": "已接入；393×852 预览与出战进入选卡已验证，待用户美术验收"
     },
     {
-      "id": "level1_paperman_move_v2",
-      "path": "docs/art/deliver/level1/paperman-frames/",
-      "width": 384,
-      "height": 384,
-      "frames": 12,
-      "fps": 10,
-      "source": "ChatGPT Image，以现有槐树精和像素样板生成6×2动作图集；脚本切帧统一尺度与脚底",
-      "license": "AI 生成",
-      "status": "旧阵容动画候选已退役；未接入游戏",
-      "alpha": true
-    },
-    {
-      "id": "level1_jiangshi_move_v2",
-      "path": "docs/art/deliver/level1/jiangshi-frames/",
-      "width": 384,
-      "height": 384,
-      "frames": 12,
-      "fps": 12,
-      "source": "ChatGPT Image，参考现有泥尸与像素样板生成6×2并脚跳动作图集；统一尺度并保留纵向跳跃",
-      "license": "AI 生成",
-      "status": "旧阵容动画候选已退役；未接入游戏",
-      "alpha": true
-    },
-    {
-      "id": "level1_roster_concept",
-      "path": "docs/art/deliver/level1/haunted-village-roster.png",
-      "width": 1536,
-      "height": 1024,
-      "frames": 1,
-      "alpha": false,
-      "source": "ChatGPT Image，用户确认的荒村七怪阵容造型总览；参考当前像素风样板",
-      "license": "AI 生成",
-      "status": "阵容造型审图候选，尚未拆分或接入游戏"
-    },
-    {
       "id": "paperchild_move",
       "path": "assets/resources/textures/anim/enemy_paperman/",
       "width": 256,
@@ -668,17 +633,6 @@
       "source": "代码生成：docs/evidence/pixelfx/fx/fuzhen/ 配方经 tools/fx-bake/bake.mjs 烘焙；底层画法参考 PixelFX（MIT）",
       "license": "MIT（PixelFX 衍生）+ 项目自有",
       "status": "精灵表已导出，暂存 art/fx/；尚未接入 Cocos 战斗，待用户美术验收"
-    },
-    {
-      "id": "four_heroes_specializations",
-      "path": "docs/art/deliver/heroes/four-heroes-specializations.png",
-      "width": 1915,
-      "height": 821,
-      "frames": 1,
-      "alpha": false,
-      "source": "ChatGPT Image，现有首页符师与像素样板为参考",
-      "license": "AI 生成",
-      "status": "用户已确认四人造型；战斗动作与专精机制待实现"
     },
     {
       "id": "barrier_village_basic",

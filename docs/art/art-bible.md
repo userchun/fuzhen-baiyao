@@ -80,7 +80,7 @@
 
 ### 首页独立背景新稿（2026-11-01）
 
-用户确认继续后，内置 GPT Image 以唯一像素样板和首页符师为参考生成独立夜城背景，保存 `docs/art/deliver/ui_home_bg_pixel.png`。画面无人物和 UI，保留月夜古镇、两侧灯火和前景石台，供后续与符师及控件分层组合；已替换运行背景，组合与手机布局验收见本节末尾。生成原图保留实际尺寸，不拉伸冒充目标规格。
+用户确认继续后，内置 GPT Image 以唯一像素样板和首页符师为参考生成独立夜城背景，保存 `docs/art/deliver/ui_home_bg_pixel.png`（已删除，见 git 历史）。画面无人物和 UI，保留月夜古镇、两侧灯火和前景石台，供后续与符师及控件分层组合；已替换运行背景，组合与手机布局验收见本节末尾。生成原图保留实际尺寸，不拉伸冒充目标规格。
 
 实际生成提示词：
 
@@ -108,7 +108,7 @@
 
 ### 首页符师独立立绘（2026-11-01）
 
-内置 GPT Image 参考唯一像素样板生成一张：首页符师、独立透明背景，深靛道袍 / 朱红飘带 / 暖金符光。交付 `docs/art/deliver/ui_home_hero_pixel.png`，1024×1536 RGBA；已核验存在透明像素。仅为首页静态候选，用户“继续”后已接入 HomeUI，不作战斗图或动作图集使用。
+内置 GPT Image 参考唯一像素样板生成一张：首页符师、独立透明背景，深靛道袍 / 朱红飘带 / 暖金符光。交付 `docs/art/deliver/ui_home_hero_pixel.png`（已删除，见 git 历史），1024×1536 RGBA；已核验存在透明像素。仅为首页静态候选，用户“继续”后已接入 HomeUI，不作战斗图或动作图集使用。
 
 实际生成提示词：
 
@@ -136,11 +136,11 @@
 
 | 元素 | 原图路径 | 实际排布 / 帧数 | 视觉 |
 |---|---|---|---|
-| 金 | `docs/art/deliver/barriers/barrier_metal.png` | 2 列 4 行 / 8 帧 | 金白阵片、剑纹、碎光 |
-| 木 | `docs/art/deliver/barriers/barrier_wood.png` | 4 列 4 行 / 16 帧 | 青绿藤叶符网 |
-| 水 | `docs/art/deliver/barriers/barrier_water.png` | 4 列 2 行 / 8 帧 | 蓝白水幕与波纹 |
-| 火 | `docs/art/deliver/barriers/barrier_fire.png` | 4 列 4 行 / 16 帧 | 朱红流焰、符印、火星 |
-| 土 | `docs/art/deliver/barriers/barrier_earth.png` | 2 列 4 行 / 8 帧 | 赭金山纹与砂光 |
+| 金 | `docs/art/deliver/barriers/barrier_metal.png`（已删除，见 git 历史） | 2 列 4 行 / 8 帧 | 金白阵片、剑纹、碎光 |
+| 木 | `docs/art/deliver/barriers/barrier_wood.png`（已删除，见 git 历史） | 4 列 4 行 / 16 帧 | 青绿藤叶符网 |
+| 水 | `docs/art/deliver/barriers/barrier_water.png`（已删除，见 git 历史） | 4 列 2 行 / 8 帧 | 蓝白水幕与波纹 |
+| 火 | `docs/art/deliver/barriers/barrier_fire.png`（已删除，见 git 历史） | 4 列 4 行 / 16 帧 | 朱红流焰、符印、火星 |
+| 土 | `docs/art/deliver/barriers/barrier_earth.png`（已删除，见 git 历史） | 2 列 4 行 / 8 帧 | 赭金山纹与砂光 |
 
 模型未严格遵守统一八帧网格。逐帧预览按实际排布和非等距行区间取样、按每帧亮像素底沿校准；原图未裁改。预览源内保留全部帧取样坐标，见 `docs/evidence/2026-11-01-barrier-animation-preview.html`。预览支持播放 / 暂停、6 / 8 / 12 fps、地面 / 黑底切换。
 
@@ -177,7 +177,7 @@
 
 用户拒绝代码线框版，以及加厚能量幕后的第二版：重复轮廓仍像栅栏，材质感不足。当前运行版属于待替换试验，不代表视觉定稿。下一步只出金系单张造型样板，不批量重出五系或动作图集。使用项目指定 Agnes 2.5 Flash；模型、参考图与实际生成结果据实登记。
 
-金系重做样板：`docs/art/deliver/barriers/metal-ward-concept-v2.png`，1312×736，Agnes 2.5 Flash。带当前样板的图生图请求返回 503 no available server，随后同型号纯文生图成功；未使用参考图，不能标为图生图。深靛有底色，仅供造型评审，不是透明运行素材，未接入 Cocos，也未扩展其他元素。新造型为双悬浮金符、弧形金色能量幕及中央印记；透视方向、符箓尺寸、屏幕占位待确认。
+金系重做样板：`docs/art/deliver/barriers/metal-ward-concept-v2.png`（已删除，见 git 历史），1312×736，Agnes 2.5 Flash。带当前样板的图生图请求返回 503 no available server，随后同型号纯文生图成功；未使用参考图，不能标为图生图。深靛有底色，仅供造型评审，不是透明运行素材，未接入 Cocos，也未扩展其他元素。新造型为双悬浮金符、弧形金色能量幕及中央印记；透视方向、符箓尺寸、屏幕占位待确认。
 
 实际成功提示词：
 
@@ -185,7 +185,7 @@
 
 ### 金系横向平直样板 v3（2026-11-01）
 
-用户指出 v2 弧形不合理，确认继续改为横向防线。新候选 `docs/art/deliver/barriers/metal-ward-straight-v3.png`，1312×736，Agnes 2.5 Flash 纯文生图（未附参考图，沿用上轮已验证的可用路径）。两侧竖直悬浮符箓、上下平直金色能量屏、中央小菱形印记，取消下垂弧线。仍有深色底，仅作造型候选，未接入游戏、未制成动画；不代表五行定稿。
+用户指出 v2 弧形不合理，确认继续改为横向防线。新候选 `docs/art/deliver/barriers/metal-ward-straight-v3.png`（已删除，见 git 历史），1312×736，Agnes 2.5 Flash 纯文生图（未附参考图，沿用上轮已验证的可用路径）。两侧竖直悬浮符箓、上下平直金色能量屏、中央小菱形印记，取消下垂弧线。仍有深色底，仅作造型候选，未接入游戏、未制成动画；不代表五行定稿。
 
 实际生成提示词：
 
@@ -230,7 +230,7 @@
 
 ### 四位符师造型候选（2026-11-02，用户已确认）
 
-造型对照图：`docs/art/deliver/heroes/four-heroes-specializations.png`。ChatGPT Image 以现有首页符师及唯一像素样板为参考生成。用户确认采用本版：现有符箓道士沿用，新增灰白短袍与桃木剑的镇邪剑客、青黑衣裙与银铃柳枝的引魂巫女、赭红破袍与葫芦符串的赤焰道人。专精与玩法唯一来源见 `docs/gameplay-design.md` 第4.8节，本页不重复技能规则。
+造型对照图：`docs/art/deliver/heroes/four-heroes-specializations.png`（已删除，见 git 历史）。ChatGPT Image 以现有首页符师及唯一像素样板为参考生成。用户确认采用本版：现有符箓道士沿用，新增灰白短袍与桃木剑的镇邪剑客、青黑衣裙与银铃柳枝的引魂巫女、赭红破袍与葫芦符串的赤焰道人。专精与玩法唯一来源见 `docs/gameplay-design.md` 第4.8节，本页不重复技能规则。
 
 本图为正面造型审图，不直接作为俯视战斗素材。当前已生成并接入四张独立首页立绘 `hero_home_*`，首页背景移除了原先烘焙的人物；新增三人的背面战斗静态图及 `anim/hero_{sword,medium,flame}` 待机 / 施法 / 受击序列，动作 GIF 在 `docs/art/deliver/heroes/`，原始生成图与背景备份在 `generated-images/home-heroes-20261102/`。首页具有轻待机与人物属性粒子。选人与武器规则见 gameplay-design 第4.8节。
 
