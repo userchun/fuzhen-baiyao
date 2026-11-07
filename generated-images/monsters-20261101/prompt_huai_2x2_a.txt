@@ -1,0 +1,14 @@
+Sprite sheet of the EXACT character in the input image (approved final design, an evil haunted locust tree spirit): same dark gnarled bark trunk body, same scary bark face with two glowing pale-green eyes and jagged mouth, same antler-like bare branch crown with a few dark-green leaves and tiny white flowers, same short torn red cloth strip hanging from the upper right branch, same blank pale paper talisman on the chest, same long branch arms with twig claws, same twisted root legs, same pixel art style and muted night palette.
+
+Layout: a square canvas split into EXACTLY 4 equal cells: 2 across, 2 down. Exactly 4 full-body figures, one per cell. No gutters, no lines, no labels, no numbers.
+
+ALL 4 figures: FRONT VIEW, the face, glowing eyes and chest talisman clearly visible, walking straight down toward the viewer (camera about 30 degrees above). Never the back, never sideways. Complete body from crown to root feet inside each cell, same size, same horizontal position, the standing foot on the same line near the bottom of each cell.
+
+Start of a walk step, only the leg on the VIEWER'S LEFT side moves. Top-left, top-right, bottom-left, bottom-right:
+1 both root feet planted side by side, arms hanging, body upright;
+2 the viewer's-left root leg lifts, knee bent up high, the viewer's-right arm swings forward;
+3 the viewer's-left leg reaches far forward and down toward the viewer, viewer's-right arm fully forward, viewer's-left arm back;
+4 the viewer's-left foot lands in front, widest stride, body slightly lower.
+Each frame clearly different.
+
+Background: flat solid pure magenta #FF00FF, no gradient, no ground, no cast shadow. No text, no watermark.

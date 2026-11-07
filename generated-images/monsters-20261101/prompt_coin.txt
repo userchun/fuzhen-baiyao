@@ -1,0 +1,9 @@
+Use the input image ONLY as a style and palette reference: match its refined retro NIGHT pixel art exactly — same pixel size, same muted dark palette, same hard dark outlines, same eerie mood. Do NOT copy any character, wall, UI or scene.
+Draw ONE single enemy sprite for a top-down vertical defense game: a COPPER COIN SPIRIT (铜钱精), METAL element, made of old Chinese square-holed copper cash coins. Eerie and greedy, NOT cute.
+View: STRICT FRONT VIEW, it rolls / waddles straight DOWN toward the viewer, camera about 30 degrees above.
+Silhouette: ROUND and chunky — a ball-shaped body made of many old copper coins strung and tangled together on frayed red-brown cords, like a heavy coin bundle; ONE giant old square-holed coin forms its face, with two small glowing pale-gold eyes inside the square hole and a jagged grin of coin edges below; two short stubby arms made of stacked coins; two short stubby legs of stacked coins. Round outline overall, clearly different from a human shape.
+Colors: METAL palette — tarnished dark gold, dull bronze and greenish-black patina shadows, a few bright pale-gold / white metallic glints on coin rims; dark indigo #1A1C2C outlines; muted night tones. No bright red, no blue, no green body.
+On the front of the round body (belly), below the face coin: one small BLANK pale paper talisman (empty, no writing) — a seal will be drawn on it by the game.
+Full body visible, centered, about 65% of canvas height, feet at about 88% height.
+Background: one flat solid pure magenta #FF00FF everywhere, no gradient, no texture, no cast shadow, no ground.
+No text, no letters, no characters written on the coins, no watermark, no frame.

@@ -30,3 +30,5 @@
 
 - 2026-11-01：`docs/evidence/pixelfx/` 包含 PixelFX core 及项目金系改写效果 `fx/holy/gold-ward.js`。来源 commit `a84159688af3ca37a4be05a0d422b94451b2e24e`，保留该目录 `LICENSE`、`NOTICE.md` 及源码声明；未引入 gallery 字体。Cocos 原有 `BarrierArt.ts` / `BarrierView.ts` 尚未换成这套实现。
 - 2026-11-02：`docs/evidence/pixelfx/fx/fuzhen/` 为本项目基于 PixelFX core 与 fire/impacts 等配方改写的符咒特效，沿用 MIT 并保留源码声明；`art/fx/` 精灵表由 `tools/fx-bake/bake.mjs` 从这些配方生成。
+
+- 2026-11-02：寒冰符图标候选 `assets/resources/textures/icon_talisman_water.png`，Agnes Image 2.5 Flash 参考项目像素样板生成，裁方与最近邻缩放；授权状态同此前Agnes候选，待用户视觉验收。

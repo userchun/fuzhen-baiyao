@@ -1,0 +1,11 @@
+Use the input image ONLY as a style and palette reference: match its refined retro NIGHT pixel art exactly — same pixel size, same muted dark palette, same hard dark outlines, same eerie mood. Do NOT copy any character, wall, UI or scene.
+Draw ONE single enemy sprite for a top-down vertical defense game: a Chinese JIANGSHI hopping vampire corpse (泥尸) covered in grave mud, EARTH element. Classic Chinese folklore jiangshi, NOT a western zombie, NOT a cowboy.
+Pose: STRICT FRONT VIEW, facing the viewer, camera about 30 degrees above. Both ARMS stretched STRAIGHT FORWARD toward the viewer at shoulder height, stiff and parallel, hands hanging down with long claws (classic jiangshi pose). Both FEET pressed TOGETHER side by side (it hops, never walks), legs straight and stiff.
+Costume: Qing-dynasty official robe with wide long sleeves and a square rank badge patch on the chest, a round Qing official hat (mandarin hat with a small knob on top and a short brim). 
+Silhouette: SHORT, SQUAT and BLOCKY — wide boxy torso, heavy square head, short stiff legs; chunkier than a normal human.
+Everything is caked in cracked dried yellow-brown grave mud and clay: mud clumps dripping from the sleeves and hem, the robe and hat dull ochre and umber under the mud. Face: grey-brown mud-crusted skin, two small dim amber glowing eyes, dark mouth with two small fangs.
+Colors: EARTH palette — ochre, yellow-brown, muddy tan, dark umber, with dark indigo #1A1C2C outlines and shadows; muted night tones; only the eyes softly glow. No green, no blue, no bright red.
+The chest rank badge patch is a BLANK pale square (empty, no writing) — a seal will be drawn on it by the game.
+Full body visible, centered, about 70% of canvas height, feet at about 88% height.
+Background: one flat solid pure magenta #FF00FF everywhere, no gradient, no texture, no cast shadow, no ground.
+No text, no letters, no watermark, no frame.

@@ -1,193 +1,6 @@
 {
   "assets": [
     {
-      "id": "ui_card_rarity_metal",
-      "path": "assets/resources/textures/ui_card_rarity_metal.png",
-      "width": 200,
-      "height": 300,
-      "frames": 1,
-      "source": "项目内程序绘制的五行选卡角框",
-      "license": "项目原创",
-      "status": "已接入选卡，待用户视觉确认",
-      "alpha": true
-    },
-    {
-      "id": "ui_card_rarity_water",
-      "path": "assets/resources/textures/ui_card_rarity_water.png",
-      "width": 200,
-      "height": 300,
-      "frames": 1,
-      "source": "项目内程序绘制的五行选卡角框",
-      "license": "项目原创",
-      "status": "已接入选卡，待用户视觉确认",
-      "alpha": true
-    },
-    {
-      "id": "ui_card_rarity_fire",
-      "path": "assets/resources/textures/ui_card_rarity_fire.png",
-      "width": 200,
-      "height": 300,
-      "frames": 1,
-      "source": "项目内程序绘制的五行选卡角框",
-      "license": "项目原创",
-      "status": "已接入选卡，待用户视觉确认",
-      "alpha": true
-    },
-    {
-      "id": "ui_card_rarity_earth",
-      "path": "assets/resources/textures/ui_card_rarity_earth.png",
-      "width": 200,
-      "height": 300,
-      "frames": 1,
-      "source": "项目内程序绘制的五行选卡角框",
-      "license": "项目原创",
-      "status": "已接入选卡，待用户视觉确认",
-      "alpha": true
-    },
-    {
-      "id": "ui_card_rarity_wood",
-      "path": "assets/resources/textures/ui_card_rarity_wood.png",
-      "width": 200,
-      "height": 300,
-      "frames": 1,
-      "source": "项目内程序绘制的五行选卡角框",
-      "license": "项目原创",
-      "status": "已接入选卡，待用户视觉确认",
-      "alpha": true
-    },
-    {
-      "id": "icon_talisman_water",
-      "path": "assets/resources/textures/icon_talisman_water.png",
-      "width": 128,
-      "height": 128,
-      "frames": 1,
-      "source": "ChatGPT Image 精绘，裁切并统一为透明图标",
-      "license": "AI 生成",
-      "status": "已替换运行图标，待视觉验收",
-      "alpha": true
-    },
-    {
-      "id": "icon_talisman_fire",
-      "path": "assets/resources/textures/icon_talisman_fire.png",
-      "width": 128,
-      "height": 128,
-      "frames": 1,
-      "source": "ChatGPT Image 精绘，裁切并统一为透明图标",
-      "license": "AI 生成",
-      "status": "已替换运行图标，待视觉验收",
-      "alpha": true
-    },
-    {
-      "id": "icon_talisman_earth",
-      "path": "assets/resources/textures/icon_talisman_earth.png",
-      "width": 128,
-      "height": 128,
-      "frames": 1,
-      "source": "ChatGPT Image 精绘，裁切并统一为透明图标",
-      "license": "AI 生成",
-      "status": "已替换运行图标，待视觉验收",
-      "alpha": true
-    },
-    {
-      "id": "icon_talisman_thunder",
-      "path": "assets/resources/textures/icon_talisman_thunder.png",
-      "width": 128,
-      "height": 128,
-      "frames": 1,
-      "source": "ChatGPT Image 精绘，裁切并统一为透明图标",
-      "license": "AI 生成",
-      "status": "已替换运行图标，待视觉验收",
-      "alpha": true
-    },
-    {
-      "id": "icon_talisman_wood",
-      "path": "assets/resources/textures/icon_talisman_wood.png",
-      "width": 128,
-      "height": 128,
-      "frames": 1,
-      "source": "ChatGPT Image 精绘，裁切并统一为透明图标",
-      "license": "AI 生成",
-      "status": "已替换运行图标，待视觉验收",
-      "alpha": true
-    },
-    {
-      "id": "icon_passive_haste",
-      "path": "assets/resources/textures/icon_passive_haste.png",
-      "width": 128,
-      "height": 128,
-      "frames": 1,
-      "source": "项目内程序绘制的像素 UI",
-      "license": "项目原创",
-      "status": "已接入选卡，待用户视觉确认",
-      "alpha": true
-    },
-    {
-      "id": "icon_passive_power",
-      "path": "assets/resources/textures/icon_passive_power.png",
-      "width": 128,
-      "height": 128,
-      "frames": 1,
-      "source": "项目内程序绘制的像素 UI",
-      "license": "项目原创",
-      "status": "已接入选卡，待用户视觉确认",
-      "alpha": true
-    },
-    {
-      "id": "icon_passive_multi",
-      "path": "assets/resources/textures/icon_passive_multi.png",
-      "width": 128,
-      "height": 128,
-      "frames": 1,
-      "source": "项目内程序绘制的像素 UI",
-      "license": "项目原创",
-      "status": "已接入选卡，待用户视觉确认",
-      "alpha": true
-    },
-    {
-      "id": "icon_passive_ward",
-      "path": "assets/resources/textures/icon_passive_ward.png",
-      "width": 128,
-      "height": 128,
-      "frames": 1,
-      "source": "项目内程序绘制的像素 UI",
-      "license": "项目原创",
-      "status": "已接入选卡，待用户视觉确认",
-      "alpha": true
-    },
-    {
-      "id": "icon_pick_heal",
-      "path": "assets/resources/textures/icon_pick_heal.png",
-      "width": 128,
-      "height": 128,
-      "frames": 1,
-      "source": "项目内程序绘制的像素 UI",
-      "license": "项目原创",
-      "status": "已接入选卡，待用户视觉确认",
-      "alpha": true
-    },
-    {
-      "id": "ui_card_pick_base",
-      "path": "assets/resources/textures/ui_card_pick_base.png",
-      "width": 200,
-      "height": 300,
-      "frames": 1,
-      "source": "项目内程序绘制的像素 UI 样稿",
-      "license": "项目原创",
-      "status": "已接入第一关选卡，待用户视觉确认",
-      "alpha": true
-    },
-    {
-      "id": "icon_talisman_metal",
-      "path": "assets/resources/textures/icon_talisman_metal.png",
-      "width": 128,
-      "height": 128,
-      "frames": 1,
-      "source": "ChatGPT Image 精绘，裁切并统一为透明图标",
-      "license": "AI 生成",
-      "status": "已替换运行图标，待视觉验收",
-      "alpha": true
-    },
-    {
       "id": "ui_ref_background",
       "path": "assets/resources/textures/ui_ref_background.png",
       "width": 941,
@@ -307,6 +120,41 @@
       "source": "ChatGPT Image 首页候选图；UI 轮廓切分，背景遮挡处由 ChatGPT Image 补全",
       "license": "AI 生成",
       "status": "已接入；393×852 预览与出战进入选卡已验证，待用户美术验收"
+    },
+    {
+      "id": "level1_paperman_move_v2",
+      "path": "docs/art/deliver/level1/paperman-frames/",
+      "width": 384,
+      "height": 384,
+      "frames": 12,
+      "fps": 10,
+      "source": "ChatGPT Image，以现有槐树精和像素样板生成6×2动作图集；脚本切帧统一尺度与脚底",
+      "license": "AI 生成",
+      "status": "旧阵容动画候选已退役；未接入游戏",
+      "alpha": true
+    },
+    {
+      "id": "level1_jiangshi_move_v2",
+      "path": "docs/art/deliver/level1/jiangshi-frames/",
+      "width": 384,
+      "height": 384,
+      "frames": 12,
+      "fps": 12,
+      "source": "ChatGPT Image，参考现有泥尸与像素样板生成6×2并脚跳动作图集；统一尺度并保留纵向跳跃",
+      "license": "AI 生成",
+      "status": "旧阵容动画候选已退役；未接入游戏",
+      "alpha": true
+    },
+    {
+      "id": "level1_roster_concept",
+      "path": "docs/art/deliver/level1/haunted-village-roster.png",
+      "width": 1536,
+      "height": 1024,
+      "frames": 1,
+      "alpha": false,
+      "source": "ChatGPT Image，用户确认的荒村七怪阵容造型总览；参考当前像素风样板",
+      "license": "AI 生成",
+      "status": "阵容造型审图候选，尚未拆分或接入游戏"
     },
     {
       "id": "paperchild_move",
@@ -635,114 +483,26 @@
       "status": "精灵表已导出，暂存 art/fx/；尚未接入 Cocos 战斗，待用户美术验收"
     },
     {
-      "id": "barrier_village_basic",
-      "path": "assets/resources/textures/barrier_village_basic.png",
-      "width": 1000,
-      "height": 224,
+      "id": "four_heroes_specializations",
+      "path": "docs/art/deliver/heroes/four-heroes-specializations.png",
+      "width": 1915,
+      "height": 821,
       "frames": 1,
-      "source": "ChatGPT Image 六款结界对照图裁切",
+      "alpha": false,
+      "source": "ChatGPT Image，现有首页符师与像素样板为参考",
       "license": "AI 生成",
-      "status": "第一关静态贴图，待实战视觉验收",
-      "alpha": true
+      "status": "用户已确认四人造型；战斗动作与专精机制待实现"
     },
     {
-      "id": "barrier_village_metal",
-      "path": "assets/resources/textures/barrier_village_metal.png",
-      "width": 1000,
-      "height": 224,
+      "id": "icon_talisman_water",
+      "path": "assets/resources/textures/icon_talisman_water.png",
+      "width": 384,
+      "height": 384,
       "frames": 1,
-      "source": "ChatGPT Image 六款结界对照图裁切",
-      "license": "AI 生成",
-      "status": "第一关静态贴图，待实战视觉验收",
-      "alpha": true
-    },
-    {
-      "id": "barrier_village_wood",
-      "path": "assets/resources/textures/barrier_village_wood.png",
-      "width": 1000,
-      "height": 224,
-      "frames": 1,
-      "source": "ChatGPT Image 六款结界对照图裁切",
-      "license": "AI 生成",
-      "status": "第一关静态贴图，待实战视觉验收",
-      "alpha": true
-    },
-    {
-      "id": "barrier_village_water",
-      "path": "assets/resources/textures/barrier_village_water.png",
-      "width": 1000,
-      "height": 224,
-      "frames": 1,
-      "source": "ChatGPT Image 六款结界对照图裁切",
-      "license": "AI 生成",
-      "status": "第一关静态贴图，待实战视觉验收",
-      "alpha": true
-    },
-    {
-      "id": "barrier_village_fire",
-      "path": "assets/resources/textures/barrier_village_fire.png",
-      "width": 1000,
-      "height": 224,
-      "frames": 1,
-      "source": "ChatGPT Image 六款结界对照图裁切",
-      "license": "AI 生成",
-      "status": "第一关静态贴图，待实战视觉验收",
-      "alpha": true
-    },
-    {
-      "id": "barrier_village_earth",
-      "path": "assets/resources/textures/barrier_village_earth.png",
-      "width": 1000,
-      "height": 224,
-      "frames": 1,
-      "source": "ChatGPT Image 六款结界对照图裁切",
-      "license": "AI 生成",
-      "status": "第一关静态贴图，待实战视觉验收",
-      "alpha": true
-    },
-    {
-      "id": "fx_water_bolt",
-      "path": "assets/resources/textures/fx_water_bolt.png",
-      "width": 40,
-      "height": 107,
-      "frames": 1,
-      "source": "项目冰爆配方 ice_burst_lv1 的飞行帧裁切",
-      "license": "项目自制",
-      "alpha": true,
-      "status": "已接入，待实战视觉验收"
-    },
-    {
-      "id": "weapon_projectile_sword",
-      "path": "assets/resources/textures/weapon_projectile_sword.png",
-      "width": 26,
-      "height": 128,
-      "frames": 1,
-      "source": "ChatGPT Image 三款普攻弹道图集",
-      "license": "AI 生成",
-      "alpha": true,
-      "status": "已接入，待实战视觉验收"
-    },
-    {
-      "id": "weapon_projectile_medium",
-      "path": "assets/resources/textures/weapon_projectile_medium.png",
-      "width": 128,
-      "height": 91,
-      "frames": 1,
-      "source": "ChatGPT Image 三款普攻弹道图集",
-      "license": "AI 生成",
-      "alpha": true,
-      "status": "已接入，待实战视觉验收"
-    },
-    {
-      "id": "weapon_projectile_flame",
-      "path": "assets/resources/textures/weapon_projectile_flame.png",
-      "width": 68,
-      "height": 128,
-      "frames": 1,
-      "source": "ChatGPT Image 三款普攻弹道图集",
-      "license": "AI 生成",
-      "alpha": true,
-      "status": "已接入，待实战视觉验收"
+      "source": "Agnes Image 2.5 Flash；像素样板参考；generated-images/skill-water-20261102/prompt-v2.txt；原图裁方、96逻辑像素最近邻放大",
+      "license": "AI 生成；授权状态同现有 Agnes 候选",
+      "status": "寒冰符首张候选已放入运行资源，待游戏内与用户视觉验收；未批量扩展",
+      "alpha": false
     }
   ]
 }

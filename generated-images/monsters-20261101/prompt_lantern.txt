@@ -1,0 +1,9 @@
+Use the input image ONLY as a style and palette reference: match its refined retro NIGHT pixel art exactly — same pixel size, same muted dark palette, same hard dark outlines, same eerie mood. Do NOT copy any character, wall, UI or scene.
+Draw ONE single ELITE enemy sprite for a top-down vertical defense game: a LANTERN GHOST (灯笼鬼), a haunted old red paper lantern turned into a demon, FIRE element. Menacing and big, NOT cute.
+View: STRICT FRONT VIEW, it floats straight DOWN toward the viewer, camera about 30 degrees above.
+Silhouette: a large round-oval Chinese paper lantern body (taller than wide), with a dark wooden top cap and bottom ring; the paper is torn in places. ONE huge single eye in the upper middle of the lantern, glowing gold, with a slit pupil; below it a wide jagged mouth full of fangs split across the lantern ribs, a long dark tongue hanging out. Small ghost flames flicker out of the top cap and from the torn holes. A frayed tassel hangs from the bottom. Two short wispy smoke-like arms with claws. It floats; no legs.
+Colors: FIRE palette — faded cinnabar red paper #BC2525 with darker red ribs, warm orange-gold glow from inside through the paper and the eye, dark wood brown cap, dark indigo #1A1C2C outlines and shadows; muted night tones; only the eye, mouth interior and small flames glow. No green, no blue.
+On the lower front of the lantern under the mouth: one small BLANK pale paper talisman pasted on (empty, no writing) — a seal will be drawn on it by the game.
+Full body visible including flames and tassel, centered, about 75% of canvas height, the bottom of the tassel at about 90% height.
+Background: one flat solid pure magenta #FF00FF everywhere, no gradient, no texture, no cast shadow, no ground.
+No text, no letters, no characters written on the lantern, no watermark, no frame.

@@ -1,0 +1,16 @@
+Sprite sheet of the EXACT character in the input image (approved final design, an evil haunted locust tree spirit): same dark gnarled bark trunk body, same scary bark face with two glowing pale-green eyes and jagged mouth, same antler-like bare branch crown with a few dark-green leaves and tiny white flowers, same short torn red cloth strip hanging from the upper right branch (stays on the branch, NOT a tail), same blank pale paper talisman on the chest, same long branch arms with twig claws, same twisted root legs, same pixel art style and muted night palette.
+
+Layout: a landscape 3:2 canvas split into EXACTLY 6 equal cells: 3 cells across, 2 cells down. Exactly 6 full-body figures, one per cell, nothing else. No gutters, no lines, no labels, no numbers.
+
+EVERY figure: FRONT VIEW ONLY, facing the viewer, walking straight down toward the viewer (camera about 30 degrees above). NEVER show the back, NEVER turn sideways. The COMPLETE body from the top of the branch crown down to the root feet, fully inside its cell with empty margin above and below. Same size and same horizontal position in every cell; the standing foot always on the same line near the bottom of each cell.
+
+This is HALF of a walk cycle, only the leg on the VIEWER'S LEFT side steps. Left to right, top row then bottom row:
+1 both root feet planted side by side, arms hanging, body at full height;
+2 the viewer's-left root leg lifts, knee bent up, the viewer's-right arm starts swinging forward;
+3 the viewer's-left leg reaches forward and down toward the viewer, the viewer's-right arm fully forward, viewer's-left arm back;
+4 the viewer's-left foot lands in front, widest stride;
+5 body dips lower, knees bent, weight on the viewer's-left leg;
+6 body rises again, the viewer's-right leg starts to lift from behind, arms returning to the sides.
+Legs and arms must clearly change between frames; no two frames identical.
+
+Background: flat solid pure magenta #FF00FF in every cell, no gradient, no ground, no cast shadow. No text, no watermark.

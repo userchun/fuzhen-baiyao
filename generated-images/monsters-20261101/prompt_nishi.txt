@@ -1,0 +1,10 @@
+Use the input image ONLY as a style and palette reference: match its refined retro NIGHT pixel art exactly — same pixel size, same muted dark palette, same hard dark outlines, same eerie mood. You may take inspiration from its hopping jiangshi but design a NEW, DIFFERENT creature; do NOT copy any character, wall, UI or scene.
+Draw ONE single enemy sprite for a top-down vertical defense game: a MUD CORPSE (泥尸), a jiangshi-like hopping corpse that crawled out of a village grave, EARTH element. Creepy, heavy and menacing, NOT cute.
+View: front-facing, it hops DOWN toward the viewer, camera about 30 degrees above. Both feet together (it hops, it does not walk), both arms stretched stiffly straight forward toward the viewer with clawed hands.
+Silhouette: SHORT, SQUAT and BLOCKY — a wide boxy body almost as wide as it is tall, thick neck-less shoulders, a heavy square head with a crumbling old Qing-style official hat, stubby legs. Clearly wider and chunkier than a normal human.
+Body: completely caked in cracked dried grave mud and clay, clumps of mud dripping, a few pebbles and grass roots stuck in it, tattered old burial robe barely visible under the mud. Face: grey-brown mud mask, two small dim amber glowing eyes, a dark open mouth with crooked teeth.
+Colors: EARTH palette — ochre, yellow-brown, muddy tan and dark umber for the mud, dark indigo #1A1C2C outlines and shadows, muted night tones; only the eyes softly glow. No green, no bright red, no blue.
+On the middle of the chest: one small BLANK pale paper talisman stuck in the mud (empty, no writing) — a seal will be drawn on it by the game.
+Full body visible, centered, about 70% of canvas height, feet at about 88% height.
+Background: one flat solid pure magenta #FF00FF everywhere, no gradient, no texture, no cast shadow, no ground.
+No text, no letters, no watermark, no frame.
