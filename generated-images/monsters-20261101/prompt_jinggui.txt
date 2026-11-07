@@ -1,0 +1,9 @@
+Use the input image ONLY as a style and palette reference: match its refined retro NIGHT pixel art exactly — same pixel size, same muted dark palette, same hard dark outlines, same eerie mood. Do NOT copy any character, wall, UI or scene.
+Draw ONE single enemy sprite for a top-down vertical defense game: a WELL GHOST (井鬼), a drowned female ghost that crawled out of an old village well, WATER element. Creepy, NOT cute.
+View: STRICT FRONT VIEW, it glides straight DOWN toward the viewer, camera about 30 degrees above.
+Silhouette: only the UPPER HALF of the body rises out of a small round pool of dark water on the ground; below the waist it is submerged. Around the waist a clear ring of water RIPPLES (two or three concentric pixel rings, slightly oval because of the camera angle). Long soaking-wet black hair hangs down in front and completely hides the face except one pale glowing eye peeking through. Thin pale bluish arms reach forward toward the viewer with long fingers, water dripping from the fingertips. Tattered soaked white-indigo burial robe on the upper body. A few water drops and a strand of waterweed.
+Colors: WATER palette — deep indigo, dark navy and near-black for hair and water, pale cold blue-grey skin, desaturated indigo robe, a few cold pale-cyan highlights on the ripples and drops; dark indigo #1A1C2C outlines; muted night tones. No green, no red, no warm colors.
+On the chest of the robe: one small BLANK pale paper talisman (empty, no writing) — a seal will be drawn on it by the game.
+Whole figure including the ripple rings visible, centered, about 65% of canvas height, the bottom of the ripple rings at about 90% height.
+Background: one flat solid pure magenta #FF00FF everywhere, no gradient, no texture, no cast shadow, no ground other than the small water pool.
+No text, no letters, no watermark, no frame.

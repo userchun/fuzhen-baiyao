@@ -1,0 +1,10 @@
+Use the input image ONLY as a style and palette reference: match its refined retro NIGHT pixel art exactly — same pixel size, same muted dark palette, same hard dark outlines, same eerie mood. Do NOT copy any character, wall, UI or scene.
+Draw ONE single enemy sprite for a top-down vertical defense game: a demonic FIRE FOX spirit (火狐), FIRE element. Fierce and eerie, NOT cute, NOT a pet.
+View: STRICT FRONT VIEW, the fox runs straight DOWN toward the viewer, camera about 30 degrees above. Head low and forward, both front paws visible mid-stride, chest low to the ground.
+Silhouette: LOW and WIDE — a crouched running fox, much wider than tall; big pointed ears; one large bushy tail made of living flame rising up behind its back and curling over, clearly visible above the body from the front. 
+Body: dark charcoal-red fur with glowing ember cracks, cinnabar red and deep orange markings, narrow glowing golden eyes, a snarling muzzle with small fangs; flame tips on the ear tips. The flame tail is cinnabar #BC2525 and dark orange with a few small bright gold sparks, flames drawn as crisp stepped pixel shapes, not blurry glow.
+Colors: FIRE palette — cinnabar red, deep orange, ember brown, small warm gold highlights only on the eyes and flame tips; dark indigo #1A1C2C outlines and shadows; muted night tones overall. No green, no blue, no large glow halo.
+On the middle of its chest: one small BLANK pale paper talisman tag (empty, no writing) — a seal will be drawn on it by the game.
+Full body including the flame tail visible, centered, about 70% of canvas height, front paws at about 88% height.
+Background: one flat solid pure magenta #FF00FF everywhere, no gradient, no texture, no cast shadow, no ground.
+No text, no letters, no watermark, no frame.

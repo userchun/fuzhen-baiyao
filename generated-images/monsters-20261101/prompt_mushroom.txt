@@ -1,0 +1,9 @@
+Use the input image ONLY as a style and palette reference (refined retro night pixel art, chunky clean pixel clusters, 2-3 shade steps, hard dark outlines). Do NOT copy any character, wall, UI or scene from it.
+Draw ONE single enemy sprite for a top-down vertical defense game: a poisonous MUSHROOM demon (毒菇精) that grew on a village grave, WOOD element.
+View: it walks DOWN toward the viewer, front-facing, from a slightly elevated camera about 30 degrees.
+Silhouette: a BIG wide round mushroom CAP on top (the cap is the widest part, about 2x the body width), under it a short stubby pale stalk body with a creepy face (two small glowing yellow-green eyes, a jagged grinning mouth), two tiny stubby legs mid-stride, two short root-like arms. Chunky, compact, top-heavy, cute-creepy, clearly readable at small size.
+Cap colors: poisonous moss green / jade green cap with a few dark purple spots and a lighter green rim highlight; a few thin gills visible under the rim. Stalk: pale greenish ivory. Little green spore dots floating near the cap. Dark indigo #1A1C2C outline and shadows. No red, no blue.
+On the center of the stalk (its belly): one small BLANK pale paper talisman tag (empty, no writing) — a seal will be drawn on it by the game.
+Full body visible, centered, filling about 70% of the canvas height, feet at about 86% height.
+Background: one flat solid pure magenta #FF00FF everywhere, no gradient, no texture, no cast shadow, no ground, no scene.
+No text, no letters, no watermark, no frame.

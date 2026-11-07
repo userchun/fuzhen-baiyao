@@ -2036,6 +2036,447 @@
       "alpha": true
     },
     {
+      "id": "hero_flame",
+      "name": "hero_flame",
+      "category": "界面",
+      "status": "已接入 · 待美术验收",
+      "kind": "sequence",
+      "clips": [
+        {
+          "name": "cast",
+          "fps": 10,
+          "frames": [
+            {
+              "src": "/assets/resources/textures/anim/hero_flame/cast_00.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/hero_flame/cast_01.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/hero_flame/cast_02.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/hero_flame/cast_03.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            }
+          ]
+        },
+        {
+          "name": "受击",
+          "fps": 10,
+          "frames": [
+            {
+              "src": "/assets/resources/textures/anim/hero_flame/hit_00.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/hero_flame/hit_01.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/hero_flame/hit_02.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/hero_flame/hit_03.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            }
+          ]
+        },
+        {
+          "name": "待机",
+          "fps": 10,
+          "frames": [
+            {
+              "src": "/assets/resources/textures/anim/hero_flame/idle_00.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/hero_flame/idle_01.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/hero_flame/idle_02.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/hero_flame/idle_03.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            }
+          ]
+        }
+      ],
+      "src": "/assets/resources/textures/hero_flame.png",
+      "width": 256,
+      "height": 256,
+      "alpha": true
+    },
+    {
+      "id": "hero_home_flame",
+      "name": "hero_home_flame",
+      "category": "界面",
+      "status": "已接入 · 待美术验收",
+      "kind": "static",
+      "clips": [],
+      "src": "/assets/resources/textures/hero_home_flame.png",
+      "width": 1024,
+      "height": 1024,
+      "alpha": true
+    },
+    {
+      "id": "hero_home_medium",
+      "name": "hero_home_medium",
+      "category": "界面",
+      "status": "已接入 · 待美术验收",
+      "kind": "static",
+      "clips": [],
+      "src": "/assets/resources/textures/hero_home_medium.png",
+      "width": 1024,
+      "height": 1024,
+      "alpha": true
+    },
+    {
+      "id": "hero_home_sword",
+      "name": "hero_home_sword",
+      "category": "界面",
+      "status": "已接入 · 待美术验收",
+      "kind": "static",
+      "clips": [],
+      "src": "/assets/resources/textures/hero_home_sword.png",
+      "width": 1024,
+      "height": 1024,
+      "alpha": true
+    },
+    {
+      "id": "hero_home_taoist",
+      "name": "hero_home_taoist",
+      "category": "界面",
+      "status": "已接入 · 待美术验收",
+      "kind": "static",
+      "clips": [],
+      "src": "/assets/resources/textures/hero_home_taoist.png",
+      "width": 1024,
+      "height": 1024,
+      "alpha": true
+    },
+    {
+      "id": "hero_medium",
+      "name": "hero_medium",
+      "category": "界面",
+      "status": "已接入 · 待美术验收",
+      "kind": "sequence",
+      "clips": [
+        {
+          "name": "cast",
+          "fps": 10,
+          "frames": [
+            {
+              "src": "/assets/resources/textures/anim/hero_medium/cast_00.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/hero_medium/cast_01.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/hero_medium/cast_02.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/hero_medium/cast_03.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            }
+          ]
+        },
+        {
+          "name": "受击",
+          "fps": 10,
+          "frames": [
+            {
+              "src": "/assets/resources/textures/anim/hero_medium/hit_00.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/hero_medium/hit_01.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/hero_medium/hit_02.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/hero_medium/hit_03.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            }
+          ]
+        },
+        {
+          "name": "待机",
+          "fps": 10,
+          "frames": [
+            {
+              "src": "/assets/resources/textures/anim/hero_medium/idle_00.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/hero_medium/idle_01.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/hero_medium/idle_02.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/hero_medium/idle_03.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            }
+          ]
+        }
+      ],
+      "src": "/assets/resources/textures/hero_medium.png",
+      "width": 256,
+      "height": 256,
+      "alpha": true
+    },
+    {
+      "id": "hero_sword",
+      "name": "hero_sword",
+      "category": "界面",
+      "status": "已接入 · 待美术验收",
+      "kind": "sequence",
+      "clips": [
+        {
+          "name": "cast",
+          "fps": 10,
+          "frames": [
+            {
+              "src": "/assets/resources/textures/anim/hero_sword/cast_00.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/hero_sword/cast_01.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/hero_sword/cast_02.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/hero_sword/cast_03.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/hero_sword/cast_04.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/hero_sword/cast_05.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/hero_sword/cast_06.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/hero_sword/cast_07.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            }
+          ]
+        },
+        {
+          "name": "受击",
+          "fps": 10,
+          "frames": [
+            {
+              "src": "/assets/resources/textures/anim/hero_sword/hit_00.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/hero_sword/hit_01.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/hero_sword/hit_02.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/hero_sword/hit_03.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            }
+          ]
+        },
+        {
+          "name": "待机",
+          "fps": 10,
+          "frames": [
+            {
+              "src": "/assets/resources/textures/anim/hero_sword/idle_00.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/hero_sword/idle_01.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/hero_sword/idle_02.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/hero_sword/idle_03.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/hero_sword/idle_04.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/hero_sword/idle_05.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/hero_sword/idle_06.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/hero_sword/idle_07.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/hero_sword/idle_08.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/hero_sword/idle_09.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/hero_sword/idle_10.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            },
+            {
+              "src": "/assets/resources/textures/anim/hero_sword/idle_11.png",
+              "width": 256,
+              "height": 256,
+              "alpha": true
+            }
+          ]
+        }
+      ],
+      "src": "/assets/resources/textures/hero_sword.png",
+      "width": 256,
+      "height": 256,
+      "alpha": true
+    },
+    {
+      "id": "icon_talisman_water",
+      "name": "icon_talisman_water",
+      "category": "界面",
+      "status": "已接入 · 待美术验收",
+      "kind": "static",
+      "clips": [],
+      "src": "/assets/resources/textures/icon_talisman_water.png",
+      "width": 384,
+      "height": 384,
+      "alpha": false
+    },
+    {
       "id": "player_actions",
       "name": "符师动作原图",
       "category": "角色",

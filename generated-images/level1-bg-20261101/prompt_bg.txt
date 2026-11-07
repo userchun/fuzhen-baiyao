@@ -1,0 +1,7 @@
+Use the input image ONLY as a style reference (retro refined pixel art, chunky pixel clusters, palette, night lighting). Do NOT copy its characters, UI, wall, barrier, banners or layout.
+Draw: a top-down orthographic battle ground background for a vertical mobile game, level 1, an abandoned village at night.
+Composition: ONE VERY WIDE vertical cobblestone road that fills about 84% of the image width, edge to edge almost, running straight from top to bottom. Only very thin side strips (about 8% of width each) at the far left and right edges, with roof edges, broken wooden fences, a cart wheel, barrels, dark indigo bushes, a few crimson fallen leaves and small dim amber paper lanterns.
+The road: low-contrast slate blue-gray cobblestones (#5C6B7A, #8A90A0) with subtle cracks and a little moss, evenly lit, seamlessly tileable top to bottom, no strong focal point, no path markings.
+Palette: deep indigo #1A1C2C shadows, warm gold #F4B41B lantern glow (dim, small), cinnabar #BC2525 accents, warm paper #E8E4D9 highlights.
+Crisp handcrafted retro pixel art, clean pixel clusters, limited palette, no blur, no painterly gradients.
+Strictly no characters, no monsters, no wall, no gate, no barrier, no UI, no text.

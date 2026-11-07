@@ -1,0 +1,10 @@
+Use the input image ONLY as a style and palette reference: match its refined retro NIGHT pixel art exactly — same pixel size, same muted dark palette, same hard dark outlines, same eerie mood as its jiangshi monsters. Do NOT copy any character, wall, UI or scene from it.
+Draw ONE single enemy sprite for a top-down vertical defense game: an evil haunted LOCUST TREE spirit (槐树精) from an old village, WOOD element. Creepy and menacing, NOT cute, NOT cartoonish.
+View: it walks DOWN toward the viewer, front-facing, from a slightly elevated camera about 30 degrees.
+Body: a gnarled hunched tree trunk as the body, cracked dark bark forming a scary face (two small glowing pale-green eyes, a split dark mouth like a knot hole), two thick twisted root legs mid-stride, two long thin branch arms with claw-like twig fingers reaching forward.
+Head: NO round canopy, NO cap. Instead a crown of SHARP JAGGED bare branches spreading upward like antlers, with only a few sparse dark-green leaves and a few tiny pale locust flower clusters, and a dangling torn red cloth strip tied to one branch (old village shrine tree).
+Colors: muted dark bark brown and deep moss / pine green for WOOD, dark indigo #1A1C2C outlines and shadows, dim desaturated tones that fit a night scene; only the eyes softly glow. No bright saturated green, no white.
+On the middle of the trunk (its chest): one small BLANK pale paper talisman nailed to the bark (empty, no writing) — a seal will be drawn on it by the game.
+Full body visible, centered, about 75% of canvas height, feet at about 88% height.
+Background: one flat solid pure magenta #FF00FF everywhere, no gradient, no texture, no cast shadow, no ground.
+No text, no letters, no watermark, no frame.
