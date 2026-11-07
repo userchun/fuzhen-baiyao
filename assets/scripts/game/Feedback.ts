@@ -35,6 +35,15 @@ export class Feedback {
     /** 2026-10-31 去掉震屏（试玩觉得不需要）：保留接口，调用处不用改；需要恢复时还原这里即可 */
     shake(_power: number, _time = 0.2): void {}
 
+    /** 符咒命中专用的轻震（全局 shake 已按试玩意见关掉，这里只给高等级符咒用，力度很小） */
+    impact(power: number, time = 0.15): void {
+        if (power <= 0) return;
+        if (power >= this.shakePower * Math.max(0, this.shakeT / Math.max(0.001, this.shakeMax))) {
+            this.shakePower = power;
+            this.shakeT = this.shakeMax = time;
+        }
+    }
+
     hitStop(time: number): void {
         this.hitStopT = Math.max(this.hitStopT, time);
     }

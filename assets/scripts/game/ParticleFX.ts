@@ -1,4 +1,4 @@
-import { Node, ParticleSystem2D, UITransform, Layers, Color, v2, Sprite, UIOpacity, Graphics, tween, Vec3 } from 'cc';
+import { Node, ParticleSystem2D, UITransform, Layers, Color, v2, Sprite, UIOpacity, Graphics, tween, Vec3, Texture2D, SpriteFrame } from 'cc';
 import { getFrame, getFrames } from '../core/Art';
 import type { Element, HitTier } from '../config/GameConfig';
 
@@ -36,10 +36,30 @@ export interface FxSpec {
     endAlpha?: number;   // 结束透明度（默认 0 = 淡出）
 }
 
+let softDotFrame: SpriteFrame | null = null;
+/** 白色柔光圆点：项目里没有 fx_dot 贴图时用代码生成，粒子和光晕共用 */
+export function softDot(): SpriteFrame {
+    if (softDotFrame) return softDotFrame;
+    const n = 64, data = new Uint8Array(n * n * 4);
+    for (let y = 0; y < n; y++) for (let x = 0; x < n; x++) {
+        const d = Math.hypot(x + 0.5 - n / 2, y + 0.5 - n / 2) / (n / 2);
+        const a = d >= 1 ? 0 : Math.pow(1 - d, 1.6);
+        const i = (y * n + x) * 4;
+        data[i] = data[i + 1] = data[i + 2] = 255;
+        data[i + 3] = Math.round(a * 255);
+    }
+    const tex = new Texture2D();
+    tex.reset({ width: n, height: n, format: Texture2D.PixelFormat.RGBA8888 });
+    tex.uploadData(data);
+    softDotFrame = new SpriteFrame();
+    softDotFrame.texture = tex;
+    return softDotFrame;
+}
+
 /** 播放一次性粒子特效，自动销毁。贴图缺失时不播放 */
 export function burst(parent: Node, x: number, y: number, spec: FxSpec): void {
-    const sf = getFrame('fx_dot');
-    if (!sf) return;
+    if (!parent?.isValid) return;
+    const sf = getFrame('fx_dot') ?? softDot();
     const n = makeNode('particle', parent);
     n.setPosition(x, y);
     const ps = n.addComponent(ParticleSystem2D);
@@ -66,6 +86,70 @@ export function burst(parent: Node, x: number, y: number, spec: FxSpec): void {
     ps.gravity = v2(0, -spec.gravity);
     ps.autoRemoveOnFinish = true;
     ps.resetSystem();
+}
+
+// ---------- 符咒命中冲击（代码绘制，不依赖贴图） ----------
+
+/** 一团柔光：快速放大后淡出，用来做命中瞬间的亮闪 */
+export function glowPuff(parent: Node, x: number, y: number, size: number, color: string, duration = 0.25, alpha = 230, sx = 1, sy = 1): void {
+    if (!parent?.isValid) return;
+    const n = makeNode('glowPuff', parent);
+    n.setPosition(x, y);
+    n.getComponent(UITransform)!.setContentSize(size * sx, size * sy);
+    const sp = n.addComponent(Sprite);
+    sp.sizeMode = Sprite.SizeMode.CUSTOM;
+    sp.spriteFrame = softDot();
+    sp.color = toColor(color);
+    const op = n.addComponent(UIOpacity);
+    op.opacity = alpha;
+    n.setScale(0.45, 0.45, 1);
+    tween(n).to(duration * 0.35, { scale: new Vec3(1.15, 1.15, 1) }, { easing: 'quadOut' })
+        .to(duration * 0.65, { scale: new Vec3(1.35, 1.35, 1) }).start();
+    tween(op).delay(duration * 0.3).to(duration * 0.7, { opacity: 0 }, { easing: 'quadIn' })
+        .call(() => n.isValid && n.destroy()).start();
+}
+
+/** 地面冲击波：一圈压扁的椭圆从脚下扩散 */
+export function shockwave(parent: Node, x: number, y: number, radius: number, color: string, duration = 0.32, width = 5, rings = 1): void {
+    if (!parent?.isValid) return;
+    for (let r = 0; r < rings; r++) {
+        const n = makeNode('shockwave', parent);
+        n.setPosition(x, y);
+        const g = n.addComponent(Graphics);
+        g.lineWidth = Math.max(1.5, width - r * 1.5);
+        g.strokeColor = toColor(color, 255);
+        g.ellipse(0, 0, radius, radius * 0.36);
+        g.stroke();
+        g.lineWidth = Math.max(1, width * 0.4);
+        g.strokeColor = toColor('#FFFFFF', 200);
+        g.ellipse(0, 0, radius * 0.97, radius * 0.35);
+        g.stroke();
+        const op = n.addComponent(UIOpacity);
+        const delay = r * 0.07;
+        n.setScale(0.2, 0.2, 1);
+        op.opacity = 0;
+        tween(n).delay(delay).to(duration, { scale: new Vec3(1, 1, 1) }, { easing: 'quartOut' }).start();
+        tween(op).delay(delay).to(0.02, { opacity: 255 }).to(duration, { opacity: 0 }, { easing: 'quadIn' })
+            .call(() => n.isValid && n.destroy()).start();
+    }
+}
+
+/** 全屏闪光：高等级大招落下时整屏一亮 */
+export function screenFlash(parent: Node, color: string, alpha = 110, duration = 0.18): void {
+    if (!parent?.isValid) return;
+    const n = makeNode('screenFlash', parent);
+    const g = n.addComponent(Graphics);
+    g.fillColor = toColor(color, 255);
+    g.rect(-1500, -2500, 3000, 5000);
+    g.fill();
+    const op = n.addComponent(UIOpacity);
+    op.opacity = alpha;
+    tween(op).to(duration, { opacity: 0 }, { easing: 'quadIn' }).call(() => n.isValid && n.destroy()).start();
+}
+
+/** 命中火花：亮色放射粒子，数量随等级增加 */
+export function impactSparks(parent: Node, x: number, y: number, color: string, count: number, speed: number, gravity = 0, angle = 90, angleVar = 360): void {
+    burst(parent, x, y, { count, duration: 0.12, life: 0.38, speed, speedVar: speed * 0.5, angle, angleVar, size: 9, sizeVar: 5, gravity, color });
 }
 
 /** 铃波命中时，在目标脚下扩散一圈青蓝水纹。 */

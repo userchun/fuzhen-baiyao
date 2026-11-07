@@ -245,6 +245,14 @@ export const TALISMANS: Record<TalismanId, TalismanDef> = {
 
 export interface PassiveDef { name: string; desc: string; maxLevel: number; }
 
+/** 符咒特效表现（纯视觉，不影响伤害）：每级放大、命中冲击、≥4 级形态质变 🧪 */
+export const SKILL_FX = {
+    scalePerLevel: 0.08,     // 精灵表每级额外放大，5 级 ×1.32
+    shake: [0, 0, 0, 2, 4, 6], // 按等级的命中轻震像素，0 = 不震
+    hitStopLv: 4,            // 达到此等级命中顿帧 0.04 秒
+    evolveLv: 4,             // 达到此等级出现额外形态（多重落雷、陨火雨等）
+};
+
 export const PASSIVES: Record<string, PassiveDef> = {
     haste: { name: '疾书', desc: '施法速度 +15%', maxLevel: 5 },
     power: { name: '朱砂', desc: '全部伤害 +20%', maxLevel: 5 },

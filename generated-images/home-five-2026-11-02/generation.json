@@ -1,0 +1,52 @@
+{
+  "model": "agnes-image-2.5-flash",
+  "script": "scripts/agnes-image.py",
+  "requested_size": "2K",
+  "ratio": "9:16",
+  "status": "review-only",
+  "cases": [
+    {
+      "name": "月夜古镇",
+      "image": "01-moon-town.png",
+      "prompt": "01-moon-town.txt",
+      "reference_images": [
+        "docs/art/ref/style_target.png",
+        "assets/resources/textures/ui_home_hero.png"
+      ],
+      "method": "reference-image",
+      "style": "精致像素"
+    },
+    {
+      "name": "符师道院",
+      "image": "02-taoist-courtyard-restyle.png",
+      "prompt": "02-taoist-courtyard-restyle.txt",
+      "reference_images": [],
+      "method": "text-to-image",
+      "style": "清雅国漫"
+    },
+    {
+      "name": "雨夜长街",
+      "image": "03-rain-street-restyle.png",
+      "prompt": "03-rain-street-restyle.txt",
+      "reference_images": [],
+      "method": "text-to-image",
+      "style": "暗黑厚涂"
+    },
+    {
+      "name": "山门云海",
+      "image": "04-mountain-gate-restyle.png",
+      "prompt": "04-mountain-gate-restyle.txt",
+      "reference_images": [],
+      "method": "text-to-image",
+      "style": "青绿山水绘卷"
+    },
+    {
+      "name": "百妖灯会",
+      "image": "05-lantern-festival-restyle.png",
+      "prompt": "05-lantern-festival-restyle.txt",
+      "reference_images": [],
+      "method": "text-to-image",
+      "style": "精致Q版"
+    }
+  ]
+}

@@ -3,8 +3,7 @@ import { Node, Graphics, Label, UITransform, Sprite } from 'cc';
 import {
     ENEMIES, EnemyDef, GAME, BASE_ATTACK, HERO_BASIC_EFFECTS, HERO_WEAPONS, TalismanId, ELEMENT_COLOR, ELEMENT_NAME, Element, elementTier, TIER_MULT,
     MIN_HIT_DAMAGE, RIVER_INTERVAL, SIEGE, depthY, depthScale, lanePixels, travelPixels, LAYOUT,
-    ULT, ULT_NAMES, GROWTH,
-} from '../config/GameConfig';
+    ULT, ULT_NAMES, GROWTH, SKILL_FX } from '../config/GameConfig';
 import { Pool } from '../core/Pool';
 import { STAT_EFFECT } from '../config/MetaConfig';
 import { circleNode, rectNode, makeNode, hex, setOpacity, paintCircle, addLabel } from '../core/Draw';
@@ -13,7 +12,7 @@ import { SkillSystem } from './SkillSystem';
 import { paintElement, drawHp } from './EnemyView';
 import { Feedback } from './Feedback';
 import { AudioManager } from '../core/AudioManager';
-import { FX, burst, flash, flashCombat, flashCastGlow, flashBellRipple, flashHasteTrail, flashMotionHit } from './ParticleFX';
+import { FX, burst, flash, glowPuff, shockwave, screenFlash, impactSparks, flashCombat, flashCastGlow, flashBellRipple, flashHasteTrail, flashMotionHit } from './ParticleFX';
 import { hitPulse } from './Anim';
 import { FrameAnim, FrameClip } from './FrameAnim';
 import { FX_SHEETS, FX_FPS } from '../config/FxSheets';
@@ -65,6 +64,17 @@ const HALF_W = LAYOUT.roadHalfW; // 出怪与妖怪横向活动范围：收在�
 const top = (): number => GAME.horizonY; // 纵深最远点（地平线/出怪线）
 const PLAYER_ART_SIZE = 160; // 当前符师动作帧显示边长，完整轮廓位于结界后方。
 const fxLv = (lv: number): number => Math.max(1, Math.min(5, lv));
+/** 符咒特效随等级放大 */
+const lvScale = (lv: number): number => 1 + SKILL_FX.scalePerLevel * (fxLv(lv) - 1);
+/** 各符咒命中冲击的主色 / 亮色 / 命中时刻（相对特效开始，秒） */
+const IMPACT: Record<string, { color: string; hot: string; at: number }> = {
+    metal: { color: '#F5C542', hot: '#FFF4C2', at: 0.22 },
+    water: { color: '#5AB4F0', hot: '#E2F6FF', at: 0.2 },
+    fire: { color: '#FF6A2A', hot: '#FFD27A', at: 0.2 },
+    wood: { color: '#5FCF6A', hot: '#D8FFC4', at: 0.12 },
+    earth: { color: '#C99A55', hot: '#FFE2A8', at: 0.1 },
+    thunder: { color: '#B48CFF', hot: '#F2EAFF', at: 0.25 },
+};
 const FX_PIXEL_SCALE = 2; // 符咒像素特效放大倍数：特效里妖怪身高约 44 像素，对应场上妖怪约 90 像素
 
 // 战斗世界：施法、敌人移动、子弹碰撞、区域伤害、特效
@@ -704,7 +714,13 @@ export class Combat {
                 const dy = t.y - oy;
                 const speed = 1600 / Math.max(1, Math.hypot(dx, dy));
                 this.shoot('metal', ox, oy, dx * speed, dy * speed, dmg, { pierce: lv, radius: 16, life: 2 });
-                this.playSheet(`gold_pillar_lv${fxLv(lv)}`, t.x, this.footY(t), this.fxScale(t));
+                this.playSheet(`gold_pillar_lv${fxLv(lv)}`, t.x, this.footY(t), this.fxScale(t) * lvScale(lv));
+                this.talismanImpact('metal', lv, t);
+                if (lv >= SKILL_FX.evolveLv) {
+                    // 高等级：两侧再落两道金光柱，形成剑阵（纯表现）
+                    const side = 46 * depthScale(t.depth);
+                    for (const k of [-1, 1]) this.playSheet(`gold_pillar_lv${fxLv(lv - 2)}`, t.x + k * side, this.footY(t) + 6, this.fxScale(t) * 0.8, 0.08);
+                }
             }
             this.audio?.playSfx('shoot', 0.45);
         } else if (id === 'water' || id === 'fire') {
@@ -720,8 +736,25 @@ export class Combat {
                 const dx = t.x - sx;
                 const dy = t.y - sy;
                 const dist = Math.max(1, Math.hypot(dx, dy));
-                this.playSheet(`${id === 'water' ? 'ice_burst' : 'fire_burst'}_lv${fxLv(lv)}`, t.x, this.footY(t),
-                    this.fxScale(t), Math.max(0, dist / speed - 0.2));
+                const arrive = Math.max(0, dist / speed - 0.2);
+                const sheet = id === 'water' ? 'ice_burst' : 'fire_burst';
+                this.playSheet(`${sheet}_lv${fxLv(lv)}`, t.x, this.footY(t), this.fxScale(t) * lvScale(lv), arrive);
+                this.talismanImpact(id, lv, t, arrive);
+                if (lv >= SKILL_FX.evolveLv) {
+                    // 高等级：火变陨火雨、冰变冰棱齐落，在目标周围再砸几发（纯表现）
+                    const extra = lv >= 5 ? 3 : 2;
+                    for (let k = 0; k < extra; k++) {
+                        const a = (k / extra) * Math.PI * 2 + Math.random();
+                        const r = (50 + Math.random() * 30) * depthScale(t.depth);
+                        const ex = t.x + Math.cos(a) * r, ey = this.footY(t) + Math.sin(a) * r * 0.35;
+                        const d = arrive + 0.12 + k * 0.1;
+                        this.playSheet(`${sheet}_lv${fxLv(lv - 2)}`, ex, ey, this.fxScale(t) * 0.75, d);
+                        this.scheduleFx(d + IMPACT[id].at, () => {
+                            glowPuff(this.fxLayer, ex, ey + 10, 70 * depthScale(t.depth), IMPACT[id].color, 0.22, 200, 1, 0.6);
+                            shockwave(this.fxLayer, ex, ey, 40 * depthScale(t.depth), IMPACT[id].color, 0.25, 3);
+                        });
+                    }
+                }
                 this.shoot(id, sx, sy, dx / dist * speed, dy / dist * speed, dmg, id === 'water'
                     ? { bounces: lv, radius: 11 }
                     : { explodeR: 70 + 15 * lv, radius: 14, life: dist / speed });
@@ -734,7 +767,12 @@ export class Combat {
                 if (!t) return;
                 used.add(t);
                 this.addZone(t.x, t.y, 60 + 10 * lv, dmg, 3);
-                this.playSheet(`vine_zone_lv${fxLv(lv)}`, t.x, this.footY(t), this.fxScale(t));
+                this.playSheet(`vine_zone_lv${fxLv(lv)}`, t.x, this.footY(t), this.fxScale(t) * lvScale(lv));
+                this.talismanImpact('wood', lv, t);
+                if (lv >= SKILL_FX.evolveLv) {
+                    // 高等级：外圈再长一层藤网（纯表现）
+                    this.playSheet(`vine_zone_lv${fxLv(lv - 2)}`, t.x, this.footY(t) - 4, this.fxScale(t) * lvScale(lv) * 1.45, 0.15);
+                }
             }
         } else if (id === 'earth') {
             const used = new Set<Enemy>();
@@ -745,7 +783,18 @@ export class Combat {
                 used.add(t);
                 const cx = t.x;
                 const cy = t.y;
-                this.playSheet(`stone_spike_lv${fxLv(lv)}`, cx, this.footY(t), this.fxScale(t));
+                this.playSheet(`stone_spike_lv${fxLv(lv)}`, cx, this.footY(t), this.fxScale(t) * lvScale(lv));
+                this.talismanImpact('earth', lv, t);
+                if (lv >= SKILL_FX.evolveLv) {
+                    // 高等级：一圈石柱依次破土（纯表现）
+                    const ring = lv >= 5 ? 5 : 3;
+                    for (let k = 0; k < ring; k++) {
+                        const a = (k / ring) * Math.PI * 2;
+                        const rr = r * 0.9 * depthScale(t.depth);
+                        this.playSheet(`stone_spike_lv${fxLv(lv - 2)}`, cx + Math.cos(a) * rr, this.footY(t) + Math.sin(a) * rr * 0.35,
+                            this.fxScale(t) * 0.7, 0.08 + k * 0.05);
+                    }
+                }
                 burst(this.fxLayer, cx, cy, FX.earth(cx, cy));
                 this.audio?.playSfx('thunder', 0.5);
                 this.fb.shake(3, 0.08);
@@ -778,8 +827,22 @@ export class Combat {
                 for (let j = 0; j <= lv && cur; j++) {
                     hit.add(cur);
                     // 第一道雷带乌云蓄雷；之后每跳到一只实际妖怪，就在它身上补劈一道
-                    if (j === 0) this.playSheet(`thunder_chain_lv${fxLv(lv)}`, cur.x, this.footY(cur), this.fxScale(cur));
-                    else this.playSheet(`thunder_hop_lv${fxLv(lv)}`, cur.x, this.footY(cur), this.fxScale(cur), 0.25 + j * 0.1);
+                    if (j === 0) {
+                        this.playSheet(`thunder_chain_lv${fxLv(lv)}`, cur.x, this.footY(cur), this.fxScale(cur) * lvScale(lv));
+                        this.talismanImpact('thunder', lv, cur);
+                        if (lv >= SKILL_FX.evolveLv) {
+                            // 高等级：天罚——整屏一闪，周围再劈下几道雷（纯表现）
+                            this.scheduleFx(IMPACT.thunder.at, () => screenFlash(this.fxLayer, '#C9B4FF', lv >= 5 ? 60 : 40, 0.15));
+                            for (let k = 0; k < (lv >= 5 ? 3 : 2); k++) {
+                                const ex = cur.x + (Math.random() * 2 - 1) * 90, ey = this.footY(cur) + (Math.random() * 2 - 1) * 30;
+                                this.playSheet(`thunder_hop_lv${fxLv(lv)}`, ex, ey, this.fxScale(cur) * 0.85, 0.12 + k * 0.08);
+                            }
+                        }
+                    } else {
+                        const hopDelay = 0.25 + j * 0.1;
+                        this.playSheet(`thunder_hop_lv${fxLv(lv)}`, cur.x, this.footY(cur), this.fxScale(cur) * lvScale(lv), hopDelay);
+                        this.talismanImpact('thunder', Math.max(1, lv - 2), cur, hopDelay - IMPACT.thunder.at + 0.05);
+                    }
                     burst(this.fxLayer, cur.x, cur.y, FX.thunder(cur.x, cur.y));
                     this.hurt(cur, dmg, 'none', true, 'thunder_hit'); // U10 天雷挂点（伤不变）
                     cur = this.nearest(cur.x, cur.y, hit, 250);
@@ -875,6 +938,29 @@ export class Combat {
             e.visualT = 0;
             e.visualAction = 'move';
             this.ensureEnemyAnim(e.node, e.def.id, e.element);
+        });
+    }
+
+    /**
+     * 符咒命中冲击（纯表现）：亮闪 + 地面冲击波 + 加色火花，等级越高越大；
+     * 高等级再加轻震与顿帧。delay 是特效开始前的等待（飞行时间）。
+     */
+    private talismanImpact(id: string, lv: number, t: Enemy, delay = 0): void {
+        const spec = IMPACT[id];
+        if (!spec) return;
+        const L = fxLv(lv);
+        const ds = depthScale(t.depth);
+        const x = t.x, foot = this.footY(t);
+        this.scheduleFx(delay + spec.at, () => {
+            const k = (0.8 + 0.15 * L) * ds;
+            glowPuff(this.fxLayer, x, foot + 24 * ds, 120 * k, spec.color, 0.3, 190, 1, 0.75);
+            glowPuff(this.fxLayer, x, foot + 24 * ds, 60 * k, spec.hot, 0.18, 255);
+            shockwave(this.fxLayer, x, foot, 70 * k, spec.color, 0.34, 4 + L * 0.6, L >= 3 ? 2 : 1);
+            const up = id === 'earth' || id === 'fire';
+            impactSparks(this.fxLayer, x, foot + 18 * ds, spec.hot, 10 + L * 5, 220 + L * 30, up ? 420 : 60, up ? 90 : 90, up ? 70 : 360);
+            const shake = SKILL_FX.shake[L] ?? 0;
+            if (shake > 0) this.fb.impact(shake, 0.12 + L * 0.02);
+            if (L >= SKILL_FX.hitStopLv) this.fb.hitStop(0.04);
         });
     }
 
