@@ -492,6 +492,17 @@
       "source": "ChatGPT Image，现有首页符师与像素样板为参考",
       "license": "AI 生成",
       "status": "用户已确认四人造型；战斗动作与专精机制待实现"
+    },
+    {
+      "id": "icon_talisman_water",
+      "path": "assets/resources/textures/icon_talisman_water.png",
+      "width": 384,
+      "height": 384,
+      "frames": 1,
+      "source": "Agnes Image 2.5 Flash；像素样板参考；generated-images/skill-water-20261102/prompt-v2.txt；原图裁方、96逻辑像素最近邻放大",
+      "license": "AI 生成；授权状态同现有 Agnes 候选",
+      "status": "寒冰符首张候选已放入运行资源，待游戏内与用户视觉验收；未批量扩展",
+      "alpha": false
     }
   ]
 }
